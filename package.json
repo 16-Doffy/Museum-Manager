@@ -4,6 +4,9 @@
   "version": "0.0.0",
  "packageManager": "pnpm@10.17.1",
   "scripts": {
+     "dev:visitor": "pnpm --filter visitor-portal dev",
+  "dev:admin": "pnpm --filter @apps/admin-portal dev",
+  "dev:museum": "pnpm --filter museum-portal dev",
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "start": "turbo run start",
