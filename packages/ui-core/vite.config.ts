@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { glob } from 'glob';
 import packageJson from './package.json';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import type { PluginOption } from 'vite';
 
 // Generate entry points for all components
 const componentEntries = Object.fromEntries(
@@ -24,7 +25,7 @@ export default defineConfig({
       jsxImportSource: 'react',
     }),
     tailwindcss(),
-    tsconfigPaths({ ignoreConfigErrors: true }),
+    tsconfigPaths({ ignoreConfigErrors: true }) as PluginOption,
     dts({
       // Generate TypeScript declarations
       insertTypesEntry: true,

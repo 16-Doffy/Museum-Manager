@@ -1,4 +1,4 @@
-import { APIResponse } from '@musetrip360/query-foundation';
+import { APIResponse } from '@museum-manager/query-foundation';
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { UploadConfirmDialog } from '../ui/components/UploadConfirmDialog';
 import { UploadErrorDialog } from '../ui/components/UploadErrorDialog';

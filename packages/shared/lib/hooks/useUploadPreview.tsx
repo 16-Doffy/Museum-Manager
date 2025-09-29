@@ -2,7 +2,7 @@ import { useFileUpload } from '@/api/hooks/useUpload';
 import { BulkUploadProps, useBulkUpload } from '@/contexts/UploadFileContext';
 import { FileData, MediaType } from '@/types';
 import { formatFileSize, validateFileByMediaType } from '@/utils';
-import { UploadProgress, UploadStatus } from '@musetrip360/query-foundation';
+import { UploadProgress, UploadStatus } from '@museum-manager/query-foundation';
 import React, { useCallback } from 'react';
 
 interface UseUploadPreviewProps extends BulkUploadProps {
@@ -27,19 +27,20 @@ export const useUploadPreview = ({
 
   const uploadFileMutation = useFileUpload(
     (progress: UploadProgress) => {
-      setUploadProgress((prev) => ({ ...prev, ...progress }));
+      setUploadProgress((prev: UploadProgress | null) => ({ ...(prev ?? {} as UploadProgress), ...progress } as UploadProgress));
     },
     {
       onMutate: () => {
         setUploadProgress({ status: UploadStatus.UPLOADING, loaded: 0, total: 0, percentage: 0 });
       },
-      onSuccess: (res) => {
-        setUploadProgress((prev) => (prev ? { ...prev, status: UploadStatus.SUCCESS } : null));
-        onUpload?.(res.data.url);
+      onSuccess: (res: unknown) => {
+        setUploadProgress((prev: UploadProgress | null) => (prev ? { ...prev, status: UploadStatus.SUCCESS } : null));
+        const url = (res as { data?: { url?: string } })?.data?.url;
+        if (url) onUpload?.(url);
         setTimeout(() => setUploadProgress(null), 2000);
       },
       onError: () => {
-        setUploadProgress((prev) => (prev ? { ...prev, status: UploadStatus.ERROR } : null));
+        setUploadProgress((prev: UploadProgress | null) => (prev ? { ...prev, status: UploadStatus.ERROR } : null));
         setTimeout(() => setUploadProgress(null), 3000);
       },
     }

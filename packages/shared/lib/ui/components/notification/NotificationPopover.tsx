@@ -1,7 +1,7 @@
 import React from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@musetrip360/ui-core/popover';
-import { Separator } from '@musetrip360/ui-core/separator';
-import { cn } from '@musetrip360/ui-core';
+import { Popover, PopoverContent, PopoverTrigger } from '@museum-manager/ui-core/popover';
+import { Separator } from '@museum-manager/ui-core/separator';
+import { cn } from '@museum-manager/ui-core';
 import { NotificationList } from './NotificationList';
 import { notificationPopoverVariants } from './notification.variants';
 import { NotificationPopoverProps } from './notification.types';

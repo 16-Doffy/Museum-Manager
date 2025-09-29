@@ -1,5 +1,5 @@
 import { FeedbackSearchParams } from '@/types';
-import { BaseCacheKeyFactory } from '@musetrip360/query-foundation';
+import { BaseCacheKeyFactory } from '@museum-manager/query-foundation';
 import type { QueryKey } from '@tanstack/react-query';
 
 /**
@@ -80,6 +80,13 @@ export class FeedbackCacheKeys extends BaseCacheKeyFactory {
    */
   feedback(params: FeedbackSearchParams): QueryKey {
     return [this.prefix, 'list', params.Page, params.PageSize, params.targetId ?? '', params.targetType ?? ''];
+  }
+
+  /**
+   * Cache key for feedback list (no filters)
+   */
+  list(): QueryKey {
+    return [this.prefix, 'list'];
   }
 }
 

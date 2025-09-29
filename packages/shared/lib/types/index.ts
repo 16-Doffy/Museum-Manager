@@ -4,8 +4,21 @@
  * Common TypeScript types used across the shared package
  */
 
-import type { Pagination } from '@musetrip360/query-foundation';
-import { IUser } from 'node_modules/@musetrip360/auth-system/dist/types/types';
+// Shims for external types to keep package self-contained at type-check time.
+// Consumers should provide real types via peer deps at app build time.
+export type Pagination = {
+  Page: number;
+  PageSize: number;
+  TotalItems?: number;
+  TotalPages?: number;
+};
+
+// Minimal IUser shape used in this package
+export interface IUser {
+  id: string;
+  email?: string;
+  name?: string;
+}
 import { z, ZodType } from 'zod';
 
 /**

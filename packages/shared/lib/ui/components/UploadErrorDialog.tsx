@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   ScrollArea,
-} from '@musetrip360/ui-core';
+} from '@museum-manager/ui-core';
 import { FileText, Image, Video, XCircle } from 'lucide-react';
 
 interface UploadErrorDialogProps {

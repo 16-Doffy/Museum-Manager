@@ -1,9 +1,9 @@
 import { useDropzone } from 'react-dropzone';
-import { Card, CardContent } from '@musetrip360/ui-core/card';
-import { Badge } from '@musetrip360/ui-core/badge';
+import { Card, CardContent } from '@museum-manager/ui-core/card';
+import { Badge } from '@museum-manager/ui-core/badge';
 import { Upload, FileText, Image, Video, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import type { MediaType } from '@/types';
-import { cn } from '@musetrip360/ui-core/utils';
+import { cn } from '@museum-manager/ui-core/utils';
 import { getAcceptConfig, validateFileByMediaType } from '@/utils';
 import React from 'react';
 

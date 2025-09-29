@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button } from '@musetrip360/ui-core/button';
-import { ScrollArea } from '@musetrip360/ui-core/scroll-area';
-import { Separator } from '@musetrip360/ui-core/separator';
+import { Button } from '@museum-manager/ui-core/button';
+import { ScrollArea } from '@museum-manager/ui-core/scroll-area';
+import { Separator } from '@museum-manager/ui-core/separator';
 import { CheckCheck, Bell } from 'lucide-react';
-import { cn } from '@musetrip360/ui-core';
+import { cn } from '@museum-manager/ui-core';
 import { NotificationItem } from './NotificationItem';
 import { notificationListVariants } from './notification.variants';
 import { NotificationListProps } from './notification.types';

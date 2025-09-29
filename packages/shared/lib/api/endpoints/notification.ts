@@ -5,7 +5,7 @@
  */
 
 import { Notification, NotificationSearchParams, UpdateReadNotification } from '@/types';
-import { APIResponse, getHttpClient, PaginatedResponse } from '@musetrip360/query-foundation';
+import { APIResponse, getHttpClient, PaginatedResponse } from '@museum-manager/query-foundation';
 
 export const notificationEndpoints = {
   notification: 'messaging/notifications',

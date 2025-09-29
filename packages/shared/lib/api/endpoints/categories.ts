@@ -5,7 +5,7 @@
  */
 
 import { Category } from '@/types';
-import { APIResponse, getHttpClient } from '@musetrip360/query-foundation';
+import { APIResponse, getHttpClient } from '@museum-manager/query-foundation';
 
 export const categoryEndpoints = {
   getCategories: 'categories',

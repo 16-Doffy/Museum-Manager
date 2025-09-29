@@ -3,7 +3,7 @@
 import { animated } from '@react-spring/web';
 import { PreviewContentProps } from './PreviewModal.types';
 import { sizeVariants } from './PreviewModal.variants';
-import { cn } from '@musetrip360/ui-core/utils';
+import { cn } from '@museum-manager/ui-core/utils';
 
 export function PreviewContent({ children, size, className, style, animationStyle, onClick }: PreviewContentProps) {
   const sizeStyles = sizeVariants[size];

@@ -1,6 +1,6 @@
-import { Button } from '@musetrip360/ui-core/button';
+import { Button } from '@museum-manager/ui-core/button';
 import { Bell } from 'lucide-react';
-import { cn } from '@musetrip360/ui-core';
+import { cn } from '@museum-manager/ui-core';
 import { NotificationPopover } from './NotificationPopover';
 import { notificationBellVariants, notificationBadgeVariants } from './notification.variants';
 import { NotificationBellProps } from './notification.types';

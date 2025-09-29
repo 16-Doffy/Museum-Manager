@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, X } from 'lucide-react';
-import { Button } from '@musetrip360/ui-core/button';
+import { Button } from '@museum-manager/ui-core/button';
 import { PreviewHeaderProps } from './PreviewModal.types';
 
 export function PreviewHeader({ title, showBackButton = true, showCloseButton = false, onClose }: PreviewHeaderProps) {

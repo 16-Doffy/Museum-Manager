@@ -6,6 +6,7 @@ import { resolve } from 'path';
 import tailwindcss from '@tailwindcss/vite';
 import packageJson from './package.json';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import type { PluginOption } from 'vite';
 
 export default defineConfig({
   plugins: [
@@ -14,7 +15,7 @@ export default defineConfig({
       jsxImportSource: 'react',
     }),
     tailwindcss(),
-    tsconfigPaths({ ignoreConfigErrors: true }),
+    tsconfigPaths({ ignoreConfigErrors: true }) as PluginOption,
     dts({
       // Generate TypeScript declarations
       insertTypesEntry: true,
@@ -26,7 +27,7 @@ export default defineConfig({
       compilerOptions: {
         preserveSymlinks: false,
         skipLibCheck: true,
-      },
+      }
     }),
   ],
 
@@ -54,7 +55,8 @@ export default defineConfig({
       // Externalize dependencies that shouldn't be bundled
       external: [
         ...new Set([...Object.keys(packageJson.dependencies), ...Object.keys(packageJson.peerDependencies)]),
-      ].map((dep) => new RegExp(`^${dep}`)),
+        /^@musetrip360\//,
+      ].map((dep) => (dep instanceof RegExp ? dep : new RegExp(`^${dep}`))),
 
       output: {
         // Provide global variables for externalized deps in UMD builds

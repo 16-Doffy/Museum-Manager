@@ -1,5 +1,5 @@
 import { FeedbackCreate, FeedbackSearchParams } from '@/types';
-import { getQueryClient, useMutation, useQuery } from '@musetrip360/query-foundation';
+import { getQueryClient, useMutation, useQuery } from '@museum-manager/query-foundation';
 import { sharedCacheKeys } from '../cache/cacheKeys';
 import { createFeedback, getFeedback } from '../endpoints';
 
