@@ -1,3 +1,5 @@
+'use client';
+
 import { SidebarContext } from '@/components/ui/sidebar';
 import { useFormContext, useFormState } from 'react-hook-form';
 import { FormFieldContext, FormItemContext } from '@/components/ui/form';

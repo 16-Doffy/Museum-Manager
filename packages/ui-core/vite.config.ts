@@ -52,6 +52,8 @@ export default defineConfig({
       entry: {
         // Main entry point
         index: resolve(__dirname, 'lib/index.ts'),
+        // Client-safe entry point
+        client: resolve(__dirname, 'lib/client.ts'),
         // Utils entry
         utils: resolve(__dirname, 'lib/libs/utils.ts'),
         // Individual component entries for better tree-shaking
@@ -72,6 +74,9 @@ export default defineConfig({
         entryFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'index') {
             return '[format]/index.js';
+          }
+          if (chunkInfo.name === 'client') {
+            return '[format]/client.js';
           }
           if (chunkInfo.name === 'utils') {
             return '[format]/utils.js';
