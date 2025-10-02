@@ -13,6 +13,11 @@
       "import": "./dist/es/index.js",
       "require": "./dist/cjs/index.js"
     },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/es/client.js",
+      "require": "./dist/cjs/client.js"
+    },
     "./utils": {
       "types": "./dist/utils.d.ts",
       "import": "./dist/es/utils.js",
