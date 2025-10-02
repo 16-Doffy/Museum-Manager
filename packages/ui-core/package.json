@@ -1,5 +1,5 @@
 {
-  "name": "@musetrip360/ui-core",
+  "name": "@museum-manage/ui-core",
   "version": "0.1.0",
   "description": "A comprehensive UI component library for MuseTrip360 built on the design system",
   "type": "module",

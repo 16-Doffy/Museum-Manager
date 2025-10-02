@@ -1,5 +1,5 @@
 {
-  "name": "@musetrip360/shared",
+  "name": "@museum-manage/shared",
   "version": "0.1.0",
   "description": "A comprehensive shared package for the MuseTrip360 system",
   "type": "module",
