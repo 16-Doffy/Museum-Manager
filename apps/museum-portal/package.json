@@ -8,10 +8,14 @@
     "start": "next start -p 3500"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "next": "15.5.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "shared": "*"
+    "react-icons": "^5.5.0",
+    "recharts": "^2.15.4",
+    "shared": "*",
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

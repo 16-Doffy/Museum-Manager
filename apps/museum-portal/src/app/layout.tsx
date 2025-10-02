@@ -1,19 +1,23 @@
-// src/app/layout.tsx
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css'; // nếu có
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Museum Portal', // đổi tên app tương ứng
-  description: ''
+  title: "Museum Portal - Quản lý Bảo tàng",
+  description: "Hệ thống quản lý bảo tàng dành cho nhân viên",
 };
 
-const inter = Inter({ subsets: ['latin'] });
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="vi">
-      <body className={inter.className}>{children}</body>
+      <body className="min-h-screen bg-gray-50 antialiased">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

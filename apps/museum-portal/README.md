@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Museum Management Portal
 
-## Getting Started
+Hệ thống quản lý bảo tàng toàn diện với giao diện hiện đại và dễ sử dụng.
 
-First, run the development server:
+## 🏗️ Cấu trúc Dự án
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 📁 Thư mục chính
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── dashboard/         # Trang tổng quan
+│   ├── collections/       # Quản lý bộ sưu tập
+│   ├── events/           # Quản lý sự kiện
+│   ├── visitors/         # Quản lý khách tham quan
+│   ├── tickets/          # Quản lý vé
+│   ├── reports/          # Báo cáo & thống kê
+│   └── settings/         # Cài đặt hệ thống
+├── components/           # React Components
+│   ├── layout/          # Layout components (Sidebar, Topbar, etc.)
+│   ├── dashboard/       # Dashboard components
+│   ├── collections/     # Collection management components
+│   ├── events/          # Event management components
+│   ├── visitors/        # Visitor management components
+│   ├── tickets/         # Ticket management components
+│   ├── reports/         # Report components
+│   └── common/          # Shared/common components
+└── lib/                 # Utilities & configurations
+    ├── api/            # API functions
+    ├── hooks/          # Custom React hooks
+    ├── types/          # TypeScript type definitions
+    └── utils/          # Utility functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Tính năng chính
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📊 Dashboard
+- Thống kê tổng quan về bảo tàng
+- Biểu đồ doanh thu và khách tham quan
+- Tổng quan về bộ sưu tập và sự kiện
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🖼️ Quản lý Bộ sưu tập
+- Thêm, sửa, xóa bộ sưu tập
+- Phân loại và tìm kiếm
+- Quản lý thông tin chi tiết
 
-## Learn More
+### 🎉 Quản lý Sự kiện
+- Tạo và quản lý sự kiện
+- Lên lịch sự kiện
+- Theo dõi hiệu quả sự kiện
 
-To learn more about Next.js, take a look at the following resources:
+### 👥 Quản lý Khách tham quan
+- Theo dõi số lượng khách
+- Thống kê theo thời gian
+- Phân tích xu hướng
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🎫 Quản lý Vé
+- Bán vé trực tuyến
+- Quản lý giá vé
+- Thống kê doanh thu
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 📈 Báo cáo & Thống kê
+- Báo cáo doanh thu
+- Thống kê khách tham quan
+- Phân tích hiệu quả sự kiện
 
-## Deploy on Vercel
+### ⚙️ Cài đặt Hệ thống
+- Cấu hình thông tin bảo tàng
+- Thiết lập giờ mở cửa
+- Quản lý giá vé
+- Cài đặt thông báo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Công nghệ sử dụng
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework**: Next.js 15
+- **UI Library**: React 18
+- **Styling**: Tailwind CSS
+- **Charts**: Recharts
+- **Icons**: React Icons
+- **Language**: TypeScript
+- **Package Manager**: pnpm
+
+## 🚀 Cách chạy dự án
+
+```bash
+# Cài đặt dependencies
+pnpm install
+
+# Chạy development server
+pnpm dev
+
+# Build cho production
+pnpm build
+
+# Chạy production server
+pnpm start
+```
+
+## 📝 Ghi chú
+
+- Server chạy trên port 3500
+- Sử dụng App Router của Next.js 15
+- Components được tổ chức theo chức năng
+- Hỗ trợ TypeScript đầy đủ
+- Responsive design cho mobile và desktop
+
+## 🔄 Cập nhật gần đây
+
+- Tái cấu trúc thư mục theo chức năng
+- Thêm các trang quản lý chuyên biệt
+- Cải thiện tổ chức components
+- Thêm các utility functions
+- Tối ưu hóa import paths
