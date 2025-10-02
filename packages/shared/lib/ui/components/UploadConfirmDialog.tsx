@@ -1,4 +1,4 @@
-import { Button } from '@musetrip360/ui-core/button';
+import { Button } from '@museum-manager/ui-core/button';
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@musetrip360/ui-core/dialog';
+} from '@museum-manager/ui-core/dialog';
 import { FileText, Image, Upload, Video } from 'lucide-react';
 
 interface UploadConfirmDialogProps {

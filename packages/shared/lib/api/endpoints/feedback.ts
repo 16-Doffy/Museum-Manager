@@ -5,7 +5,7 @@
  */
 
 import { Feedback, FeedbackCreate, FeedbackSearchParams } from '@/types';
-import { APIResponse, getHttpClient, PaginatedResponse } from '@musetrip360/query-foundation';
+import { APIResponse, getHttpClient, PaginatedResponse } from '@museum-manager/query-foundation';
 
 export const feedbackEndpoints = {
   getFeedback: 'feedbacks',

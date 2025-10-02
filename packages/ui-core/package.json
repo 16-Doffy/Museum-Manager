@@ -1,5 +1,6 @@
 {
-  "name": "@museum-manage/ui-core",
+
+  "name": "@museum-manager/ui-core",
   "version": "0.1.0",
   "description": "A comprehensive UI component library for MuseTrip360 built on the design system",
   "type": "module",
@@ -295,8 +296,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@musetrip360/eslint-config": "workspace:*",
-    "@musetrip360/tsconfig": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.13",
     "@types/glob": "^9.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -317,6 +317,7 @@
     "typescript-eslint": "^8.32.0",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^3.7.0",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.4"
   },
   "dependencies": {

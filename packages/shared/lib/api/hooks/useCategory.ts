@@ -1,4 +1,4 @@
-import { useQuery } from '@musetrip360/query-foundation';
+import { useQuery } from '@museum-manager/query-foundation';
 import { sharedCacheKeys } from '../cache/cacheKeys';
 import { getCategories } from '../endpoints';
 

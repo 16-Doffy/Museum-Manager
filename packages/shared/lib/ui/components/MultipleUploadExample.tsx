@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import { Button } from '@musetrip360/ui-core/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@musetrip360/ui-core/form';
-import { Input } from '@musetrip360/ui-core/input';
+import { Button } from '@museum-manager/ui-core/button';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@museum-manager/ui-core/form';
+import { Input } from '@museum-manager/ui-core/input';
 import { FormDropZone } from './FormDropZone';
 import { MediaType, FileData } from '../../types';
 import { useBulkUpload } from '@/contexts';

@@ -1,7 +1,7 @@
 {
   "name": "@museum-manage/tsconfig",
   "version": "0.0.1",
-  "description": "TypeScript configuration for MuseTrip360 projects",
+  "description": "TypeScript configuration for museum-manager projects",
   "private": true,
   "type": "module",
   "exports": {
@@ -18,5 +18,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13"
   }
 }

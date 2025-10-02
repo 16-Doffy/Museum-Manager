@@ -1,8 +1,8 @@
 import { Control, FieldPath, FieldValues } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@musetrip360/ui-core/form';
-import { Input } from '@musetrip360/ui-core/input';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@museum-manager/ui-core/form';
+import { Input } from '@museum-manager/ui-core/input';
 import { DropZoneWithPreview } from './FilePreview';
-import { cn } from '@musetrip360/ui-core/utils';
+import { cn } from '@museum-manager/ui-core/utils';
 import { MediaType, FileData } from '@/types';
 import { useState, useEffect } from 'react';
 
@@ -63,11 +63,11 @@ export function FormDropZone<
       rules={{
         required: required ? `${label || 'File'} không được để trống` : true,
       }}
-      render={({ field: { value, onChange, onBlur, disabled } }) => {
+      render={({ field: { value, onChange, onBlur, disabled } }: { field: { value: FileData | null; onChange: (v: FileData | null) => void; onBlur: () => void; disabled?: boolean } }) => {
         // Sync urlInput with field value when it's a string
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useEffect(() => {
-          if (value && typeof value.file === 'string') {
+          if (value && typeof (value as any).file === 'string') {
             setUrlInput(value.file);
           } else {
             setUrlInput('');
@@ -97,7 +97,7 @@ export function FormDropZone<
                       placeholder={urlPlaceholder}
                       value={urlInput}
                       disabled={disabled}
-                      onChange={(e) => setUrlInput(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUrlInput(e.target.value)}
                       onBlur={async () => {
                         const fileData: FileData = {
                           file: urlInput,

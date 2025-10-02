@@ -1,7 +1,8 @@
 {
-  "name": "@musetrip360/eslint-config",
+
+  "name": "@museum-manager/eslint-config",
   "version": "0.0.1",
-  "description": "ESLint configuration for MuseTrip360 projects",
+  "description": "ESLint configuration for museum-manager projects",
   "private": true,
   "type": "module",
   "exports": {
@@ -40,6 +41,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
     "eslint": "^9",
     "typescript": "^5"
   }

@@ -4,7 +4,7 @@ import {
   CustomMutationOptions,
   useUploadMutation,
   UploadProgress,
-} from '@musetrip360/query-foundation';
+} from '@museum-manager/query-foundation';
 
 /**
  * Hook for single file upload using query-foundation conventions

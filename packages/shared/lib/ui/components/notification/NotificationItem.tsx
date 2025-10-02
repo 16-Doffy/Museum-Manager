@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button } from '@musetrip360/ui-core/button';
-import { Badge } from '@musetrip360/ui-core/badge';
+import { Button } from '@museum-manager/ui-core/button';
+import { Badge } from '@museum-manager/ui-core/badge';
 import { Check, X, Dot, Clock } from 'lucide-react';
-import { cn } from '@musetrip360/ui-core';
+import { cn } from '@museum-manager/ui-core';
 import { notificationItemVariants } from './notification.variants';
 import { NotificationItemProps } from './notification.types';
 

@@ -2,11 +2,11 @@ import { BulkUploadProps } from '@/contexts/UploadFileContext';
 import { useUploadPreview } from '@/hooks/useUploadPreview';
 import { FileData, MediaType } from '@/types';
 import { formatFileSize, getFileName } from '@/utils';
-import { UploadProgress, UploadStatus } from '@musetrip360/query-foundation';
-import { Button } from '@musetrip360/ui-core/button';
-import { FormLabel } from '@musetrip360/ui-core/form';
-import { Switch } from '@musetrip360/ui-core/switch';
-import { cn } from '@musetrip360/ui-core/utils';
+import { UploadProgress, UploadStatus } from '@museum-manager/query-foundation';
+import { Button } from '@museum-manager/ui-core/button';
+import { FormLabel } from '@museum-manager/ui-core/form';
+import { Switch } from '@museum-manager/ui-core/switch';
+import { cn } from '@museum-manager/ui-core/utils';
 import { saveAs } from 'file-saver';
 import { AlertTriangle, CheckCircle, Download, FileText, Loader2, Upload, XCircle } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
@@ -310,7 +310,7 @@ export function FilePreviewCard({
                         <FormLabel>AutoPlay</FormLabel>
                         <Switch
                           checked={fileData.audioOptions?.autoPlay}
-                          onCheckedChange={(value) => {
+                          onCheckedChange={(value: boolean) => {
                             fileData.audioOptions = {
                               ...fileData.audioOptions,
                               autoPlay: value,
@@ -323,7 +323,7 @@ export function FilePreviewCard({
                         <FormLabel>Loop</FormLabel>
                         <Switch
                           checked={fileData.audioOptions?.loop}
-                          onCheckedChange={(value) => {
+                          onCheckedChange={(value: boolean) => {
                             fileData.audioOptions = {
                               ...fileData.audioOptions,
                               loop: value,
@@ -436,7 +436,7 @@ export function FilePreviewCard({
                       <FormLabel>AutoPlay</FormLabel>
                       <Switch
                         checked={fileData.audioOptions?.autoPlay}
-                        onCheckedChange={(value) => {
+                        onCheckedChange={(value: boolean) => {
                           fileData.audioOptions = {
                             ...fileData.audioOptions,
                             autoPlay: value,
@@ -449,7 +449,7 @@ export function FilePreviewCard({
                       <FormLabel>Loop</FormLabel>
                       <Switch
                         checked={fileData.audioOptions?.loop}
-                        onCheckedChange={(value) => {
+                        onCheckedChange={(value: boolean) => {
                           fileData.audioOptions = {
                             ...fileData.audioOptions,
                             loop: value,

@@ -55,5 +55,5 @@ export function NotificationExample() {
 }
 
 // Usage in your app:
-// import { NotificationExample } from '@musetrip360/shared/ui/components/notification';
+// import { NotificationExample } from '@museum-manager/shared/ui/components/notification';
 // <NotificationExample />

@@ -4,7 +4,7 @@
  * API endpoints for global search operations across all content types.
  */
 
-import { APIResponse, getHttpClient } from '@musetrip360/query-foundation';
+import { APIResponse, getHttpClient } from '@museum-manager/query-foundation';
 
 export interface GlobalSearchItem {
   id: string;

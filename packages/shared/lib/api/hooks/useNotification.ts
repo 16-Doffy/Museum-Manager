@@ -1,4 +1,4 @@
-import { useMutation, useQuery, getQueryClient, CustomMutationOptions, APIError } from '@musetrip360/query-foundation';
+import { useMutation, useQuery, getQueryClient, CustomMutationOptions, APIError } from '@museum-manager/query-foundation';
 
 import { NotificationSearchParams, UpdateReadNotification, Notification } from '@/types';
 import { getNotifications, updateReadNotification, deleteNotification } from '../endpoints';

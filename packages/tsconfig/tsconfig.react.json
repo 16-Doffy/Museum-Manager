@@ -14,9 +14,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
-      "@musetrip360/ui": ["../ui/src"],
-      "@musetrip360/eslint-config": ["../eslint-config/src"],
-      "@musetrip360/tsconfig": ["../tsconfig/src"]
+
+      "@museum-manager/ui": ["../ui/src"],
+      "@museum-manager/eslint-config": ["../eslint-config/src"],
+      "@museum-manager/tsconfig": ["../tsconfig/src"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],
