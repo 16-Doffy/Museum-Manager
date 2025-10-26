@@ -1,6 +1,6 @@
-import { RevenueChart } from './revenue/RevenueChart';
+import { RevenueChart } from '../components/RevenueChart';
 
-export default function Home() {
+export function HomePage() {
   const monthlyRevenue = [
     120_000_000, 180_500_000, 150_200_000, 220_300_000,
     170_100_000, 280_900_000, 250_600_000, 330_400_000,
@@ -10,6 +10,7 @@ export default function Home() {
   const currentMonthIdx = now.getMonth(); // 0-11
   const currentMonthRevenue = monthlyRevenue[currentMonthIdx];
   const fmtVND = (n: number) => n.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
   return (
     <main className="p-6 bg-gradient-to-b from-gray-50 to-white min-h-screen">
       <h2 className="text-2xl font-semibold mb-6">Tổng quan</h2>
@@ -49,3 +50,4 @@ export default function Home() {
     </main>
   );
 }
+
