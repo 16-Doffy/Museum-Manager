@@ -2,11 +2,11 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Quản lý người dùng</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Quản lý người dùng</h1>
         <p className="text-muted-foreground">Quản lý tất cả người dùng trong hệ thống</p>
       </div>
 
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
         <p className="text-muted-foreground">Tính năng đang được phát triển...</p>
       </div>
     </div>

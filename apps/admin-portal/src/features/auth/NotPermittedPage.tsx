@@ -11,13 +11,13 @@ export default function NotPermittedPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        <div className="bg-card rounded-2xl shadow-xl border border-border p-8">
           <div className="text-center mb-6">
-            <div className="inline-flex h-16 w-16 rounded-full bg-red-100 items-center justify-center mb-4">
+            <div className="inline-flex h-16 w-16 rounded-full bg-destructive/10 items-center justify-center mb-4">
               <svg
-                className="h-8 w-8 text-red-600"
+                className="h-8 w-8 text-destructive"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -30,36 +30,36 @@ export default function NotPermittedPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Truy cập bị từ chối</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-card-foreground mb-2">Truy cập bị từ chối</h1>
+            <p className="text-muted-foreground">
               Bạn không có quyền truy cập vào Admin Portal. Chỉ SuperAdmin mới có thể truy cập.
             </p>
           </div>
 
           {user && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600">Tài khoản hiện tại:</p>
-              <p className="text-sm font-medium text-gray-900">{user.email}</p>
-              <p className="text-xs text-gray-500 mt-1">Vai trò: {user.role}</p>
+            <div className="bg-muted rounded-lg p-4 mb-6">
+              <p className="text-sm text-muted-foreground">Tài khoản hiện tại:</p>
+              <p className="text-sm font-medium text-foreground">{user.email}</p>
+              <p className="text-xs text-muted-foreground mt-1">Vai trò: {user.role}</p>
             </div>
           )}
 
           <div className="space-y-3">
             <button
               onClick={handleLogout}
-              className="w-full bg-red-600 text-white py-2.5 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+              className="w-full bg-destructive text-destructive-foreground py-2.5 rounded-lg font-medium hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all"
             >
               Đăng xuất
             </button>
             <button
               onClick={() => navigate(-1)}
-              className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all"
+              className="w-full bg-secondary text-secondary-foreground py-2.5 rounded-lg font-medium hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all"
             >
               Quay lại
             </button>
           </div>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-6">
             Nếu bạn cho rằng đây là lỗi, vui lòng liên hệ quản trị viên.
           </p>
         </div>
