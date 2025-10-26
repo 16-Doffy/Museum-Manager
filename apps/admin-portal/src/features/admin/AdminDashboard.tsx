@@ -2,16 +2,16 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
         <p className="text-muted-foreground">Tổng quan hệ thống quản lý bảo tàng</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Tổng bảo tàng</p>
-              <p className="text-2xl font-bold">24</p>
+              <p className="text-2xl font-bold text-card-foreground">24</p>
             </div>
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
               <svg
@@ -31,15 +31,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Người dùng</p>
-              <p className="text-2xl font-bold">1,248</p>
+              <p className="text-2xl font-bold text-card-foreground">1,248</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-chart-2/10 flex items-center justify-center">
               <svg
-                className="h-6 w-6 text-blue-500"
+                className="h-6 w-6 text-chart-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -55,15 +55,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Yêu cầu chờ duyệt</p>
-              <p className="text-2xl font-bold">12</p>
+              <p className="text-2xl font-bold text-card-foreground">12</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-chart-3/10 flex items-center justify-center">
               <svg
-                className="h-6 w-6 text-yellow-500"
+                className="h-6 w-6 text-chart-3"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -79,15 +79,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center justify-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Doanh thu tháng</p>
-              <p className="text-2xl font-bold">₫24.5M</p>
+              <p className="text-2xl font-bold text-card-foreground">₫24.5M</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-chart-4/10 flex items-center justify-center">
               <svg
-                className="h-6 w-6 text-green-500"
+                className="h-6 w-6 text-chart-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -104,27 +104,27 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-4">Hoạt động gần đây</h2>
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-card-foreground mb-4">Hoạt động gần đây</h2>
         <div className="space-y-4">
           <div className="flex items-start gap-4">
-            <div className="h-2 w-2 rounded-full bg-green-500 mt-2"></div>
+            <div className="h-2 w-2 rounded-full bg-chart-4 mt-2"></div>
             <div className="flex-1">
-              <p className="text-sm font-medium">Bảo tàng mới được phê duyệt</p>
+              <p className="text-sm font-medium text-foreground">Bảo tàng mới được phê duyệt</p>
               <p className="text-xs text-muted-foreground">Bảo tàng Lịch sử Việt Nam - 2 giờ trước</p>
             </div>
           </div>
           <div className="flex items-start gap-4">
-            <div className="h-2 w-2 rounded-full bg-blue-500 mt-2"></div>
+            <div className="h-2 w-2 rounded-full bg-chart-2 mt-2"></div>
             <div className="flex-1">
-              <p className="text-sm font-medium">Người dùng mới đăng ký</p>
+              <p className="text-sm font-medium text-foreground">Người dùng mới đăng ký</p>
               <p className="text-xs text-muted-foreground">5 người dùng mới - 3 giờ trước</p>
             </div>
           </div>
           <div className="flex items-start gap-4">
-            <div className="h-2 w-2 rounded-full bg-yellow-500 mt-2"></div>
+            <div className="h-2 w-2 rounded-full bg-chart-3 mt-2"></div>
             <div className="flex-1">
-              <p className="text-sm font-medium">Yêu cầu mới chờ duyệt</p>
+              <p className="text-sm font-medium text-foreground">Yêu cầu mới chờ duyệt</p>
               <p className="text-xs text-muted-foreground">Bảo tàng Mỹ thuật Đà Nẵng - 5 giờ trước</p>
             </div>
           </div>
