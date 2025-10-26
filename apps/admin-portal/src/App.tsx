@@ -1,38 +1,13 @@
-import { Route, Routes } from 'react-router-dom';
-import { Layout } from './components/Layout';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { AuthProvider } from './contexts/AuthContext';
-import { HomePage } from './pages/HomePage';
-import { LoginPage } from './pages/LoginPage';
-import { MuseumsPage } from './pages/MuseumsPage';
-import { RevenuePage } from './pages/RevenuePage';
-import { UsersPage } from './pages/UsersPage';
+import { Toaster } from 'sonner';
+import { AppProvider } from './providers';
+import AppRoutes from './routes';
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-
-        {/* Protected routes */}
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/museums" element={<MuseumsPage />} />
-                  <Route path="/revenue" element={<RevenuePage />} />
-                  <Route path="/users" element={<UsersPage />} />
-                </Routes>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </AuthProvider>
+    <AppProvider>
+      <AppRoutes />
+      <Toaster position="top-right" richColors />
+    </AppProvider>
   );
 }
 

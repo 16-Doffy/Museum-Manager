@@ -1,37 +1,38 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'sonner';
+import { useAuthStore } from '../../stores/auth-store';
 
-export function LoginPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
       await login(email, password);
+      toast.success('Đăng nhập thành công!');
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      const errorMessage = err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-50 via-white to-purple-50">
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 items-center justify-center shadow-lg mb-4">
+          <div className="inline-flex h-16 w-16 rounded-2xl bg-linear-to-br from-indigo-600 via-purple-600 to-pink-600 items-center justify-center shadow-lg mb-4">
             <span className="text-white text-2xl font-bold">A</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Portal</h1>
@@ -41,12 +42,6 @@ export function LoginPage() {
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Đăng nhập</h2>
-
-          {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -84,7 +79,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+              className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
             >
               {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
@@ -92,9 +87,7 @@ export function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          © 2024 Museum Management System
-        </p>
+        <p className="text-center text-sm text-gray-500 mt-6">© Museum Management System</p>
       </div>
     </div>
   );

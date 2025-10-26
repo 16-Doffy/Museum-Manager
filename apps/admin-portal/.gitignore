@@ -12,6 +12,22 @@ dist
 dist-ssr
 *.local
 
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# TypeScript build outputs
+*.tsbuildinfo
+*.js.map
+# Ignore compiled .d.ts files, but keep vite-env.d.ts
+*.d.ts
+!src/vite-env.d.ts
+# Ignore .d.ts.map files
+*.d.ts.map
+# Ignore compiled .js files in src
+src/**/*.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
