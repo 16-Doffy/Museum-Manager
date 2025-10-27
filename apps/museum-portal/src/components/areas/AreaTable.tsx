@@ -23,6 +23,9 @@ interface AreaTableProps {
   onEdit: (area: Area) => void;
   onDelete: (id: string) => void;
   onActivate: (id: string) => void;
+  createArea: (data: any) => Promise<Area>;
+  updateArea: (id: string, data: any) => Promise<Area>;
+  museums?: Array<{ id: string; name: string }>;
 }
 
 export function AreaTable({
@@ -39,6 +42,9 @@ export function AreaTable({
   onEdit,
   onDelete,
   onActivate,
+  createArea,
+  updateArea,
+  museums = [],
 }: AreaTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingArea, setEditingArea] = useState<Area | undefined>();
@@ -47,14 +53,12 @@ export function AreaTable({
   const handleCreate = useCallback(() => {
     setEditingArea(undefined);
     setShowForm(true);
-    onCreate();
-  }, [onCreate]);
+  }, []);
 
   const handleEdit = useCallback((area: Area) => {
     setEditingArea(area);
     setShowForm(true);
-    onEdit(area);
-  }, [onEdit]);
+  }, []);
 
   const handleDelete = useCallback(async (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa khu vực này?')) {
@@ -79,19 +83,22 @@ export function AreaTable({
     try {
       if (editingArea) {
         // Update existing area
-        await onEdit(editingArea);
+        await updateArea(editingArea.id, data);
+        alert('Cập nhật khu vực thành công');
       } else {
         // Create new area
-        await onCreate();
+        await createArea(data);
+        alert('Tạo khu vực mới thành công');
       }
       setShowForm(false);
       setEditingArea(undefined);
     } catch (error) {
       console.error('Save error:', error);
+      alert('Lỗi khi lưu khu vực');
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingArea, onEdit, onCreate]);
+  }, [editingArea, createArea, updateArea]);
 
   const handleCancel = useCallback(() => {
     setShowForm(false);
@@ -280,6 +287,7 @@ export function AreaTable({
           onSave={handleSave}
           onCancel={handleCancel}
           loading={isSubmitting}
+          museums={museums}
         />
       )}
     </div>

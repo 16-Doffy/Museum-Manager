@@ -8,9 +8,10 @@ interface DisplayPositionFormProps {
   onSave: (data: DisplayPositionCreateRequest | DisplayPositionUpdateRequest) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
+  areas?: Array<{ id: string; name: string }>;
 }
 
-export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading = false }: DisplayPositionFormProps) {
+export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading = false, areas = [] }: DisplayPositionFormProps) {
   const [formData, setFormData] = useState({
     displayPositionName: '',
     positionCode: '',
@@ -20,8 +21,8 @@ export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock areas for demo
-  const mockAreas = [
+  // Use areas from props or fallback to mock data
+  const availableAreas = areas.length > 0 ? areas : [
     { id: '1', name: 'Khu vực Lịch sử Cổ đại' },
     { id: '2', name: 'Khu vực Nghệ thuật Đương đại' },
     { id: '3', name: 'Khu vực Văn hóa Dân tộc' },
@@ -34,6 +35,13 @@ export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading
         positionCode: displayPosition.positionCode,
         description: displayPosition.description || '',
         areaId: displayPosition.areaId,
+      });
+    } else {
+      setFormData({
+        displayPositionName: '',
+        positionCode: '',
+        description: '',
+        areaId: '',
       });
     }
   }, [displayPosition]);
@@ -142,7 +150,7 @@ export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading
               disabled={loading}
             >
               <option value="">Chọn khu vực</option>
-              {mockAreas.map(area => (
+              {availableAreas.map(area => (
                 <option key={area.id} value={area.id}>
                   {area.name}
                 </option>

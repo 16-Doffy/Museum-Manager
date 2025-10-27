@@ -1,6 +1,4 @@
-"use client";
-
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight, FiHome } from 'react-icons/fi';
 
 interface NavigationButtonsProps {
@@ -14,15 +12,15 @@ export default function NavigationButtons({
   nextPage, 
   nextPageTitle 
 }: NavigationButtonsProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleBackToDashboard = () => {
-    router.push('/dashboard');
+    navigate('/dashboard');
   };
 
   const handleNextPage = () => {
     if (nextPage) {
-      router.push(nextPage);
+      navigate(nextPage);
     }
   };
 

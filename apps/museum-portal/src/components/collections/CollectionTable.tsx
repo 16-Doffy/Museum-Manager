@@ -1,11 +1,12 @@
 'use client';
 
-import { useArtifacts } from '../../lib/api/hooks';
+import { useArtifacts, useAreas } from '../../lib/api/hooks';
 import { useState, useMemo, useCallback } from 'react';
 import { useDebounce } from '../../lib/hooks/useDebounce';
 import ArtifactForm from './ArtifactForm';
 import ArtifactDetail from './ArtifactDetail';
 import { Artifact, ArtifactCreateRequest, ArtifactUpdateRequest } from '../../lib/api/types';
+import { Plus } from 'lucide-react';
 
 export default function CollectionTable() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,6 +36,18 @@ export default function CollectionTable() {
     updateArtifact,
     deleteArtifact
   } = useArtifacts(searchParams);
+
+  // Get areas for dropdown
+  const { areas } = useAreas({
+    pageIndex: 1,
+    pageSize: 100, // Get all areas
+  });
+
+  // Helper to get area name from areaId
+  const getAreaName = useCallback((areaId: string) => {
+    const area = areas.find(a => a.id === areaId);
+    return area?.name || 'N/A';
+  }, [areas]);
 
   const handleSearch = useCallback((newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);
@@ -93,10 +106,10 @@ export default function CollectionTable() {
         if (data.description !== editingArtifact.description) updateData.description = data.description;
         if (data.periodTime !== editingArtifact.periodTime) updateData.periodTime = data.periodTime;
         if (data.isOriginal !== editingArtifact.isOriginal) updateData.isOriginal = data.isOriginal;
-        if (data.weight !== editingArtifact.weight?.toString()) updateData.weight = data.weight ? parseFloat(data.weight) : undefined;
-        if (data.height !== editingArtifact.height?.toString()) updateData.height = data.height ? parseFloat(data.height) : undefined;
-        if (data.width !== editingArtifact.width?.toString()) updateData.width = data.width ? parseFloat(data.width) : undefined;
-        if (data.length !== editingArtifact.length?.toString()) updateData.length = data.length ? parseFloat(data.length) : undefined;
+        if (data.weight !== editingArtifact.weight) updateData.weight = data.weight;
+        if (data.height !== editingArtifact.height) updateData.height = data.height;
+        if (data.width !== editingArtifact.width) updateData.width = data.width;
+        if (data.length !== editingArtifact.length) updateData.length = data.length;
         
         await updateArtifact(editingArtifact.id, updateData);
         alert('Cập nhật hiện vật thành công');
@@ -160,6 +173,7 @@ export default function CollectionTable() {
           onSave={handleSave}
           onCancel={handleCancel}
           isLoading={isSubmitting}
+          areas={areas.map(area => ({ id: area.id, name: area.name }))}
         />
       )}
       
@@ -175,6 +189,13 @@ export default function CollectionTable() {
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
+          <button
+            onClick={handleCreate}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Thêm hiện vật</span>
+          </button>
           <div className="text-sm text-gray-500">
             {pagination.totalItems} hiện vật
           </div>
@@ -214,7 +235,7 @@ export default function CollectionTable() {
                       : 'N/A'
                     }
                   </td>
-                  <td className="p-3 text-gray-700">{artifact.area?.name || 'N/A'}</td>
+                  <td className="p-3 text-gray-700">{getAreaName(artifact.areaId || '')}</td>
                   <td className="p-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       artifact.status === 'Active' || artifact.isActive
@@ -298,6 +319,7 @@ export default function CollectionTable() {
             setEditingArtifact(null);
           }}
           isLoading={isSubmitting}
+          areas={areas.map(area => ({ id: area.id, name: area.name }))}
         />
       )}
     </div>

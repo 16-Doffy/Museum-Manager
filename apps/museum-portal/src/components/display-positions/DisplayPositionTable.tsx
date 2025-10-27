@@ -25,6 +25,9 @@ interface DisplayPositionTableProps {
   onEdit: (displayPosition: DisplayPosition) => void;
   onDelete: (id: string) => void;
   onActivate: (id: string) => void;
+  createDisplayPosition: (data: any) => Promise<DisplayPosition>;
+  updateDisplayPosition: (id: string, data: any) => Promise<DisplayPosition>;
+  areas?: Array<{ id: string; name: string }>;
 }
 
 export function DisplayPositionTable({
@@ -43,22 +46,29 @@ export function DisplayPositionTable({
   onEdit,
   onDelete,
   onActivate,
+  createDisplayPosition,
+  updateDisplayPosition,
+  areas = [],
 }: DisplayPositionTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingPosition, setEditingPosition] = useState<DisplayPosition | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper to get area name from areaId
+  const getAreaName = useCallback((areaId: string) => {
+    const area = areas.find(a => a.id === areaId);
+    return area?.name || '-';
+  }, [areas]);
+
   const handleCreate = useCallback(() => {
     setEditingPosition(undefined);
     setShowForm(true);
-    onCreate();
-  }, [onCreate]);
+  }, []);
 
   const handleEdit = useCallback((position: DisplayPosition) => {
     setEditingPosition(position);
     setShowForm(true);
-    onEdit(position);
-  }, [onEdit]);
+  }, []);
 
   const handleDelete = useCallback(async (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa vị trí trưng bày này?')) {
@@ -83,19 +93,22 @@ export function DisplayPositionTable({
     try {
       if (editingPosition) {
         // Update existing position
-        await onEdit(editingPosition);
+        await updateDisplayPosition(editingPosition.id, data);
+        alert('Cập nhật vị trí trưng bày thành công');
       } else {
         // Create new position
-        await onCreate();
+        await createDisplayPosition(data);
+        alert('Tạo vị trí trưng bày mới thành công');
       }
       setShowForm(false);
       setEditingPosition(undefined);
     } catch (error) {
       console.error('Save error:', error);
+      alert('Lỗi khi lưu vị trí trưng bày');
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingPosition, onEdit, onCreate]);
+  }, [editingPosition, createDisplayPosition, updateDisplayPosition]);
 
   const handleCancel = useCallback(() => {
     setShowForm(false);
@@ -213,7 +226,7 @@ export function DisplayPositionTable({
                     <div className="text-sm text-gray-900">{position.positionCode}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{position.area?.name || '-'}</div>
+                    <div className="text-sm text-gray-900">{getAreaName(position.areaId || '')}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
@@ -302,6 +315,7 @@ export function DisplayPositionTable({
           onSave={handleSave}
           onCancel={handleCancel}
           loading={isSubmitting}
+          areas={areas}
         />
       )}
     </div>

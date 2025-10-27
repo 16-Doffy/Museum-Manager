@@ -8,12 +8,14 @@ interface AreaFormProps {
   onSave: (data: AreaCreateRequest | AreaUpdateRequest) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
+  museums?: Array<{ id: string; name: string }>;
 }
 
-export function AreaForm({ area, onSave, onCancel, loading = false }: AreaFormProps) {
+export function AreaForm({ area, onSave, onCancel, loading = false, museums = [] }: AreaFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    museumId: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -23,6 +25,13 @@ export function AreaForm({ area, onSave, onCancel, loading = false }: AreaFormPr
       setFormData({
         name: area.name,
         description: area.description || '',
+        museumId: area.museumId || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        museumId: '',
       });
     }
   }, [area]);
@@ -102,6 +111,26 @@ export function AreaForm({ area, onSave, onCancel, loading = false }: AreaFormPr
               rows={3}
               disabled={loading}
             />
+          </div>
+
+          <div>
+            <label htmlFor="museumId" className="block text-sm font-medium text-gray-700 mb-1">
+              Bảo tàng
+            </label>
+            <select
+              id="museumId"
+              value={formData.museumId}
+              onChange={handleChange('museumId')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+            >
+              <option value="">Chọn bảo tàng</option>
+              {museums.map(museum => (
+                <option key={museum.id} value={museum.id}>
+                  {museum.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

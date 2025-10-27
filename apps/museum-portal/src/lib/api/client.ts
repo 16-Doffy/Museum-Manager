@@ -4,7 +4,7 @@
  * Centralized API client setup with authentication and error handling
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1';
 
 export interface ApiResponse<T> {
   data: T;
@@ -40,6 +40,13 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getAuthToken();
 
+    // If no token and not auth endpoint, throw error to use mock data
+    if (!token && !endpoint.includes('/auth/') && !endpoint.includes('/login')) {
+      const error = new Error('No authentication token') as Error & { statusCode: number };
+      error.statusCode = 401;
+      throw error;
+    }
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -50,12 +57,19 @@ class ApiClient {
     };
 
     try {
+      console.log('Making request to:', url);
+      console.log('Request config:', config);
+      
       const response = await fetch(url, config);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log('Error response data:', errorData);
+        console.log('Full response:', response);
         throw {
-          message: errorData.message || 'An error occurred',
+          message: errorData.message || errorData.error || 'An error occurred',
           statusCode: response.status,
           errors: errorData.errors,
         } as ApiError;

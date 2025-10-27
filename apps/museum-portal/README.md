@@ -1,4 +1,6 @@
-# Museum Portal - API Integration
+# Museum Portal - React + Vite
+
+Museum Management Portal built with **React + Vite** (NOT Next.js)
 
 ## 🚀 Quick Start
 
@@ -8,7 +10,7 @@
 cp env.example .env.local
 
 # Edit .env.local with your API URL
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
+VITE_API_BASE_URL=http://localhost:3001/api/v1
 ```
 
 ### 2. Install Dependencies
@@ -21,27 +23,50 @@ npm install
 npm run dev
 ```
 
-### 4. Test API Integration
-Visit: `http://localhost:3000/test-api`
+The app will open at: `http://localhost:3600`
 
-## 📁 Project Structure
+### 4. Build for Production
+```bash
+npm run build
+```
+
+## 📁 Project Structure (React + Vite)
 
 ```
 src/
+├── features/              # Business logic pages
+│   ├── auth/
+│   ├── dashboard/
+│   ├── areas/
+│   ├── artifacts/
+│   ├── visitors/
+│   └── interactions/
+│
+├── components/           # Reusable UI components
+│   ├── areas/
+│   ├── collections/
+│   ├── display-positions/
+│   ├── visitors/
+│   ├── layout/
+│   └── common/
+│
 ├── lib/
-│   ├── api/                 # API layer
-│   │   ├── client.ts       # HTTP client with JWT
-│   │   ├── endpoints.ts    # API endpoints
-│   │   ├── types.ts        # TypeScript types
-│   │   └── hooks.ts        # React hooks
-│   └── contexts/
-│       └── AuthContext.tsx # Authentication context
-├── components/
-│   └── collections/
-│       └── CollectionTable.tsx # Example component using API
-└── app/
-    ├── layout.tsx          # Root layout with AuthProvider
-    └── test-api/           # API test page
+│   ├── api/             # API layer
+│   │   ├── client.ts    # HTTP client with JWT
+│   │   ├── endpoints.ts # API endpoints
+│   │   ├── types.ts     # TypeScript types
+│   │   └── hooks.ts     # React hooks
+│   ├── hooks/           # Custom hooks
+│   └── contexts/        # React contexts
+│
+├── stores/              # Zustand stores
+│   └── auth-store.ts
+│
+├── routes/              # Route definitions
+│   └── AppRoutes.tsx
+│
+├── App.tsx              # Main app component
+└── main.tsx             # Entry point
 ```
 
 ## 🔧 Available APIs
@@ -87,12 +112,23 @@ function MyComponent() {
 }
 ```
 
+## 🛠️ Tech Stack
+
+- **React 18** - UI framework
+- **Vite 6** - Build tool & dev server
+- **TypeScript** - Type safety
+- **React Router DOM** - Client-side routing
+- **Zustand** - State management
+- **TanStack Query** - Data fetching
+- **Tailwind CSS** - Styling
+- **Sonner** - Toast notifications
+
 ## 🐛 Troubleshooting
 
 ### Module Resolution Errors
 If you see "Module not found" errors:
 1. Restart TypeScript server in VS Code
-2. Clear Next.js cache: `rm -rf .next`
+2. Clear Vite cache: `rm -rf node_modules/.vite`
 3. Reinstall dependencies: `rm -rf node_modules && npm install`
 
 ### API Connection Issues
