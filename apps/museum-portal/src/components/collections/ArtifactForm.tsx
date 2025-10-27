@@ -16,6 +16,7 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading, ar
     name: '',
     description: '',
     periodTime: '',
+    year: '',
     isOriginal: true,
     weight: '',
     height: '',
@@ -30,6 +31,7 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading, ar
         name: artifact.name || '',
         description: artifact.description || '',
         periodTime: artifact.periodTime || '',
+        year: artifact.year || '',
         isOriginal: artifact.isOriginal ?? true,
         weight: artifact.weight?.toString() || '',
         height: artifact.height?.toString() || '',
@@ -42,6 +44,7 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading, ar
         name: '',
         description: '',
         periodTime: '',
+        year: '',
         isOriginal: true,
         weight: '',
         height: '',
@@ -59,6 +62,7 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading, ar
       name: formData.name,
       description: formData.description,
       periodTime: formData.periodTime,
+      year: formData.year,
       isOriginal: formData.isOriginal,
       weight: formData.weight ? parseFloat(formData.weight) : undefined,
       height: formData.height ? parseFloat(formData.height) : undefined,
@@ -115,6 +119,19 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading, ar
               onChange={(e) => setFormData(prev => ({ ...prev, periodTime: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               placeholder="Nhập thời kỳ"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Năm
+            </label>
+            <input
+              type="text"
+              value={formData.year}
+              onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Nhập năm"
             />
           </div>
 
