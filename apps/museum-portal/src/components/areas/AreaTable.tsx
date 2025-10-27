@@ -19,10 +19,8 @@ interface AreaTableProps {
   includeDeleted: boolean;
   setIncludeDeleted: (include: boolean) => void;
   onPageChange: (page: number) => void;
-  onCreate: () => void;
   onEdit: (area: Area) => void;
   onDelete: (id: string) => void;
-  onActivate: (id: string) => void;
   createArea: (data: any) => Promise<Area>;
   updateArea: (id: string, data: any) => Promise<Area>;
   museums?: Array<{ id: string; name: string }>;
@@ -38,10 +36,8 @@ export function AreaTable({
   includeDeleted,
   setIncludeDeleted,
   onPageChange,
-  onCreate,
   onEdit,
   onDelete,
-  onActivate,
   createArea,
   updateArea,
   museums = [],
@@ -69,14 +65,6 @@ export function AreaTable({
       }
     }
   }, [onDelete]);
-
-  const handleActivate = useCallback(async (id: string) => {
-    try {
-      await onActivate(id);
-    } catch (error) {
-      console.error('Activate error:', error);
-    }
-  }, [onActivate]);
 
   const handleSave = useCallback(async (data: any) => {
     setIsSubmitting(true);

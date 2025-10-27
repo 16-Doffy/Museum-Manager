@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { AreaTable } from '../../components/areas/AreaTable';
 import { useAreas } from '../../lib/api/hooks';
 import { Area } from '../../lib/api/types';
-import { Plus, MapPin, Filter } from 'lucide-react';
+import { MapPin, Filter } from 'lucide-react';
 
 export default function AreasPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,10 +32,6 @@ export default function AreasPage() {
     setPageIndex(page);
   }, []);
 
-  const handleCreate = useCallback(async () => {
-    await fetchAreas();
-  }, [fetchAreas]);
-
   const handleEdit = useCallback(async (area: Area) => {
     await fetchAreas();
   }, [fetchAreas]);
@@ -47,14 +43,6 @@ export default function AreasPage() {
       console.error('Delete area error:', error);
     }
   }, [deleteArea]);
-
-  const handleActivate = useCallback(async (id: string) => {
-    try {
-      await fetchAreas();
-    } catch (error) {
-      console.error('Activate area error:', error);
-    }
-  }, [fetchAreas]);
 
   // Mock museums for demo
   const mockMuseums = [
@@ -78,13 +66,6 @@ export default function AreasPage() {
             </div>
           </div>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm khu vực</span>
-        </button>
       </div>
 
       {/* Stats Cards */}
@@ -177,10 +158,8 @@ export default function AreasPage() {
         includeDeleted={includeDeleted}
         setIncludeDeleted={setIncludeDeleted}
         onPageChange={handlePageChange}
-        onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onActivate={handleActivate}
         createArea={createArea}
         updateArea={updateArea}
         museums={mockMuseums}
