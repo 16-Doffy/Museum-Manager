@@ -15,9 +15,12 @@ export default function PersonnelPage() {
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-emerald-600">Quản lý Nhân viên</h1>
-            {/* <Button>
+            <Button 
+              onClick={() => alert('Chức năng thêm nhân viên mới sẽ được triển khai')}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
               Thêm nhân viên mới
-            </Button> */}
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -65,8 +68,18 @@ export default function PersonnelPage() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className='text-green-500 border-green-700'>Sửa</Button>
-                          <Button size="sm" variant="outline" className='text-red-500 border-red-400'>Xem</Button>
+                          <button 
+                            onClick={() => alert('Xem chi tiết nhân viên: Nguyễn Văn A')}
+                            className="px-3 py-1 text-sm border border-red-400 text-red-500 rounded hover:bg-red-50"
+                          >
+                            Xem
+                          </button>
+                          <button 
+                            onClick={() => alert('Chỉnh sửa nhân viên: Nguyễn Văn A')}
+                            className="px-3 py-1 text-sm border border-green-700 text-green-500 rounded hover:bg-green-50"
+                          >
+                            Sửa
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -91,8 +104,18 @@ export default function PersonnelPage() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className='text-green-500 border-green-400'>Sửa</Button>
-                        <Button size="sm" variant="outline" className='text-red-500 border-red-400'>Xem</Button>
+                          <button 
+                            onClick={() => alert('Xem chi tiết nhân viên: Trần Thị B')}
+                            className="px-3 py-1 text-sm border border-red-400 text-red-500 rounded hover:bg-red-50"
+                          >
+                            Xem
+                          </button>
+                          <button 
+                            onClick={() => alert('Chỉnh sửa nhân viên: Trần Thị B')}
+                            className="px-3 py-1 text-sm border border-green-700 text-green-500 rounded hover:bg-green-50"
+                          >
+                            Sửa
+                          </button>
                         </div>
                       </td>
                     </tr>

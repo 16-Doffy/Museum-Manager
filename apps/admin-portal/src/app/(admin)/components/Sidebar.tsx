@@ -6,8 +6,9 @@ import { usePathname } from "next/navigation";
 const navItems = [
 	{ href: "/", label: "Tổng quan" },
 	{ href: "/museums", label: "Bảo tàng" },
-	{ href: "/revenue", label: "Doanh số" },
-	{ href: "/users", label: "Quản lý người dùng" }
+	{ href: "/roles", label: "Quản lý vai trò" },
+	{ href: "/users", label: "Quản lý người dùng" },
+	{ href: "/revenue", label: "Doanh số" }
 ];
 
 export function Sidebar() {
