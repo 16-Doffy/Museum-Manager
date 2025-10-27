@@ -21,10 +21,8 @@ interface DisplayPositionTableProps {
   includeDeleted: boolean;
   setIncludeDeleted: (include: boolean) => void;
   onPageChange: (page: number) => void;
-  onCreate: () => void;
   onEdit: (displayPosition: DisplayPosition) => void;
   onDelete: (id: string) => void;
-  onActivate: (id: string) => void;
   createDisplayPosition: (data: any) => Promise<DisplayPosition>;
   updateDisplayPosition: (id: string, data: any) => Promise<DisplayPosition>;
   areas?: Array<{ id: string; name: string }>;
@@ -42,10 +40,8 @@ export function DisplayPositionTable({
   includeDeleted,
   setIncludeDeleted,
   onPageChange,
-  onCreate,
   onEdit,
   onDelete,
-  onActivate,
   createDisplayPosition,
   updateDisplayPosition,
   areas = [],
@@ -79,14 +75,6 @@ export function DisplayPositionTable({
       }
     }
   }, [onDelete]);
-
-  const handleActivate = useCallback(async (id: string) => {
-    try {
-      await onActivate(id);
-    } catch (error) {
-      console.error('Activate error:', error);
-    }
-  }, [onActivate]);
 
   const handleSave = useCallback(async (data: any) => {
     setIsSubmitting(true);
@@ -253,14 +241,6 @@ export function DisplayPositionTable({
                       >
                         Sửa
                       </button>
-                      {!position.isActive && !position.isDeleted && (
-                        <button
-                          onClick={() => handleActivate(position.id)}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          Kích hoạt
-                        </button>
-                      )}
                       {!position.isDeleted && (
                         <button
                           onClick={() => handleDelete(position.id)}

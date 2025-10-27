@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from './client';
 import { artifactEndpoints, displayPositionEndpoints, areaEndpoints, visitorEndpoints, interactionEndpoints, museumEndpoints } from './endpoints';
 import { mockArtifacts, mockDisplayPositions, mockAreas, mockVisitors } from './mockData';
+import { StorageManager } from '../utils/storage';
 import { accountEndpoints } from './endpoints';
 import {
   Artifact,
@@ -80,12 +81,10 @@ function useApiCall<T>() {
 // Artifact Management Hooks
 export function useArtifacts(searchParams?: ArtifactSearchParams) {
   const [artifacts, setArtifacts] = useState<Artifact[]>(() => {
-    // Load from localStorage on init
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('museum_artifacts');
-      return saved ? JSON.parse(saved) : mockArtifacts;
-    }
-    return mockArtifacts;
+    console.log('🔄 useArtifacts: Loading artifacts...');
+    const loaded = StorageManager.loadArtifacts(mockArtifacts);
+    console.log('🔄 useArtifacts: Loaded artifacts:', loaded);
+    return loaded;
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,9 +97,8 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
 
   // Save to localStorage whenever artifacts change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('museum_artifacts', JSON.stringify(artifacts));
-    }
+    console.log('💾 useArtifacts: Saving artifacts to localStorage:', artifacts);
+    StorageManager.saveArtifacts(artifacts);
   }, [artifacts]);
 
   const fetchArtifacts = useCallback(async () => {
@@ -134,6 +132,8 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
   }, [searchParams, fetchArtifacts]);
 
   const createArtifact = useCallback(async (data: ArtifactCreateRequest) => {
+    console.log('➕ createArtifact: Creating new artifact with data:', data);
+    
     // Mock implementation - create complete artifact object
     const newArtifact: Artifact = {
       id: `artifact-${Date.now()}`,
@@ -167,7 +167,13 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setArtifacts(prev => [...prev, newArtifact]);
+    
+    console.log('➕ createArtifact: Created artifact:', newArtifact);
+    setArtifacts(prev => {
+      const updated = [...prev, newArtifact];
+      console.log('➕ createArtifact: Updated artifacts array:', updated);
+      return updated;
+    });
     return newArtifact;
   }, []);
 
@@ -245,12 +251,7 @@ export function useArtifact(id: string) {
 // Display Position Management Hooks
 export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) {
   const [displayPositions, setDisplayPositions] = useState<DisplayPosition[]>(() => {
-    // Load from localStorage on init
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('museum_display_positions');
-      return saved ? JSON.parse(saved) : mockDisplayPositions;
-    }
-    return mockDisplayPositions;
+    return StorageManager.loadDisplayPositions(mockDisplayPositions);
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -263,9 +264,7 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
 
   // Save to localStorage whenever displayPositions change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('museum_display_positions', JSON.stringify(displayPositions));
-    }
+    StorageManager.saveDisplayPositions(displayPositions);
   }, [displayPositions]);
 
   const fetchDisplayPositions = useCallback(async () => {
@@ -362,12 +361,7 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
 // Area Management Hooks
 export function useAreas(searchParams?: AreaSearchParams) {
   const [areas, setAreas] = useState<Area[]>(() => {
-    // Load from localStorage on init
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('museum_areas');
-      return saved ? JSON.parse(saved) : mockAreas;
-    }
-    return mockAreas;
+    return StorageManager.loadAreas(mockAreas);
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -380,9 +374,7 @@ export function useAreas(searchParams?: AreaSearchParams) {
 
   // Save to localStorage whenever areas change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('museum_areas', JSON.stringify(areas));
-    }
+    StorageManager.saveAreas(areas);
   }, [areas]);
 
   const fetchAreas = useCallback(async () => {
@@ -477,12 +469,7 @@ export function useAreas(searchParams?: AreaSearchParams) {
 // Visitor Management Hooks
 export function useVisitors(searchParams?: VisitorSearchParams) {
   const [visitors, setVisitors] = useState<Visitor[]>(() => {
-    // Load from localStorage on init
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('museum_visitors');
-      return saved ? JSON.parse(saved) : mockVisitors;
-    }
-    return mockVisitors;
+    return StorageManager.loadVisitors(mockVisitors);
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -495,9 +482,7 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
 
   // Save to localStorage whenever visitors change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('museum_visitors', JSON.stringify(visitors));
-    }
+    StorageManager.saveVisitors(visitors);
   }, [visitors]);
 
   const fetchVisitors = useCallback(async () => {
@@ -575,12 +560,7 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
 // Interaction Management Hooks
 export function useInteractions(searchParams?: InteractionSearchParams) {
   const [interactions, setInteractions] = useState<Interaction[]>(() => {
-    // Load from localStorage on init
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('museum_interactions');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
+    return StorageManager.loadInteractions([]);
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -593,9 +573,7 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
 
   // Save to localStorage whenever interactions change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('museum_interactions', JSON.stringify(interactions));
-    }
+    StorageManager.saveInteractions(interactions);
   }, [interactions]);
 
   const fetchInteractions = useCallback(async () => {
