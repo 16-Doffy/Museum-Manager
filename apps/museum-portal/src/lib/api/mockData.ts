@@ -1,0 +1,185 @@
+/**
+ * @fileoverview Mock Data for Museum Portal
+ * 
+ * Mock data for testing when API is not available
+ */
+
+import { Artifact, DisplayPosition, Area, Visitor } from './types';
+
+export const mockArtifacts: Artifact[] = [
+  {
+    id: '1',
+    name: 'Trống đồng Đông Sơn',
+    description: 'Hiện vật cổ đại từ thời kỳ Đông Sơn',
+    periodTime: 'Thế kỷ 3-1 TCN',
+    isOriginal: true,
+    weight: 15.5,
+    height: 45.0,
+    width: 35.0,
+    length: 35.0,
+    status: 'Active',
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'Tượng Phật A Di Đà',
+    description: 'Tượng Phật bằng đá từ thời Lý',
+    periodTime: 'Thế kỷ 11-13',
+    isOriginal: true,
+    weight: 25.0,
+    height: 80.0,
+    width: 40.0,
+    length: 40.0,
+    status: 'Active',
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-02T00:00:00Z',
+    updatedAt: '2024-01-02T00:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'Bình gốm Chu Đậu',
+    description: 'Bình gốm men trắng từ Chu Đậu',
+    periodTime: 'Thế kỷ 15-16',
+    isOriginal: false,
+    weight: 2.5,
+    height: 25.0,
+    width: 15.0,
+    length: 15.0,
+    status: 'Active',
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-03T00:00:00Z',
+    updatedAt: '2024-01-03T00:00:00Z',
+  }
+];
+
+export const mockDisplayPositions: DisplayPosition[] = [
+  {
+    id: '1',
+    displayPositionName: 'Vị trí A1 - Lịch sử Cổ đại',
+    positionCode: 'A1-001',
+    description: 'Vị trí trưng bày chính cho hiện vật lịch sử cổ đại',
+    areaId: '1',
+    area: { id: '1', name: 'Khu vực Lịch sử Cổ đại' },
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    displayPositionName: 'Vị trí B2 - Nghệ thuật Đương đại',
+    positionCode: 'B2-002',
+    description: 'Vị trí trưng bày cho tác phẩm nghệ thuật hiện đại',
+    areaId: '2',
+    area: { id: '2', name: 'Khu vực Nghệ thuật Đương đại' },
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-02T00:00:00Z',
+    updatedAt: '2024-01-02T00:00:00Z',
+  },
+  {
+    id: '3',
+    displayPositionName: 'Vị trí C3 - Văn hóa Dân tộc',
+    positionCode: 'C3-003',
+    description: 'Vị trí trưng bày hiện vật văn hóa dân tộc',
+    areaId: '3',
+    area: { id: '3', name: 'Khu vực Văn hóa Dân tộc' },
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    isActive: false,
+    isDeleted: false,
+    createdAt: '2024-01-03T00:00:00Z',
+    updatedAt: '2024-01-03T00:00:00Z',
+  }
+];
+
+export const mockAreas: Area[] = [
+  {
+    id: '1',
+    name: 'Khu vực Lịch sử Cổ đại',
+    description: 'Trưng bày các hiện vật từ thời kỳ cổ đại',
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'Khu vực Nghệ thuật Đương đại',
+    description: 'Trưng bày các tác phẩm nghệ thuật hiện đại',
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-02T00:00:00Z',
+    updatedAt: '2024-01-02T00:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'Khu vực Văn hóa Dân tộc',
+    description: 'Trưng bày các hiện vật văn hóa dân tộc',
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    isActive: true,
+    isDeleted: false,
+    createdAt: '2024-01-03T00:00:00Z',
+    updatedAt: '2024-01-03T00:00:00Z',
+  }
+];
+
+export const mockVisitors: Visitor[] = [
+  {
+    id: '1',
+    name: 'Nguyễn Văn A',
+    email: 'nguyenvana@email.com',
+    phoneNumber: '0123456789',
+    status: 'active',
+    nationality: 'Vietnamese',
+    visitDate: '2024-01-15T10:00:00Z',
+    groupSize: 2,
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    createdAt: '2024-01-15T09:00:00Z',
+    updatedAt: '2024-01-15T09:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'Trần Thị B',
+    email: 'tranthib@email.com',
+    phoneNumber: '0987654321',
+    status: 'active',
+    nationality: 'Vietnamese',
+    visitDate: '2024-01-16T14:00:00Z',
+    groupSize: 1,
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    createdAt: '2024-01-16T13:00:00Z',
+    updatedAt: '2024-01-16T13:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'John Smith',
+    email: 'johnsmith@email.com',
+    phoneNumber: '+1234567890',
+    status: 'active',
+    nationality: 'American',
+    visitDate: '2024-01-17T11:00:00Z',
+    groupSize: 3,
+    museumId: '1',
+    museum: { id: '1', name: 'Bảo tàng Lịch sử Việt Nam' },
+    createdAt: '2024-01-17T10:00:00Z',
+    updatedAt: '2024-01-17T10:00:00Z',
+  }
+];
+

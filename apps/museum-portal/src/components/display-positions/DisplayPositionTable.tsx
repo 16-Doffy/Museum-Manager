@@ -1,0 +1,309 @@
+'use client';
+
+import { useState, useCallback, useMemo } from 'react';
+import { DisplayPosition } from '../../lib/api/types';
+import { DisplayPositionForm } from './DisplayPositionForm';
+
+interface DisplayPositionTableProps {
+  displayPositions: DisplayPosition[];
+  loading: boolean;
+  error: string | null;
+  pagination: {
+    pageIndex: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  areaName: string;
+  setAreaName: (term: string) => void;
+  includeDeleted: boolean;
+  setIncludeDeleted: (include: boolean) => void;
+  onPageChange: (page: number) => void;
+  onCreate: () => void;
+  onEdit: (displayPosition: DisplayPosition) => void;
+  onDelete: (id: string) => void;
+  onActivate: (id: string) => void;
+}
+
+export function DisplayPositionTable({
+  displayPositions,
+  loading,
+  error,
+  pagination,
+  searchTerm,
+  setSearchTerm,
+  areaName,
+  setAreaName,
+  includeDeleted,
+  setIncludeDeleted,
+  onPageChange,
+  onCreate,
+  onEdit,
+  onDelete,
+  onActivate,
+}: DisplayPositionTableProps) {
+  const [showForm, setShowForm] = useState(false);
+  const [editingPosition, setEditingPosition] = useState<DisplayPosition | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCreate = useCallback(() => {
+    setEditingPosition(undefined);
+    setShowForm(true);
+    onCreate();
+  }, [onCreate]);
+
+  const handleEdit = useCallback((position: DisplayPosition) => {
+    setEditingPosition(position);
+    setShowForm(true);
+    onEdit(position);
+  }, [onEdit]);
+
+  const handleDelete = useCallback(async (id: string) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa vị trí trưng bày này?')) {
+      try {
+        await onDelete(id);
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
+    }
+  }, [onDelete]);
+
+  const handleActivate = useCallback(async (id: string) => {
+    try {
+      await onActivate(id);
+    } catch (error) {
+      console.error('Activate error:', error);
+    }
+  }, [onActivate]);
+
+  const handleSave = useCallback(async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      if (editingPosition) {
+        // Update existing position
+        await onEdit(editingPosition);
+      } else {
+        // Create new position
+        await onCreate();
+      }
+      setShowForm(false);
+      setEditingPosition(undefined);
+    } catch (error) {
+      console.error('Save error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [editingPosition, onEdit, onCreate]);
+
+  const handleCancel = useCallback(() => {
+    setShowForm(false);
+    setEditingPosition(undefined);
+  }, []);
+
+  const filteredPositions = useMemo(() => {
+    if (!displayPositions) return [];
+    return displayPositions.filter(position => {
+      if (!includeDeleted && position.isDeleted) return false;
+      if (searchTerm && !position.displayPositionName.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      if (areaName && !position.area?.name.toLowerCase().includes(areaName.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }, [displayPositions, includeDeleted, searchTerm, areaName]);
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <p className="text-red-600">Lỗi: {error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Search and Filter Controls */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Tìm kiếm vị trí trưng bày..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo khu vực..."
+            value={areaName}
+            onChange={(e) => setAreaName(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={includeDeleted}
+              onChange={(e) => setIncludeDeleted(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-sm text-gray-600">Bao gồm đã xóa</span>
+          </label>
+          <button
+            onClick={handleCreate}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Thêm vị trí mới
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tên vị trí
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Mã vị trí
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Khu vực
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Mô tả
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Thao tác
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  Đang tải...
+                </td>
+              </tr>
+            ) : filteredPositions.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  Không có vị trí trưng bày nào
+                </td>
+              </tr>
+            ) : (
+              filteredPositions.map((position) => (
+                <tr key={position.id} className={position.isDeleted ? 'bg-gray-100' : ''}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{position.displayPositionName}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{position.positionCode}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{position.area?.name || '-'}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 max-w-xs truncate">
+                      {position.description || '-'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      position.isDeleted 
+                        ? 'bg-red-100 text-red-800' 
+                        : position.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {position.isDeleted ? 'Đã xóa' : position.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleEdit(position)}
+                        className="text-blue-600 hover:text-blue-900"
+                        disabled={position.isDeleted}
+                      >
+                        Sửa
+                      </button>
+                      {!position.isActive && !position.isDeleted && (
+                        <button
+                          onClick={() => handleActivate(position.id)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Kích hoạt
+                        </button>
+                      )}
+                      {!position.isDeleted && (
+                        <button
+                          onClick={() => handleDelete(position.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Xóa
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            Hiển thị {((pagination.pageIndex - 1) * pagination.pageSize) + 1} đến{' '}
+            {Math.min(pagination.pageIndex * pagination.pageSize, pagination.totalItems)} trong tổng số{' '}
+            {pagination.totalItems} vị trí trưng bày
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onPageChange(pagination.pageIndex - 1)}
+              disabled={pagination.pageIndex <= 1}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+            <span className="px-3 py-1 text-sm">
+              {pagination.pageIndex} / {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => onPageChange(pagination.pageIndex + 1)}
+              disabled={pagination.pageIndex >= pagination.totalPages}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Form Modal */}
+      {showForm && (
+        <DisplayPositionForm
+          displayPosition={editingPosition}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          loading={isSubmitting}
+        />
+      )}
+    </div>
+  );
+}

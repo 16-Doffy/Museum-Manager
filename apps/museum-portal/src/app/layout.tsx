@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "../lib/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Museum Portal - Quản lý Bảo tàng",
@@ -14,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className="min-h-screen bg-gray-50 antialiased">
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <AuthProvider>
           {children}
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );

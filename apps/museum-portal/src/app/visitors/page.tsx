@@ -1,10 +1,26 @@
 "use client";
 
+import { useState } from 'react';
 import { Sidebar, Topbar } from '@/components';
-import { Button, Card, CardHeader, CardTitle, CardContent } from '@/components/common';
-import { StatCard } from '@/components/dashboard';
+import { Button } from '@/components/common';
+import { VisitorTable } from '@/components/visitors';
+import NavigationButtons from '@/components/common/NavigationButtons';
 
 export default function VisitorsPage() {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+
+  const handleCreate = () => {
+    setShowCreateForm(true);
+  };
+
+  const handleEdit = (id: string) => {
+    // This will be handled by VisitorTable
+  };
+
+  const handleDelete = (id: string) => {
+    // This will be handled by VisitorTable
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
@@ -12,29 +28,30 @@ export default function VisitorsPage() {
       <div className="flex-1 flex flex-col">
         <Topbar />
         
+        <NavigationButtons
+          currentPage="Quản lý Khách tham quan"
+          nextPage="/events"
+          nextPageTitle="Sự kiện"
+        />
+        
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-emerald-600">Quản lý Khách tham quan</h1>
-            <Button>
+            <Button 
+              onClick={handleCreate}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
               Thêm khách tham quan
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <StatCard title="Tổng khách tham quan" value="15,420" />
-            <StatCard title="Khách hôm nay" value="1,245" />
-            <StatCard title="Khách tuần này" value="8,750" />
-            <StatCard title="Khách tháng này" value="32,100" />
+          <div className="bg-white rounded-lg shadow">
+            <VisitorTable
+              onCreate={handleCreate}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-emerald-600">Danh sách khách tham quan gần đây</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">Bảng danh sách khách tham quan sẽ được hiển thị ở đây...</p>
-            </CardContent>
-          </Card>
         </main>
       </div>
     </div>

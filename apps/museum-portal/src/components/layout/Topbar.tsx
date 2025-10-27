@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   FiBell, 
   FiSearch, 
@@ -12,17 +12,20 @@ import {
   FiSettings
 } from "react-icons/fi";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 const getPageTitle = (pathname: string) => {
   const titles: Record<string, string> = {
     "/dashboard": "Tổng quan",
     "/collections": "Quản lý Bộ sưu tập",
-    "/events": "Quản lý Sự kiện",
+    "/areas": "Quản lý Khu vực",
+    "/display-positions": "Quản lý Vị trí trưng bày",
     "/visitors": "Quản lý Khách tham quan",
-    "/tickets": "Quản lý Vé",
+    "/interactions": "Quản lý Tương tác",
+    "/events": "Quản lý Sự kiện",
     "/reports": "Báo cáo & Thống kê",
-    "/settings": "Cài đặt Hệ thống",
-    "/personnel": "Quản lý Nhân viên"
+    "/personnel": "Quản lý Nhân viên",
+    "/accounts": "Quản lý Tài khoản"
   };
   
   return titles[pathname] || "Museum Management";
@@ -30,10 +33,21 @@ const getPageTitle = (pathname: string) => {
 
 export default function Topbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const pageTitle = getPageTitle(pathname);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-100 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
@@ -99,11 +113,17 @@ export default function Topbar() {
             className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">A</span>
+              <span className="text-white text-sm font-medium">
+                {user?.name?.charAt(0) || 'A'}
+              </span>
             </div>
             <div className="hidden md:block text-left">
-              <p className="text-sm font-medium text-emerald-600">Museum Staff</p>
-              <p className="text-xs text-gray-500">staff@museum.com</p>
+              <p className="text-sm font-medium text-emerald-600">
+                {user?.name || 'Museum Staff'}
+              </p>
+              <p className="text-xs text-gray-500">
+                {user?.role || 'Staff'} • {user?.email || 'staff@museum.com'}
+              </p>
             </div>
             <FiChevronDown className="w-4 h-4 text-gray-400" />
           </button>
@@ -111,8 +131,12 @@ export default function Topbar() {
           {showUserMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
               <div className="px-4 py-2 border-b border-gray-100">
-                <p className="text-sm font-medium text-emerald-600">Museum Staff</p>
-                <p className="text-xs text-gray-500">staff@museum.com</p>
+                <p className="text-sm font-medium text-emerald-600">
+                  {user?.name || 'Museum Staff'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {user?.email || 'staff@museum.com'}
+                </p>
               </div>
               
               <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
@@ -126,7 +150,10 @@ export default function Topbar() {
               </button>
               
               <div className="border-t border-gray-100 mt-2 pt-2">
-                <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                <button 
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                >
                   <FiLogOut className="w-4 h-4" />
                   Đăng xuất
                 </button>

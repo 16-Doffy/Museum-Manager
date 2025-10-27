@@ -1,113 +1,105 @@
-# Museum Management Portal
+# Museum Portal - API Integration
 
-Hệ thống quản lý bảo tàng toàn diện với giao diện hiện đại và dễ sử dụng.
+## 🚀 Quick Start
 
-## 🏗️ Cấu trúc Dự án
+### 1. Setup Environment
+```bash
+# Copy environment template
+cp env.example .env.local
 
-### 📁 Thư mục chính
+# Edit .env.local with your API URL
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Run Development Server
+```bash
+npm run dev
+```
+
+### 4. Test API Integration
+Visit: `http://localhost:3000/test-api`
+
+## 📁 Project Structure
 
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── dashboard/         # Trang tổng quan
-│   ├── collections/       # Quản lý bộ sưu tập
-│   ├── events/           # Quản lý sự kiện
-│   ├── visitors/         # Quản lý khách tham quan
-│   ├── tickets/          # Quản lý vé
-│   ├── reports/          # Báo cáo & thống kê
-│   └── settings/         # Cài đặt hệ thống
-├── components/           # React Components
-│   ├── layout/          # Layout components (Sidebar, Topbar, etc.)
-│   ├── dashboard/       # Dashboard components
-│   ├── collections/     # Collection management components
-│   ├── events/          # Event management components
-│   ├── visitors/        # Visitor management components
-│   ├── tickets/         # Ticket management components
-│   ├── reports/         # Report components
-│   └── common/          # Shared/common components
-└── lib/                 # Utilities & configurations
-    ├── api/            # API functions
-    ├── hooks/          # Custom React hooks
-    ├── types/          # TypeScript type definitions
-    └── utils/          # Utility functions
+├── lib/
+│   ├── api/                 # API layer
+│   │   ├── client.ts       # HTTP client with JWT
+│   │   ├── endpoints.ts    # API endpoints
+│   │   ├── types.ts        # TypeScript types
+│   │   └── hooks.ts        # React hooks
+│   └── contexts/
+│       └── AuthContext.tsx # Authentication context
+├── components/
+│   └── collections/
+│       └── CollectionTable.tsx # Example component using API
+└── app/
+    ├── layout.tsx          # Root layout with AuthProvider
+    └── test-api/           # API test page
 ```
 
-## 🚀 Tính năng chính
+## 🔧 Available APIs
 
-### 📊 Dashboard
-- Thống kê tổng quan về bảo tàng
-- Biểu đồ doanh thu và khách tham quan
-- Tổng quan về bộ sưu tập và sự kiện
+### Authentication
+- Login with email/password
+- Google OAuth login
+- JWT token management
 
-### 🖼️ Quản lý Bộ sưu tập
-- Thêm, sửa, xóa bộ sưu tập
-- Phân loại và tìm kiếm
-- Quản lý thông tin chi tiết
+### Data Management
+- **Artifacts**: CRUD operations, media management
+- **Areas**: Khu vực quản lý
+- **Display Positions**: Vị trí trưng bày
+- **Visitors**: Khách tham quan
+- **Interactions**: Tương tác khách-hiện vật
 
-### 🎉 Quản lý Sự kiện
-- Tạo và quản lý sự kiện
-- Lên lịch sự kiện
-- Theo dõi hiệu quả sự kiện
+## 💡 Usage Examples
 
-### 👥 Quản lý Khách tham quan
-- Theo dõi số lượng khách
-- Thống kê theo thời gian
-- Phân tích xu hướng
+### Using API Hooks
+```tsx
+import { useArtifacts, useAreas } from '../lib/api/hooks';
 
-### 🎫 Quản lý Vé
-- Bán vé trực tuyến
-- Quản lý giá vé
-- Thống kê doanh thu
-
-### 📈 Báo cáo & Thống kê
-- Báo cáo doanh thu
-- Thống kê khách tham quan
-- Phân tích hiệu quả sự kiện
-
-### ⚙️ Cài đặt Hệ thống
-- Cấu hình thông tin bảo tàng
-- Thiết lập giờ mở cửa
-- Quản lý giá vé
-- Cài đặt thông báo
-
-## 🛠️ Công nghệ sử dụng
-
-- **Framework**: Next.js 15
-- **UI Library**: React 18
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Icons**: React Icons
-- **Language**: TypeScript
-- **Package Manager**: pnpm
-
-## 🚀 Cách chạy dự án
-
-```bash
-# Cài đặt dependencies
-pnpm install
-
-# Chạy development server
-pnpm dev
-
-# Build cho production
-pnpm build
-
-# Chạy production server
-pnpm start
+function MyComponent() {
+  const { artifacts, loading, error, createArtifact } = useArtifacts();
+  const { areas } = useAreas();
+  
+  // Use the data...
+}
 ```
 
-## 📝 Ghi chú
+### Using Authentication
+```tsx
+import { useAuth } from '../lib/contexts/AuthContext';
 
-- Server chạy trên port 3500
-- Sử dụng App Router của Next.js 15
-- Components được tổ chức theo chức năng
-- Hỗ trợ TypeScript đầy đủ
-- Responsive design cho mobile và desktop
+function MyComponent() {
+  const { user, isAuthenticated, login, logout } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <LoginForm />;
+  }
+  
+  return <div>Welcome, {user?.name}!</div>;
+}
+```
 
-## 🔄 Cập nhật gần đây
+## 🐛 Troubleshooting
 
-- Tái cấu trúc thư mục theo chức năng
-- Thêm các trang quản lý chuyên biệt
-- Cải thiện tổ chức components
-- Thêm các utility functions
-- Tối ưu hóa import paths
+### Module Resolution Errors
+If you see "Module not found" errors:
+1. Restart TypeScript server in VS Code
+2. Clear Next.js cache: `rm -rf .next`
+3. Reinstall dependencies: `rm -rf node_modules && npm install`
+
+### API Connection Issues
+1. Check if backend is running on correct port
+2. Verify CORS configuration in backend
+3. Check browser network tab for API calls
+
+## 📚 Documentation
+
+See `API_INTEGRATION_GUIDE.md` for detailed documentation.
