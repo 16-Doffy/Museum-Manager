@@ -156,9 +156,9 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
       provenance: '',
       culturalSignificance: '',
       conservationNotes: '',
-      displayPositionId: null,
-      areaId: data.areaId || null,
-      area: data.areaId ? mockAreas.find(area => area.id === data.areaId) : null,
+        displayPositionId: undefined,
+        areaId: data.areaId || undefined,
+        area: data.areaId ? mockAreas.find(area => area.id === data.areaId) || undefined : undefined,
       museumId: 'museum-1',
       museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
       isActive: true,
@@ -305,6 +305,8 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
       positionCode: data.positionCode,
       description: data.description || '',
       areaId: data.areaId,
+      museumId: 'museum-1',
+      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
       isActive: true,
       isDeleted: false,
       createdAt: new Date().toISOString(),
@@ -420,9 +422,7 @@ export function useAreas(searchParams?: AreaSearchParams) {
       name: data.name,
       description: data.description || '',
       museumId: data.museumId || '',
-      museum: data.museumId ? { id: data.museumId, name: mockMuseums[data.museumId] || 'Bảo tàng' } : undefined,
-      location: '',
-      capacity: 0,
+      museum: data.museumId ? { id: data.museumId, name: mockMuseums[data.museumId] || 'Bảo tàng', isActive: true, createdAt: '', updatedAt: '' } : undefined,
       isActive: true,
       isDeleted: false,
       createdAt: new Date().toISOString(),
@@ -439,7 +439,7 @@ export function useAreas(searchParams?: AreaSearchParams) {
         return {
           ...a,
           ...data,
-          museum: data.museumId ? { id: data.museumId, name: a.museum?.name || 'Bảo tàng' } : a.museum,
+          museum: data.museumId ? { id: data.museumId, name: a.museum?.name || 'Bảo tàng', isActive: true, createdAt: '', updatedAt: '' } : a.museum,
           updatedAt: new Date().toISOString(),
         };
       }
@@ -526,7 +526,8 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
       nationality: data.nationality || '',
       visitDate: data.visitDate || new Date().toISOString(),
       groupSize: data.groupSize || 1,
-      isActive: true,
+      museumId: 'museum-1',
+      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -536,9 +537,16 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
 
   const updateVisitor = useCallback(async (id: string, data: VisitorUpdateRequest) => {
     // Mock implementation - update in mock array
-    setVisitors(prev => prev.map(v => v.id === id ? { ...v, ...data, updatedAt: new Date().toISOString() } : v));
-    return { ...data, id } as Visitor;
-  }, []);
+    setVisitors(prev => prev.map(v => {
+      if (v.id === id) {
+        const updated = { ...v, ...data, updatedAt: new Date().toISOString() };
+        return updated;
+      }
+      return v;
+    }));
+    const updated = visitors.find(v => v.id === id);
+    return { ...updated, ...data } as Visitor;
+  }, [visitors]);
 
   const deleteVisitor = useCallback(async (id: string) => {
     // Mock implementation - remove from mock array
@@ -617,8 +625,8 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
       rating: data.rating || 0,
       duration: 0,
       feedback: '',
-      isActive: true,
-      isDeleted: false,
+      museumId: 'museum-1',
+      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

@@ -63,17 +63,21 @@ export default function VisitorTable({ onCreate, onEdit, onDelete }: VisitorTabl
     try {
       if (editingVisitor) {
         await updateVisitor(editingVisitor.id, data as VisitorUpdateRequest);
+        alert('Cập nhật khách tham quan thành công');
       } else {
         await createVisitor(data as VisitorCreateRequest);
+        alert('Tạo khách tham quan mới thành công');
       }
       setShowForm(false);
       setEditingVisitor(null);
+      // Refresh data after save
+      await fetchVisitors();
     } catch (err) {
       alert(`Lỗi khi lưu khách tham quan: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingVisitor, createVisitor, updateVisitor]);
+  }, [editingVisitor, createVisitor, updateVisitor, fetchVisitors]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (confirm('Bạn có chắc chắn muốn xóa khách tham quan này?')) {
@@ -116,6 +120,7 @@ export default function VisitorTable({ onCreate, onEdit, onDelete }: VisitorTabl
             <thead className="bg-emerald-50">
               <tr>
                 <th className="p-3 text-emerald-700 font-semibold">Số điện thoại</th>
+                <th className="p-3 text-emerald-700 font-semibold">Tên</th>
                 <th className="p-3 text-emerald-700 font-semibold">Trạng thái</th>
                 <th className="p-3 text-emerald-700 font-semibold">Ngày tạo</th>
                 <th className="p-3 text-emerald-700 font-semibold">Thao tác</th>
@@ -124,7 +129,7 @@ export default function VisitorTable({ onCreate, onEdit, onDelete }: VisitorTabl
             <tbody>
               {visitors.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-gray-500">
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
                     Không có khách tham quan nào
                   </td>
                 </tr>
@@ -132,13 +137,17 @@ export default function VisitorTable({ onCreate, onEdit, onDelete }: VisitorTabl
                 visitors.map((visitor) => (
                   <tr key={visitor.id} className="border-t hover:bg-gray-50">
                     <td className="p-3 text-gray-800 font-medium">{visitor.phoneNumber}</td>
+                    <td className="p-3 text-gray-800">{visitor.name || '-'}</td>
                     <td className="p-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        visitor.status === 'active' 
+                        visitor.status === 'Active' 
                           ? 'bg-green-100 text-green-800' 
+                          : visitor.status === 'Suspended'
+                          ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {visitor.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
+                        {visitor.status === 'Active' ? 'Hoạt động' : 
+                         visitor.status === 'Suspended' ? 'Tạm ngưng' : 'Không hoạt động'}
                       </span>
                     </td>
                     <td className="p-3 text-gray-700">

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useInteractions } from '../../lib/api/hooks';
+import { useInteractions, useVisitors, useArtifacts } from '../../lib/api/hooks';
 import { useDebounce } from '../../lib/hooks/useDebounce';
 import InteractionForm from '../../components/interactions/InteractionForm';
 import { Interaction, InteractionCreateRequest, InteractionUpdateRequest } from '../../lib/api/types';
@@ -31,6 +31,10 @@ export default function InteractionsPage() {
     updateInteraction,
     deleteInteraction,
   } = useInteractions(searchParams);
+
+  // Get visitors and artifacts for form dropdowns
+  const { visitors } = useVisitors({ pageIndex: 1, pageSize: 100 });
+  const { artifacts } = useArtifacts({ pageIndex: 1, pageSize: 100 });
 
   const handleCreate = useCallback(() => {
     setEditingInteraction(null);
@@ -89,6 +93,17 @@ export default function InteractionsPage() {
     setPageIndex(newPage);
   }, []);
 
+  // Helper functions to get names from IDs
+  const getVisitorName = useCallback((visitorId: string) => {
+    const visitor = visitors.find(v => v.id === visitorId);
+    return visitor ? `${visitor.phoneNumber}${visitor.name ? ` (${visitor.name})` : ''}` : visitorId;
+  }, [visitors]);
+
+  const getArtifactName = useCallback((artifactId: string) => {
+    const artifact = artifacts.find(a => a.id === artifactId);
+    return artifact ? artifact.name : artifactId;
+  }, [artifacts]);
+
   if (loading && interactions.length === 0) {
     return <div className="text-center py-8">Đang tải tương tác...</div>;
   }
@@ -105,6 +120,8 @@ export default function InteractionsPage() {
           onSave={handleSave}
           onCancel={handleCancel}
           isLoading={isSubmitting}
+          visitors={visitors}
+          artifacts={artifacts}
         />
       )}
       
@@ -220,8 +237,8 @@ export default function InteractionsPage() {
                 ) : (
                   interactions.map((interaction) => (
                     <tr key={interaction.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
-                      <td className="p-3 text-gray-800">{interaction.visitorId}</td>
-                      <td className="p-3 text-gray-800">{interaction.artifactId}</td>
+                      <td className="p-3 text-gray-800">{getVisitorName(interaction.visitorId)}</td>
+                      <td className="p-3 text-gray-800">{getArtifactName(interaction.artifactId)}</td>
                       <td className="p-3 text-gray-800">{interaction.interactionType}</td>
                       <td className="p-3 text-gray-800">{interaction.comment || 'N/A'}</td>
                       <td className="p-3 text-gray-800">
