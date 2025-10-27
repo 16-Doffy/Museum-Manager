@@ -139,6 +139,7 @@ export interface Artifact {
 export interface ArtifactCreateRequest {
   name: string;
   periodTime?: string;
+  year?: string;
   description?: string;
   isOriginal?: boolean;
   weight?: number;
@@ -151,6 +152,7 @@ export interface ArtifactCreateRequest {
 export interface ArtifactUpdateRequest {
   name?: string;
   periodTime?: string;
+  year?: string;
   description?: string;
   isOriginal?: boolean;
   weight?: number;

@@ -141,12 +141,12 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
       name: data.name,
       description: data.description || '',
       periodTime: data.periodTime || '',
+      year: data.year || '',
       isOriginal: data.isOriginal ?? true,
       weight: data.weight || 0,
       height: data.height || 0,
       width: data.width || 0,
       length: data.length || 0,
-      year: '',
       origin: '',
       material: '',
       dimensions: '',
@@ -158,6 +158,9 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
       conservationNotes: '',
       displayPositionId: null,
       areaId: data.areaId || null,
+      area: data.areaId ? mockAreas.find(area => area.id === data.areaId) : null,
+      museumId: 'museum-1',
+      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
       isActive: true,
       isDeleted: false,
       media: [],
@@ -172,11 +175,22 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
     // Mock implementation - update all changed fields
     setArtifacts(prev => prev.map(a => {
       if (a.id === id) {
-        return {
+        const updated = {
           ...a,
           ...data,
           updatedAt: new Date().toISOString(),
         };
+        
+        // If areaId is provided, update the area object
+        if (data.areaId) {
+          // Find the area by ID from mockAreas
+          const area = mockAreas.find(area => area.id === data.areaId);
+          if (area) {
+            updated.area = area;
+          }
+        }
+        
+        return updated;
       }
       return a;
     }));

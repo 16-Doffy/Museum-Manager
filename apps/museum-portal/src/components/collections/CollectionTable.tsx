@@ -100,16 +100,19 @@ export default function CollectionTable() {
       }
       
       if (editingArtifact) {
-        // For update, only send changed fields
-        const updateData: ArtifactUpdateRequest = {};
-        if (data.name !== editingArtifact.name) updateData.name = data.name;
-        if (data.description !== editingArtifact.description) updateData.description = data.description;
-        if (data.periodTime !== editingArtifact.periodTime) updateData.periodTime = data.periodTime;
-        if (data.isOriginal !== editingArtifact.isOriginal) updateData.isOriginal = data.isOriginal;
-        if (data.weight !== editingArtifact.weight) updateData.weight = data.weight;
-        if (data.height !== editingArtifact.height) updateData.height = data.height;
-        if (data.width !== editingArtifact.width) updateData.width = data.width;
-        if (data.length !== editingArtifact.length) updateData.length = data.length;
+        // For update, send all form data
+        const updateData: ArtifactUpdateRequest = {
+          name: data.name,
+          description: data.description,
+          periodTime: data.periodTime,
+          year: data.year,
+          isOriginal: data.isOriginal,
+          weight: data.weight,
+          height: data.height,
+          width: data.width,
+          length: data.length,
+          areaId: data.areaId,
+        };
         
         await updateArtifact(editingArtifact.id, updateData);
         alert('Cập nhật hiện vật thành công');
