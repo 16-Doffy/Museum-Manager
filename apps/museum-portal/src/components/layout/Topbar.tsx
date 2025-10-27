@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 import { 
   FiBell, 
   FiSearch, 
@@ -11,39 +9,37 @@ import {
   FiLogOut,
   FiSettings
 } from "react-icons/fi";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { cn } from "../../lib/utils";
+import { useAuthStore } from "../../stores/auth-store";
 
 const getPageTitle = (pathname: string) => {
   const titles: Record<string, string> = {
+    "/": "Dashboard",
     "/dashboard": "Tổng quan",
-    "/collections": "Quản lý Bộ sưu tập",
     "/areas": "Quản lý Khu vực",
+    "/artifacts": "Quản lý Hiện vật",
     "/display-positions": "Quản lý Vị trí trưng bày",
     "/visitors": "Quản lý Khách tham quan",
-    "/interactions": "Quản lý Tương tác",
-    "/events": "Quản lý Sự kiện",
-    "/reports": "Báo cáo & Thống kê",
     "/personnel": "Quản lý Nhân viên",
-    "/accounts": "Quản lý Tài khoản"
+    "/settings": "Cài đặt"
   };
   
   return titles[pathname] || "Museum Management";
 };
 
 export default function Topbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const pageTitle = getPageTitle(pathname);
+  const pageTitle = getPageTitle(location.pathname);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      await logout();
-      router.push('/login');
+      logout();
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
     }

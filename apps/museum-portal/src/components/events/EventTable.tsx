@@ -1,5 +1,3 @@
-"use client";
-
 export default function EventTable() {
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">

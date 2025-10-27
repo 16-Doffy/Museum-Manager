@@ -34,4 +34,9 @@ export class AreaService {
     const response = await apiClient.patch<Area>(areaEndpoints.activate(id));
     return response.data;
   }
+
+  static async setToMaintenance(id: string): Promise<Area> {
+    const response = await apiClient.patch<Area>(areaEndpoints.maintain(id));
+    return response.data;
+  }
 }

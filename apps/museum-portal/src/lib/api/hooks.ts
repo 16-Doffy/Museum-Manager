@@ -79,7 +79,14 @@ function useApiCall<T>() {
 
 // Artifact Management Hooks
 export function useArtifacts(searchParams?: ArtifactSearchParams) {
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const [artifacts, setArtifacts] = useState<Artifact[]>(() => {
+    // Load from localStorage on init
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('museum_artifacts');
+      return saved ? JSON.parse(saved) : mockArtifacts;
+    }
+    return mockArtifacts;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -89,42 +96,23 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
     totalPages: 0,
   });
 
+  // Save to localStorage whenever artifacts change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('museum_artifacts', JSON.stringify(artifacts));
+    }
+  }, [artifacts]);
+
   const fetchArtifacts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Try real API first
-      try {
-        const response = await apiClient.get<{
-          items: Artifact[];
-          totalItems: number;
-          pageIndex: number;
-          totalPages: number;
-          pageSize: number;
-        }>(
-          artifactEndpoints.getAll,
-          searchParams as unknown as Record<string, string | number | boolean>
-        );
-        
-        setArtifacts(response.data.items);
-        setPagination({
-          pageIndex: response.data.pageIndex,
-          pageSize: response.data.pageSize,
-          totalItems: response.data.totalItems,
-          totalPages: response.data.totalPages,
-        });
-        return;
-      } catch {
-        console.log('API not available, using mock data for artifacts');
-      }
-      
-      // Fallback to mock data
-      setArtifacts(mockArtifacts);
+      // Use current artifacts from state (which includes localStorage data)
       setPagination({
         pageIndex: 1,
         pageSize: 10,
-        totalItems: mockArtifacts.length,
+        totalItems: artifacts.length,
         totalPages: 1,
       });
       
@@ -133,40 +121,73 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [artifacts]);
 
   useEffect(() => {
-    fetchArtifacts();
-  }, [fetchArtifacts]);
+    if (!searchParams) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchArtifacts();
+    }, 300); // Debounce 300ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchParams, fetchArtifacts]);
 
   const createArtifact = useCallback(async (data: ArtifactCreateRequest) => {
-    try {
-      const response = await apiClient.post<Artifact>(artifactEndpoints.create, data);
-      await fetchArtifacts(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchArtifacts]);
+    // Mock implementation - create complete artifact object
+    const newArtifact: Artifact = {
+      id: `artifact-${Date.now()}`,
+      code: `ART-${Date.now()}`,
+      name: data.name,
+      description: data.description || '',
+      periodTime: data.periodTime || '',
+      isOriginal: data.isOriginal ?? true,
+      weight: data.weight || 0,
+      height: data.height || 0,
+      width: data.width || 0,
+      length: data.length || 0,
+      year: '',
+      origin: '',
+      material: '',
+      dimensions: '',
+      condition: '',
+      acquisitionDate: '',
+      acquisitionMethod: '',
+      provenance: '',
+      culturalSignificance: '',
+      conservationNotes: '',
+      displayPositionId: null,
+      areaId: data.areaId || null,
+      isActive: true,
+      isDeleted: false,
+      media: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setArtifacts(prev => [...prev, newArtifact]);
+    return newArtifact;
+  }, []);
 
   const updateArtifact = useCallback(async (id: string, data: ArtifactUpdateRequest) => {
-    try {
-      const response = await apiClient.patch<Artifact>(artifactEndpoints.update(id), data);
-      await fetchArtifacts(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchArtifacts]);
+    // Mock implementation - update all changed fields
+    setArtifacts(prev => prev.map(a => {
+      if (a.id === id) {
+        return {
+          ...a,
+          ...data,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return a;
+    }));
+    const updated = artifacts.find(a => a.id === id);
+    return { ...updated, ...data } as Artifact;
+  }, [artifacts]);
 
   const deleteArtifact = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(artifactEndpoints.delete(id));
-      await fetchArtifacts(); // Refresh list
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchArtifacts]);
+    // Mock implementation
+    setArtifacts(prev => prev.filter(a => a.id !== id));
+  }, []);
 
   const activateArtifact = useCallback(async (id: string) => {
     try {
@@ -209,7 +230,14 @@ export function useArtifact(id: string) {
 
 // Display Position Management Hooks
 export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) {
-  const [displayPositions, setDisplayPositions] = useState<DisplayPosition[]>([]);
+  const [displayPositions, setDisplayPositions] = useState<DisplayPosition[]>(() => {
+    // Load from localStorage on init
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('museum_display_positions');
+      return saved ? JSON.parse(saved) : mockDisplayPositions;
+    }
+    return mockDisplayPositions;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -219,42 +247,23 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
     totalPages: 0,
   });
 
+  // Save to localStorage whenever displayPositions change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('museum_display_positions', JSON.stringify(displayPositions));
+    }
+  }, [displayPositions]);
+
   const fetchDisplayPositions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Try real API first
-      try {
-        const response = await apiClient.get<{
-          items: DisplayPosition[];
-          totalItems: number;
-          pageIndex: number;
-          totalPages: number;
-          pageSize: number;
-        }>(
-          displayPositionEndpoints.getAll,
-          searchParams as unknown as Record<string, string | number | boolean>
-        );
-        
-        setDisplayPositions(response.data.items);
-        setPagination({
-          pageIndex: response.data.pageIndex,
-          pageSize: response.data.pageSize,
-          totalItems: response.data.totalItems,
-          totalPages: response.data.totalPages,
-        });
-        return;
-      } catch {
-        console.log('API not available, using mock data for display positions');
-      }
-      
-      // Fallback to mock data
-      setDisplayPositions(mockDisplayPositions);
+      // Use current displayPositions from state (which includes localStorage data)
       setPagination({
         pageIndex: 1,
         pageSize: 10,
-        totalItems: mockDisplayPositions.length,
+        totalItems: displayPositions.length,
         totalPages: 1,
       });
       
@@ -263,40 +272,55 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [displayPositions]);
 
   useEffect(() => {
-    fetchDisplayPositions();
-  }, [fetchDisplayPositions]);
+    if (!searchParams) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchDisplayPositions();
+    }, 300); // Debounce 300ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchParams, fetchDisplayPositions]);
 
   const createDisplayPosition = useCallback(async (data: DisplayPositionCreateRequest) => {
-    try {
-      const response = await apiClient.post<DisplayPosition>(displayPositionEndpoints.create, data);
-      await fetchDisplayPositions(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchDisplayPositions]);
+    // Mock implementation - create complete display position object
+    const newDP: DisplayPosition = {
+      id: `dp-${Date.now()}`,
+      displayPositionName: data.displayPositionName,
+      positionCode: data.positionCode,
+      description: data.description || '',
+      areaId: data.areaId,
+      isActive: true,
+      isDeleted: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setDisplayPositions(prev => [...prev, newDP]);
+    return newDP;
+  }, []);
 
   const updateDisplayPosition = useCallback(async (id: string, data: DisplayPositionUpdateRequest) => {
-    try {
-      const response = await apiClient.patch<DisplayPosition>(displayPositionEndpoints.update(id), data);
-      await fetchDisplayPositions(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchDisplayPositions]);
+    // Mock implementation - update all changed fields
+    setDisplayPositions(prev => prev.map(dp => {
+      if (dp.id === id) {
+        return {
+          ...dp,
+          ...data,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return dp;
+    }));
+    const updated = displayPositions.find(dp => dp.id === id);
+    return { ...updated, ...data } as DisplayPosition;
+  }, [displayPositions]);
 
   const deleteDisplayPosition = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(displayPositionEndpoints.delete(id));
-      await fetchDisplayPositions(); // Refresh list
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchDisplayPositions]);
+    // Mock implementation
+    setDisplayPositions(prev => prev.filter(dp => dp.id !== id));
+  }, []);
 
   const activateDisplayPosition = useCallback(async (id: string) => {
     try {
@@ -323,7 +347,14 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
 
 // Area Management Hooks
 export function useAreas(searchParams?: AreaSearchParams) {
-  const [areas, setAreas] = useState<Area[]>([]);
+  const [areas, setAreas] = useState<Area[]>(() => {
+    // Load from localStorage on init
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('museum_areas');
+      return saved ? JSON.parse(saved) : mockAreas;
+    }
+    return mockAreas;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -333,42 +364,23 @@ export function useAreas(searchParams?: AreaSearchParams) {
     totalPages: 0,
   });
 
+  // Save to localStorage whenever areas change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('museum_areas', JSON.stringify(areas));
+    }
+  }, [areas]);
+
   const fetchAreas = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Try real API first
-      try {
-        const response = await apiClient.get<{
-          items: Area[];
-          totalItems: number;
-          pageIndex: number;
-          totalPages: number;
-          pageSize: number;
-        }>(
-          areaEndpoints.getAll,
-          searchParams as unknown as Record<string, string | number | boolean>
-        );
-        
-        setAreas(response.data.items);
-        setPagination({
-          pageIndex: response.data.pageIndex,
-          pageSize: response.data.pageSize,
-          totalItems: response.data.totalItems,
-          totalPages: response.data.totalPages,
-        });
-        return;
-      } catch {
-        console.log('API not available, using mock data for areas');
-      }
-      
-      // Fallback to mock data
-      setAreas(mockAreas);
+      // Use current areas from state (which includes localStorage data)
       setPagination({
         pageIndex: 1,
         pageSize: 10,
-        totalItems: mockAreas.length,
+        totalItems: areas.length,
         totalPages: 1,
       });
       
@@ -377,40 +389,64 @@ export function useAreas(searchParams?: AreaSearchParams) {
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [areas]);
 
   useEffect(() => {
-    fetchAreas();
-  }, [fetchAreas]);
+    if (!searchParams) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchAreas();
+    }, 300); // Debounce 300ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchParams, fetchAreas]);
 
   const createArea = useCallback(async (data: AreaCreateRequest) => {
-    try {
-      const response = await apiClient.post<Area>(areaEndpoints.create, data);
-      await fetchAreas(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchAreas]);
+    // Mock implementation - create complete area object
+    const mockMuseums: Record<string, string> = {
+      'museum-1': 'Bảo tàng Lịch sử Việt Nam',
+      'museum-2': 'Bảo tàng Mỹ thuật Việt Nam',
+      'museum-3': 'Bảo tàng Dân tộc học Việt Nam',
+    };
+    
+    const newArea: Area = {
+      id: `area-${Date.now()}`,
+      name: data.name,
+      description: data.description || '',
+      museumId: data.museumId || '',
+      museum: data.museumId ? { id: data.museumId, name: mockMuseums[data.museumId] || 'Bảo tàng' } : undefined,
+      location: '',
+      capacity: 0,
+      isActive: true,
+      isDeleted: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setAreas(prev => [...prev, newArea]);
+    return newArea;
+  }, []);
 
   const updateArea = useCallback(async (id: string, data: AreaUpdateRequest) => {
-    try {
-      const response = await apiClient.patch<Area>(areaEndpoints.update(id), data);
-      await fetchAreas(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchAreas]);
+    // Mock implementation - update all changed fields
+    setAreas(prev => prev.map(a => {
+      if (a.id === id) {
+        return {
+          ...a,
+          ...data,
+          museum: data.museumId ? { id: data.museumId, name: a.museum?.name || 'Bảo tàng' } : a.museum,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return a;
+    }));
+    const updated = areas.find(a => a.id === id);
+    return { ...updated, ...data } as Area;
+  }, [areas]);
 
   const deleteArea = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(areaEndpoints.delete(id));
-      await fetchAreas(); // Refresh list
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchAreas]);
+    // Mock implementation
+    setAreas(prev => prev.filter(a => a.id !== id));
+  }, []);
 
   return {
     areas,
@@ -426,7 +462,14 @@ export function useAreas(searchParams?: AreaSearchParams) {
 
 // Visitor Management Hooks
 export function useVisitors(searchParams?: VisitorSearchParams) {
-  const [visitors, setVisitors] = useState<Visitor[]>([]);
+  const [visitors, setVisitors] = useState<Visitor[]>(() => {
+    // Load from localStorage on init
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('museum_visitors');
+      return saved ? JSON.parse(saved) : mockVisitors;
+    }
+    return mockVisitors;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -436,42 +479,23 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
     totalPages: 0,
   });
 
+  // Save to localStorage whenever visitors change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('museum_visitors', JSON.stringify(visitors));
+    }
+  }, [visitors]);
+
   const fetchVisitors = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Try real API first
-      try {
-        const response = await apiClient.get<{
-          items: Visitor[];
-          totalItems: number;
-          pageIndex: number;
-          totalPages: number;
-          pageSize: number;
-        }>(
-          visitorEndpoints.getAll,
-          searchParams as unknown as Record<string, string | number | boolean>
-        );
-        
-        setVisitors(response.data.items);
-        setPagination({
-          pageIndex: response.data.pageIndex,
-          pageSize: response.data.pageSize,
-          totalItems: response.data.totalItems,
-          totalPages: response.data.totalPages,
-        });
-        return;
-      } catch {
-        console.log('API not available, using mock data for visitors');
-      }
-      
-      // Fallback to mock data
-      setVisitors(mockVisitors);
+      // Use current visitors from state (which includes localStorage data)
       setPagination({
         pageIndex: 1,
         pageSize: 10,
-        totalItems: mockVisitors.length,
+        totalItems: visitors.length,
         totalPages: 1,
       });
       
@@ -480,40 +504,47 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [visitors]);
 
   useEffect(() => {
-    fetchVisitors();
-  }, [fetchVisitors]);
+    if (!searchParams) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchVisitors();
+    }, 300); // Debounce 300ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchParams, fetchVisitors]);
 
   const createVisitor = useCallback(async (data: VisitorCreateRequest) => {
-    try {
-      const response = await apiClient.post<Visitor>(visitorEndpoints.create, data);
-      await fetchVisitors(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchVisitors]);
+    // Mock implementation - create complete visitor object
+    const newVisitor: Visitor = {
+      id: `visitor-${Date.now()}`,
+      phoneNumber: data.phoneNumber,
+      status: data.status,
+      name: data.name || '',
+      email: data.email || '',
+      nationality: data.nationality || '',
+      visitDate: data.visitDate || new Date().toISOString(),
+      groupSize: data.groupSize || 1,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setVisitors(prev => [...prev, newVisitor]);
+    return newVisitor;
+  }, []);
 
   const updateVisitor = useCallback(async (id: string, data: VisitorUpdateRequest) => {
-    try {
-      const response = await apiClient.put<Visitor>(visitorEndpoints.update(id), data);
-      await fetchVisitors(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchVisitors]);
+    // Mock implementation - update in mock array
+    setVisitors(prev => prev.map(v => v.id === id ? { ...v, ...data, updatedAt: new Date().toISOString() } : v));
+    return { ...data, id } as Visitor;
+  }, []);
 
   const deleteVisitor = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(visitorEndpoints.delete(id));
-      await fetchVisitors(); // Refresh list
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchVisitors]);
+    // Mock implementation - remove from mock array
+    setVisitors(prev => prev.filter(v => v.id !== id));
+  }, []);
 
   return {
     visitors,
@@ -529,7 +560,14 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
 
 // Interaction Management Hooks
 export function useInteractions(searchParams?: InteractionSearchParams) {
-  const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>(() => {
+    // Load from localStorage on init
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('museum_interactions');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -539,68 +577,73 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
     totalPages: 0,
   });
 
+  // Save to localStorage whenever interactions change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('museum_interactions', JSON.stringify(interactions));
+    }
+  }, [interactions]);
+
   const fetchInteractions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await apiClient.get<{
-        items: Interaction[];
-        totalItems: number;
-        pageIndex: number;
-        totalPages: number;
-        pageSize: number;
-      }>(
-        interactionEndpoints.getAll,
-        searchParams as unknown as Record<string, string | number | boolean>
-      );
-      
-      setInteractions(response.data.items);
+      // Use current interactions from state (which includes localStorage data)
       setPagination({
-        pageIndex: response.data.pageIndex,
-        pageSize: response.data.pageSize,
-        totalItems: response.data.totalItems,
-        totalPages: response.data.totalPages,
+        pageIndex: 1,
+        pageSize: 10,
+        totalItems: interactions.length,
+        totalPages: 1,
       });
+      
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [interactions]);
 
   useEffect(() => {
-    fetchInteractions();
-  }, [fetchInteractions]);
+    if (!searchParams) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchInteractions();
+    }, 300); // Debounce 300ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchParams, fetchInteractions]);
 
   const createInteraction = useCallback(async (data: InteractionCreateRequest) => {
-    try {
-      const response = await apiClient.post<Interaction>(interactionEndpoints.create, data);
-      await fetchInteractions(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchInteractions]);
+    // Mock implementation - create complete interaction object
+    const newInteraction: Interaction = {
+      id: `interaction-${Date.now()}`,
+      visitorId: data.visitorId,
+      artifactId: data.artifactId,
+      interactionType: data.interactionType,
+      comment: data.comment || '',
+      rating: data.rating || 0,
+      duration: 0,
+      feedback: '',
+      isActive: true,
+      isDeleted: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setInteractions(prev => [...prev, newInteraction]);
+    return newInteraction;
+  }, []);
 
   const updateInteraction = useCallback(async (id: string, data: InteractionUpdateRequest) => {
-    try {
-      const response = await apiClient.put<Interaction>(interactionEndpoints.update(id), data);
-      await fetchInteractions(); // Refresh list
-      return response.data;
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchInteractions]);
+    // Mock implementation
+    setInteractions(prev => prev.map(i => i.id === id ? { ...i, ...data, updatedAt: new Date().toISOString() } : i));
+    return { ...data, id } as Interaction;
+  }, []);
 
   const deleteInteraction = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(interactionEndpoints.delete(id));
-      await fetchInteractions(); // Refresh list
-    } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
-    }
-  }, [fetchInteractions]);
+    // Mock implementation
+    setInteractions(prev => prev.filter(i => i.id !== id));
+  }, []);
 
   return {
     interactions,

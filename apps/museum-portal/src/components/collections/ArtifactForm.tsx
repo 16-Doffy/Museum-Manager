@@ -8,9 +8,10 @@ interface ArtifactFormProps {
   onSave: (data: ArtifactCreateRequest | ArtifactUpdateRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  areas?: Array<{ id: string; name: string }>;
 }
 
-export default function ArtifactForm({ artifact, onSave, onCancel, isLoading }: ArtifactFormProps) {
+export default function ArtifactForm({ artifact, onSave, onCancel, isLoading, areas = [] }: ArtifactFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -20,6 +21,7 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading }: 
     height: '',
     width: '',
     length: '',
+    areaId: '',
   });
 
   useEffect(() => {
@@ -33,6 +35,19 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading }: 
         height: artifact.height?.toString() || '',
         width: artifact.width?.toString() || '',
         length: artifact.length?.toString() || '',
+        areaId: artifact.areaId || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        periodTime: '',
+        isOriginal: true,
+        weight: '',
+        height: '',
+        width: '',
+        length: '',
+        areaId: '',
       });
     }
   }, [artifact]);
@@ -49,8 +64,9 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading }: 
       height: formData.height ? parseFloat(formData.height) : undefined,
       width: formData.width ? parseFloat(formData.width) : undefined,
       length: formData.length ? parseFloat(formData.length) : undefined,
+      areaId: formData.areaId || undefined,
     };
-
+    
     onSave(submitData);
   };
 
@@ -171,6 +187,24 @@ export default function ArtifactForm({ artifact, onSave, onCancel, isLoading }: 
                 placeholder="0.0"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Khu vực
+            </label>
+            <select
+              value={formData.areaId}
+              onChange={(e) => setFormData(prev => ({ ...prev, areaId: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="">Chọn khu vực</option>
+              {areas.map(area => (
+                <option key={area.id} value={area.id}>
+                  {area.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

@@ -1,33 +1,22 @@
-"use client";
-
-import { ReactNode } from "react";
-import { useAuth } from "@/lib/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useAuthStore } from "../../stores/auth-store";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
-interface ProtectedLayoutProps {
-  children: ReactNode;
-  requiredRoles?: string[];
-}
+export default function ProtectedLayout() {
+  const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const navigate = useNavigate();
 
-export default function ProtectedLayout({ 
-  children, 
-  requiredRoles 
-}: ProtectedLayoutProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      navigate('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
-
-  // Check role-based access
-  const hasAccess = !requiredRoles || 
-    (user?.role && requiredRoles.includes(user.role));
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return (
@@ -51,34 +40,10 @@ export default function ProtectedLayout({
             Vui lòng đăng nhập để truy cập hệ thống quản lý bảo tàng.
           </p>
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => navigate('/login')}
             className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
           >
             Đăng nhập
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!hasAccess) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">
-            Không có quyền truy cập
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Bạn không có quyền truy cập vào trang này.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
-            Vai trò hiện tại: <span className="font-medium">{user?.role}</span>
-          </p>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            Về Dashboard
           </button>
         </div>
       </div>
@@ -97,7 +62,7 @@ export default function ProtectedLayout({
         
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

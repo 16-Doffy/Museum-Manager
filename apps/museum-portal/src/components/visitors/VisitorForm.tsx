@@ -13,17 +13,20 @@ interface VisitorFormProps {
 export default function VisitorForm({ visitor, onSave, onCancel, isLoading = false }: VisitorFormProps) {
   const [formData, setFormData] = useState({
     phoneNumber: '',
+    status: 'Active',
   });
 
   useEffect(() => {
     if (visitor) {
       setFormData({
         phoneNumber: visitor.phoneNumber,
+        status: visitor.status,
       });
     } else {
       setFormData({
-      phoneNumber: '',
-    });
+        phoneNumber: '',
+        status: 'Active',
+      });
     }
   }, [visitor]);
 
@@ -74,6 +77,23 @@ export default function VisitorForm({ visitor, onSave, onCancel, isLoading = fal
               placeholder="Nhập số điện thoại"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Trạng thái *
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              required
+            >
+              <option value="Active">Hoạt động</option>
+              <option value="Inactive">Không hoạt động</option>
+              <option value="Suspended">Tạm ngưng</option>
+            </select>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

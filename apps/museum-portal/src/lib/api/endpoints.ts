@@ -33,12 +33,13 @@ export const artifactEndpoints = {
 
 // Display Position Management endpoints
 export const displayPositionEndpoints = {
-  getAll: '/display-positions',
-  getById: (id: string) => `/display-positions/${id}`,
-  create: '/display-positions',
-  update: (id: string) => `/display-positions/${id}`,
-  delete: (id: string) => `/display-positions/${id}`,
-  activate: (id: string) => `/display-positions/activate/${id}`,
+  getAll: '/display-postions',
+  getById: (id: string) => `/display-postions/${id}`,
+  create: '/display-postions',
+  update: (id: string) => `/display-postions/${id}`,
+  delete: (id: string) => `/display-postions/${id}`,
+  activate: (id: string) => `/display-postions/${id}/active`,
+  maintain: (id: string) => `/display-postions/${id}/maintain`,
 } as const;
 
 // Area Management endpoints
@@ -49,6 +50,7 @@ export const areaEndpoints = {
   update: (id: string) => `/areas/${id}`,
   delete: (id: string) => `/areas/${id}`,
   activate: (id: string) => `/areas/${id}/activate`,
+  maintain: (id: string) => `/areas/${id}/maintain`,
 } as const;
 
 // Visitor Management endpoints
@@ -71,15 +73,27 @@ export const interactionEndpoints = {
 
 // Museum Management endpoints (for admin to get their museum info)
 export const museumEndpoints = {
+  getAll: '/museums',
   getById: (id: string) => `/museums/${id}`,
+  create: '/museums',
   update: (id: string) => `/museums/${id}`,
+  delete: (id: string) => `/museums/${id}`,
 } as const;
 
 // Account Management endpoints (SuperAdmin & Admin)
 export const accountEndpoints = {
-  getAll: '/api/v1/accounts',
-  getById: (id: string) => `/api/v1/accounts/${id}`,
-  create: (roleId: string, museumId: string) => `/api/v1/accounts/${roleId}/${museumId}`,
-  update: (id: string) => `/api/v1/accounts/${id}`,
-  delete: (id: string) => `/api/v1/accounts/${id}`,
+  getAll: '/accounts',
+  getById: (id: string) => `/accounts/${id}`,
+  create: '/accounts',
+  update: (id: string) => `/accounts/${id}`,
+  delete: (id: string) => `/accounts/${id}`,
+} as const;
+
+// Role Management endpoints
+export const roleEndpoints = {
+  getAll: '/roles',
+  getById: (id: string) => `/roles/${id}`,
+  create: '/roles',
+  update: (id: string) => `/roles/${id}`,
+  delete: (id: string) => `/roles/${id}`,
 } as const;

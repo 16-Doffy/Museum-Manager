@@ -145,18 +145,6 @@ export interface ArtifactCreateRequest {
   height?: number;
   width?: number;
   length?: number;
-  code?: string;
-  year?: string;
-  origin?: string;
-  material?: string;
-  dimensions?: string;
-  condition?: string;
-  acquisitionDate?: string;
-  acquisitionMethod?: string;
-  provenance?: string;
-  culturalSignificance?: string;
-  conservationNotes?: string;
-  displayPositionId?: string;
   areaId?: string;
 }
 
@@ -169,6 +157,7 @@ export interface ArtifactUpdateRequest {
   height?: number;
   width?: number;
   length?: number;
+  areaId?: string;
 }
 
 export interface ArtifactMedia {
@@ -242,6 +231,7 @@ export interface Area {
 export interface AreaCreateRequest {
   name: string;
   description?: string;
+  museumId?: string;
 }
 
 export type AreaUpdateRequest = Partial<AreaCreateRequest>;
@@ -307,8 +297,6 @@ export interface InteractionCreateRequest {
   interactionType: string;
   comment?: string;
   rating?: number;
-  duration?: number;
-  feedback?: string;
 }
 
 export type InteractionUpdateRequest = Partial<InteractionCreateRequest>;

@@ -1,5 +1,3 @@
-"use client";
-
 import { Artifact } from '@/lib/api/types';
 import { FiX, FiPrinter, FiDownload } from 'react-icons/fi';
 
