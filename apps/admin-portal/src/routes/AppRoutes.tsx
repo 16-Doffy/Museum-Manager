@@ -3,7 +3,7 @@ import ScrollToTop from '@/components/ScrollToTop';
 import { AdminDashboard, SubscriptionAdminPage } from '@/features/admin';
 import AuthPage from '@/features/auth/AuthPage';
 import NotPermittedPage from '@/features/auth/NotPermittedPage';
-import { MuseumDetailPage, MuseumRequestDetailPage, MuseumRequestsPage, MuseumsPage } from '@/features/museum';
+import { MuseumDetailPage, MuseumsPage } from '@/features/museum';
 import { OrderListPage, PayoutListPage, PlanListPage, SubscriptionListPage } from '@/features/payment';
 import { PermissionPage, RolePage, RolePermissionsPage } from '@/features/rolebase';
 import { UsersPage } from '@/features/users';
@@ -26,10 +26,6 @@ export default function AppRoutes() {
           {/* Museum Management */}
           <Route path="museums/admin" element={<MuseumsPage />} />
           <Route path="museums/admin/:id" element={<MuseumDetailPage />} />
-
-          {/* Museum Request Management */}
-          <Route path="museums/requests" element={<MuseumRequestsPage />} />
-          <Route path="museums/requests/:id" element={<MuseumRequestDetailPage />} />
 
           {/* Manager Subscription */}
           <Route path="subscription" element={<SubscriptionAdminPage />} />
