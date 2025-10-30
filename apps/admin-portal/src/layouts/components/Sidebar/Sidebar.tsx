@@ -19,18 +19,7 @@ const navItems = [
     title: 'Quản lý bảo tàng',
     url: routes.museums.list,
     icon: Building2,
-    items: [
-      {
-        title: 'Danh sách bảo tàng',
-        url: routes.museums.list,
-        icon: Building2,
-      },
-      {
-        title: 'Phê duyệt bảo tàng',
-        url: routes.museums.requests,
-        icon: Gavel,
-      },
-    ],
+    items: [],
   },
   {
     title: 'Quản lý người dùng',
@@ -39,21 +28,10 @@ const navItems = [
     items: [],
   },
   {
-    title: 'Quản lý quyền',
+    title: 'Quản lý vai trò',
     url: routes.rolebase.roles,
     icon: Gavel,
-    items: [
-      {
-        title: 'Vai trò',
-        url: routes.rolebase.roles,
-        icon: Gavel,
-      },
-      {
-        title: 'Quyền',
-        url: routes.rolebase.permissions,
-        icon: Gavel,
-      },
-    ],
+    items: [],
   },
   {
     title: 'Quản lý thanh toán',
