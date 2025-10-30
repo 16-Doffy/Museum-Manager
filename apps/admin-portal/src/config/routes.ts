@@ -9,7 +9,6 @@ const routes = {
   policies: '/policies',
   rolebase: {
     roles: '/rolebase/roles',
-    permissions: '/rolebase/permissions',
   },
   payments: {
     orders: '/payments/orders',

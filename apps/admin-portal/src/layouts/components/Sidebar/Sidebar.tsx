@@ -28,21 +28,10 @@ const navItems = [
     items: [],
   },
   {
-    title: 'Quản lý quyền',
+    title: 'Quản lý vai trò',
     url: routes.rolebase.roles,
     icon: Gavel,
-    items: [
-      {
-        title: 'Vai trò',
-        url: routes.rolebase.roles,
-        icon: Gavel,
-      },
-      {
-        title: 'Quyền',
-        url: routes.rolebase.permissions,
-        icon: Gavel,
-      },
-    ],
+    items: [],
   },
   {
     title: 'Quản lý thanh toán',

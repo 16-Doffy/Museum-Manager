@@ -5,7 +5,7 @@ import AuthPage from '@/features/auth/AuthPage';
 import NotPermittedPage from '@/features/auth/NotPermittedPage';
 import { MuseumDetailPage, MuseumsPage } from '@/features/museum';
 import { OrderListPage, PayoutListPage, PlanListPage, SubscriptionListPage } from '@/features/payment';
-import { PermissionPage, RolePage, RolePermissionsPage } from '@/features/rolebase';
+import { RolePage } from '@/features/rolebase';
 import { UsersPage } from '@/features/users';
 import DefaultLayout from '@/layouts/DefaultLayout';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -35,8 +35,6 @@ export default function AppRoutes() {
 
           {/* Role-based Access Control */}
           <Route path="rolebase/roles" element={<RolePage />} />
-          <Route path="rolebase/roles/:roleId/permissions" element={<RolePermissionsPage />} />
-          <Route path="rolebase/permissions" element={<PermissionPage />} />
 
           {/* Payment Management */}
           <Route path="payments/orders" element={<OrderListPage />} />

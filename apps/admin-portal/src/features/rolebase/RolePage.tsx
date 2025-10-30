@@ -1,14 +1,28 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import CreateRoleModal from './components/CreateRoleModal';
+import DeleteRoleModal from './components/DeleteRoleModal';
+import EditRoleModal from './components/EditRoleModal';
+import { useCreateRole } from './hooks/useCreateRole';
+import { useDeleteRole } from './hooks/useDeleteRole';
 import { useRoles } from './hooks/useRoles';
-import { Role } from './types';
+import { useUpdateRole } from './hooks/useUpdateRole';
+import { CreateRoleRequest, Role, UpdateRoleRequest } from './types';
 
 export default function RolePage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(10);
-  const navigate = useNavigate();
+
+  // Modals state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
   const { data, isLoading, error } = useRoles({ pageIndex, pageSize });
+  const createMutation = useCreateRole();
+  const updateMutation = useUpdateRole();
+  const deleteMutation = useDeleteRole();
 
   const getStatusColor = (status: Role['status']) => {
     switch (status) {
@@ -29,6 +43,51 @@ export default function RolePage() {
     });
   };
 
+  // Handlers
+  const handleCreate = async (data: CreateRoleRequest) => {
+    try {
+      await createMutation.mutateAsync(data);
+      toast.success('Tạo vai trò thành công');
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể tạo vai trò');
+    }
+  };
+
+  const handleUpdate = async (data: UpdateRoleRequest) => {
+    if (!selectedRole) return;
+    try {
+      await updateMutation.mutateAsync({ id: selectedRole.id, data });
+      toast.success('Cập nhật vai trò thành công');
+      setIsEditModalOpen(false);
+      setSelectedRole(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể cập nhật vai trò');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedRole) return;
+    try {
+      await deleteMutation.mutateAsync(selectedRole.id);
+      toast.success('Xóa vai trò thành công');
+      setIsDeleteModalOpen(false);
+      setSelectedRole(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể xóa vai trò');
+    }
+  };
+
+  const openEditModal = (role: Role) => {
+    setSelectedRole(role);
+    setIsEditModalOpen(true);
+  };
+
+  const openDeleteModal = (role: Role) => {
+    setSelectedRole(role);
+    setIsDeleteModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -37,6 +96,12 @@ export default function RolePage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Quản lý vai trò</h1>
           <p className="text-muted-foreground">Quản lý các vai trò trong hệ thống</p>
         </div>
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow font-medium"
+        >
+          Thêm vai trò
+        </button>
       </div>
 
       {/* Content */}
@@ -111,12 +176,20 @@ export default function RolePage() {
                         <div className="text-sm text-muted-foreground">{formatDate(role.createAt)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => navigate(`/rolebase/roles/${role.id}/permissions`)}
-                          className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow text-sm font-medium"
-                        >
-                          Phân quyền
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEditModal(role)}
+                            className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow text-sm font-medium"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(role)}
+                            className="px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow text-sm font-medium"
+                          >
+                            Xóa
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -172,6 +245,36 @@ export default function RolePage() {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <CreateRoleModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreate}
+        isLoading={createMutation.isPending}
+      />
+
+      <EditRoleModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedRole(null);
+        }}
+        onSubmit={handleUpdate}
+        role={selectedRole}
+        isLoading={updateMutation.isPending}
+      />
+
+      <DeleteRoleModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedRole(null);
+        }}
+        onConfirm={handleDelete}
+        role={selectedRole}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

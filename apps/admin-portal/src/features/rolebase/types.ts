@@ -18,3 +18,12 @@ export interface RoleListParams {
   pageSize?: number;
 }
 
+export interface CreateRoleRequest {
+  name: string;
+}
+
+export interface UpdateRoleRequest {
+  name: string;
+  status: 'Active' | 'Inactive';
+}
+
