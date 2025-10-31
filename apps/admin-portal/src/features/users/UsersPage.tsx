@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import CreateAccountModal from './components/CreateAccountModal';
 import { useAccounts } from './hooks/useAccounts';
@@ -9,6 +10,7 @@ export default function UsersPage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(10);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { data, isLoading, error } = useAccounts({ pageIndex, pageSize });
   const createMutation = useCreateAccount();
@@ -159,7 +161,10 @@ export default function UsersPage() {
                         <div className="text-sm text-muted-foreground">{formatDate(account.createAt)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow text-sm font-medium">
+                        <button
+                          onClick={() => navigate(`/users/${account.id}`)}
+                          className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow text-sm font-medium"
+                        >
                           Chi tiết
                         </button>
                       </td>
