@@ -7,10 +7,20 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    // Proxy API calls to avoid CORS during development
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: process.env.BACKEND_API_ORIGIN?.replace(/\/$/, '') + '/api/v1/:path*' || 'http://localhost:3001/api/v1/:path*',
+      },
+    ];
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
       '@': path.resolve(__dirname, 'src'),
+      '@museum-manager/ui-core/client': path.resolve(__dirname, 'src/shims/ui-core-client.tsx'),
     };
 
     // Exclude server-side packages that shouldn't be bundled in client-side code

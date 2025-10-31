@@ -1,42 +1,118 @@
 import { Card, CardContent } from '@museum-manager/ui-core/client';
 import { Users, Calendar, MapPin, Award } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { http } from '@/lib/api/client';
+import { areaEndpoints, artifactEndpoints, visitorEndpoints } from '@/lib/api/endpoints';
+import { mockAreas, mockArtifacts, mockVisitors } from '@/lib/api/mockData';
+import { USE_MOCK_DATA_ONLY } from '@/lib/api/config';
 
-const stats = [
-  {
-    icon: Users,
-    value: '2.5M+',
-    label: 'Khách Tham Quan',
-    description: 'Tổng số lượt tham quan từ khi thành lập',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-  },
-  {
-    icon: Calendar,
-    value: '150+',
-    label: 'Triển Lãm',
-    description: 'Triển lãm đã tổ chức trong 5 năm qua',
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
-  },
-  {
-    icon: MapPin,
-    value: '50K+',
-    label: 'Hiện Vật',
-    description: 'Hiện vật và tài liệu lịch sử quý giá',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
-  },
-  {
-    icon: Award,
-    value: '25+',
-    label: 'Giải Thưởng',
-    description: 'Giải thưởng và danh hiệu quốc tế',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
-  },
-];
+type StatItem = {
+  icon: typeof Users;
+  value: string;
+  label: string;
+  description: string;
+  color: string;
+  bgColor: string;
+};
 
 export function MuseumStats() {
+  const [counts, setCounts] = useState<{ visitors: number; artifacts: number; areas: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (USE_MOCK_DATA_ONLY) {
+      // Use mock data directly
+      setCounts({ 
+        visitors: mockVisitors.length, 
+        artifacts: mockArtifacts.length, 
+        areas: mockAreas.length 
+      });
+      setError(null);
+      return () => { mounted = false; };
+    }
+    
+    const fetchCounts = async () => {
+      try {
+        const [visitors, artifacts, areas] = await Promise.all([
+          http<any>(visitorEndpoints.getAll),
+          http<any>(artifactEndpoints.getAll),
+          http<any>(areaEndpoints.getAll),
+        ]);
+
+        if (!mounted) return;
+
+        const visitorsCount = Array.isArray(visitors?.data) ? visitors.data.length : (Array.isArray(visitors) ? visitors.length : 0);
+        const artifactsCount = Array.isArray(artifacts?.data) ? artifacts.data.length : (Array.isArray(artifacts) ? artifacts.length : 0);
+        const areasCount = Array.isArray(areas?.data) ? areas.data.length : (Array.isArray(areas) ? areas.length : 0);
+
+        setCounts({ visitors: visitorsCount, artifacts: artifactsCount, areas: areasCount });
+        setError(null);
+      } catch (e: unknown) {
+        // Fallback to mock data counts
+        setCounts({ 
+          visitors: mockVisitors.length, 
+          artifacts: mockArtifacts.length, 
+          areas: mockAreas.length 
+        });
+        setError(null);
+      }
+    };
+    
+    // Initial fetch
+    fetchCounts();
+    
+    // Auto-refresh every 10 seconds to sync with museum-portal changes quickly
+    interval = setInterval(() => {
+      if (!mounted) return;
+      fetchCounts();
+    }, 10000); // 10 seconds for faster sync
+    
+    return () => {
+      mounted = false;
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
+  const stats: StatItem[] = useMemo(() => {
+    return [
+      {
+        icon: Users,
+        value: counts ? `${counts.visitors}` : '—',
+        label: 'Khách Tham Quan',
+        description: 'Tổng số lượt khách đã ghi nhận',
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50',
+      },
+      {
+        icon: Calendar,
+        value: counts ? `${counts.areas}` : '—',
+        label: 'Khu Vực Trưng Bày',
+        description: 'Các khu vực trong bảo tàng',
+        color: 'text-green-600',
+        bgColor: 'bg-green-50',
+      },
+      {
+        icon: MapPin,
+        value: counts ? `${counts.artifacts}` : '—',
+        label: 'Hiện Vật',
+        description: 'Hiện vật và tài liệu lịch sử',
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-50',
+      },
+      {
+        icon: Award,
+        value: '25+',
+        label: 'Giải Thưởng',
+        description: 'Giải thưởng và danh hiệu quốc tế',
+        color: 'text-orange-600',
+        bgColor: 'bg-orange-50',
+      },
+    ];
+  }, [counts]);
+
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 text-white relative overflow-hidden">
       {/* Background Pattern */}

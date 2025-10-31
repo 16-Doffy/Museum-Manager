@@ -75,11 +75,6 @@ export function HeroSection() {
                   🏛️ Xem Triển Lãm
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-2 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105">
-                <Link href="/virtual-tour">
-                  🥽 Tham Quan Ảo
-                </Link>
-              </Button>
             </div>
           </div>
 

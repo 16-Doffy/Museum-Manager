@@ -14,39 +14,16 @@ const navigationItems = [
     href: '/',
   },
   {
-    title: 'Triển Lãm',
-    href: '/exhibits',
-    children: [
-      { title: 'Triển Lãm Hiện Tại', href: '/exhibits/current' },
-      { title: 'Triển Lãm Sắp Tới', href: '/exhibits/upcoming' },
-      { title: 'Triển Lãm Đã Qua', href: '/exhibits/past' },
-    ],
-  },
-  {
-    title: 'Sự Kiện',
-    href: '/events',
-    children: [
-      { title: 'Sự Kiện Hôm Nay', href: '/events/today' },
-      { title: 'Lịch Sự Kiện', href: '/events/calendar' },
-      { title: 'Workshop & Hội Thảo', href: '/events/workshops' },
-    ],
-  },
-  {
-    title: 'Bộ Sưu Tập',
-    href: '/collections',
-    children: [
-      { title: 'Hiện Vật Cổ', href: '/collections/antiques' },
-      { title: 'Tài Liệu Lịch Sử', href: '/collections/documents' },
-      { title: 'Nghệ Thuật Truyền Thống', href: '/collections/art' },
-    ],
+    title: 'Khu Vực',
+    href: '/areas',
   },
   {
     title: 'Thông Tin',
     href: '/about',
     children: [
       { title: 'Giới Thiệu Bảo Tàng', href: '/about/museum' },
-      { title: 'Lịch Sử Bảo Tàng', href: '/about/history' },
-      { title: 'Đội Ngũ', href: '/about/team' },
+      { title: 'Lịch Sử Hình Thành', href: '/about/history' },
+      { title: 'Contacts', href: '/about/contacts' },
     ],
   },
 ];

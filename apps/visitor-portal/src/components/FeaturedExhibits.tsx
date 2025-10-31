@@ -3,51 +3,124 @@ import { Button } from '@museum-manager/ui-core/client';
 import { Badge } from '@museum-manager/ui-core/client';
 import { Calendar, MapPin, Users, ArrowRight, Star } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
+import { http } from '@/lib/api/client';
+import { artifactEndpoints } from '@/lib/api/endpoints';
+import { mockArtifacts } from '@/lib/api/mockData';
+import { USE_MOCK_DATA_ONLY } from '@/lib/api/config';
+import type { Artifact, PaginatedResponse, ApiResponse } from '@/lib/api/types';
 
-const featuredExhibits = [
-  {
-    id: 1,
-    title: 'Văn Hóa Chăm Pa',
-    description: 'Khám phá nền văn minh Chăm Pa cổ đại với những tác phẩm điêu khắc, kiến trúc và nghệ thuật độc đáo.',
-    image: '/api/placeholder/400/300',
-    location: 'Tầng 1 - Phòng A',
-    duration: '15/12/2024 - 15/03/2025',
-    visitors: '12,450',
-    rating: 4.8,
-    status: 'Đang diễn ra',
-    category: 'Văn hóa cổ đại',
-    featured: true,
-  },
-  {
-    id: 2,
-    title: 'Cuộc Kháng Chiến Chống Mỹ',
-    description: 'Triển lãm tái hiện cuộc kháng chiến anh dũng của dân tộc Việt Nam với những hiện vật, hình ảnh lịch sử.',
-    image: '/api/placeholder/400/300',
-    location: 'Tầng 2 - Phòng B',
-    duration: '20/01/2025 - 20/04/2025',
-    visitors: '8,920',
-    rating: 4.9,
-    status: 'Sắp diễn ra',
-    category: 'Lịch sử hiện đại',
-    featured: true,
-  },
-  {
-    id: 3,
-    title: 'Nghệ Thuật Đông Sơn',
-    description: 'Bộ sưu tập trống đồng và hiện vật văn hóa Đông Sơn - nền văn hóa tiêu biểu của Việt Nam cổ đại.',
-    image: '/api/placeholder/400/300',
-    location: 'Tầng 1 - Phòng C',
-    duration: '10/11/2024 - 10/02/2025',
-    visitors: '15,680',
-    rating: 4.7,
-    status: 'Đang diễn ra',
-    category: 'Khảo cổ học',
-    featured: false,
-  },
-];
+type ExhibitCard = {
+  id: string;
+  title: string;
+  description?: string;
+  image?: string;
+  location?: string;
+  duration?: string;
+  visitors?: string;
+  rating?: number;
+  status?: 'Đang diễn ra' | 'Sắp diễn ra' | 'Đã kết thúc';
+  category?: string;
+  featured?: boolean;
+};
 
 export function FeaturedExhibits() {
+  const [artifacts, setArtifacts] = useState<Artifact[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (USE_MOCK_DATA_ONLY) {
+      // Use mock data directly
+      setArtifacts(mockArtifacts.slice(0, 3) as Artifact[]);
+      setError(null);
+      return () => { mounted = false; };
+    }
+    
+    const fetchArtifacts = async () => {
+      try {
+        const res = await http<ApiResponse<Artifact[]> | PaginatedResponse<Artifact> | Artifact[]>(artifactEndpoints.getAll);
+        if (!mounted) return;
+        
+        // Handle different response formats
+        let allArtifacts: Artifact[] = [];
+        if (Array.isArray(res)) {
+          allArtifacts = res;
+        } else if ('data' in res && Array.isArray(res.data)) {
+          allArtifacts = res.data;
+        } else if ('data' in res && 'success' in res && Array.isArray((res as ApiResponse<Artifact[]>).data)) {
+          allArtifacts = (res as ApiResponse<Artifact[]>).data;
+        }
+        
+        // Filter: Only active artifacts, not deleted (sync with museum-portal)
+        const activeArtifacts = allArtifacts
+          .filter(art => art.isActive && !art.isDeleted)
+          .slice(0, 3);
+        
+        setArtifacts(activeArtifacts);
+        setError(null);
+      } catch (e: unknown) {
+        // Fallback to mock data (filter active only)
+        if (!mounted) return;
+        const activeMockArtifacts = mockArtifacts
+          .filter(art => art.isActive && !art.isDeleted)
+          .slice(0, 3);
+        setArtifacts(activeMockArtifacts as Artifact[]);
+        setError(null);
+      }
+    };
+    
+    // Initial fetch
+    fetchArtifacts();
+    
+    // Auto-refresh every 10 seconds to sync with museum-portal changes quickly
+    interval = setInterval(() => {
+      if (!mounted) return;
+      fetchArtifacts();
+    }, 10000); // 10 seconds for faster sync
+    
+    return () => {
+      mounted = false;
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
+  const featuredExhibits: ExhibitCard[] = useMemo(() => {
+    if (!artifacts || artifacts.length === 0) {
+      return [
+        {
+          id: 'placeholder-1',
+          title: 'Triển lãm đặc sắc',
+          description: 'Khám phá các hiện vật tiêu biểu của bảo tàng.',
+          image: undefined,
+          location: 'Khu trưng bày chính',
+          duration: undefined,
+          visitors: '—',
+          rating: 4.7,
+          status: 'Đang diễn ra',
+          category: 'Tổng hợp',
+          featured: true,
+        },
+      ];
+    }
+
+    return artifacts.map((a) => ({
+      id: a.id,
+      title: a.name,
+      description: a.description,
+      image: a.media?.[0]?.url,
+      location: a.periodTime,
+      duration: a.year,
+      visitors: undefined,
+      rating: 4.8,
+      status: 'Đang diễn ra',
+      category: 'Bộ sưu tập',
+      featured: true,
+    }));
+  }, [artifacts]);
+
   return (
     <section className="py-20 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 relative overflow-hidden">
       {/* Background Pattern */}
@@ -74,12 +147,17 @@ export function FeaturedExhibits() {
             <Card key={exhibit.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden bg-white border-0 shadow-lg hover:-translate-y-2">
               <div className="relative overflow-hidden">
                 <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                  <div className="text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold text-2xl">🏛️</span>
+                  {exhibit.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={exhibit.image} alt={exhibit.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-2xl">🏛️</span>
+                      </div>
+                      <p className="text-gray-600 font-medium">Hình ảnh triển lãm</p>
                     </div>
-                    <p className="text-gray-600 font-medium">Hình ảnh triển lãm</p>
-                  </div>
+                  )}
                 </div>
                 
                 {/* Status Badge */}
@@ -124,18 +202,24 @@ export function FeaturedExhibits() {
                 </p>
 
                 <div className="space-y-3 text-sm text-gray-500">
-                  <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
-                    <MapPin className="w-4 h-4 text-indigo-500" />
-                    <span className="font-medium">{exhibit.location}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
-                    <Calendar className="w-4 h-4 text-green-500" />
-                    <span className="font-medium">{exhibit.duration}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
-                    <Users className="w-4 h-4 text-purple-500" />
-                    <span className="font-medium">{exhibit.visitors} lượt tham quan</span>
-                  </div>
+                  {exhibit.location && (
+                    <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                      <MapPin className="w-4 h-4 text-indigo-500" />
+                      <span className="font-medium">{exhibit.location}</span>
+                    </div>
+                  )}
+                  {exhibit.duration && (
+                    <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                      <Calendar className="w-4 h-4 text-green-500" />
+                      <span className="font-medium">{exhibit.duration}</span>
+                    </div>
+                  )}
+                  {exhibit.visitors && (
+                    <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                      <Users className="w-4 h-4 text-purple-500" />
+                      <span className="font-medium">{exhibit.visitors} lượt tham quan</span>
+                    </div>
+                  )}
                 </div>
 
                 <Button asChild className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 group-hover:shadow-lg">
