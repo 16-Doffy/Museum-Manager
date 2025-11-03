@@ -29,7 +29,7 @@ const navItems = [
   },
   {
     title: 'Quản lý vai trò',
-    url: routes.rolebase.roles,
+    url: routes.roles.list,
     icon: Gavel,
     items: [],
   },

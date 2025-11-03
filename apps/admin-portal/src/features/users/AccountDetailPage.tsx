@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/error-utils';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -26,7 +27,7 @@ export default function AccountDetailPage() {
       toast.success('Cập nhật tài khoản thành công');
       setIsEditModalOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không thể cập nhật tài khoản');
+      toast.error(getErrorMessage(error, 'Không thể cập nhật tài khoản'));
     }
   };
 
@@ -38,7 +39,7 @@ export default function AccountDetailPage() {
       setIsDeleteModalOpen(false);
       // Don't navigate, stay on page - account will auto-update to Inactive
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không thể xóa tài khoản');
+      toast.error(getErrorMessage(error, 'Không thể xóa tài khoản'));
     }
   };
 

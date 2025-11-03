@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/error-utils';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,7 +22,7 @@ export default function UsersPage() {
       toast.success('Tạo tài khoản thành công!');
       setIsCreateModalOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Tạo tài khoản thất bại');
+      toast.error(getErrorMessage(error, 'Tạo tài khoản thất bại'));
     }
   };
 
