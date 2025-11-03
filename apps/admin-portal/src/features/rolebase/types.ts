@@ -24,6 +24,5 @@ export interface CreateRoleRequest {
 
 export interface UpdateRoleRequest {
   name: string;
-  status: 'Active' | 'Inactive';
 }
 

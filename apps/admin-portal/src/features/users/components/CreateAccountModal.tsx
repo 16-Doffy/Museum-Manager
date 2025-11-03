@@ -21,7 +21,6 @@ export default function CreateAccountModal({ isOpen, onClose, onSubmit, isLoadin
     password: '',
     roleId: '',
     museumId: '',
-    status: 'Active',
   });
 
   useEffect(() => {
@@ -32,7 +31,6 @@ export default function CreateAccountModal({ isOpen, onClose, onSubmit, isLoadin
         password: '',
         roleId: '',
         museumId: '',
-        status: 'Active',
       });
     }
   }, [isOpen]);
@@ -164,23 +162,6 @@ export default function CreateAccountModal({ isOpen, onClose, onSubmit, isLoadin
                 </select>
               </div>
 
-              {/* Status */}
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
-                  Trạng thái <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Inactive' })}
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-ring outline-none transition"
-                  required
-                  disabled={isLoading}
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
             </div>
 
             {/* Footer */}

@@ -3,7 +3,7 @@ export interface Museum {
   name: string;
   location: string;
   description: string;
-  status: 'Active' | 'Inactive' | 'Pending';
+  status: 'Active' | 'Inactive';
   createAt: string;
   updateAt: string | null;
 }
@@ -19,12 +19,18 @@ export interface MuseumListResponse {
 export interface MuseumListParams {
   pageIndex?: number;
   pageSize?: number;
+  Status?: 'Active' | 'Inactive';
+}
+
+export interface CreateMuseumRequest {
+  name: string;
+  location: string;
+  description: string;
 }
 
 export interface UpdateMuseumRequest {
   name: string;
   location: string;
   description: string;
-  status: 'Active' | 'Inactive' | 'Pending';
 }
 

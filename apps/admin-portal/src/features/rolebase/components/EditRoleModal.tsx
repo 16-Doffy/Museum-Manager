@@ -12,14 +12,12 @@ interface EditRoleModalProps {
 export default function EditRoleModal({ isOpen, onClose, onSubmit, role, isLoading }: EditRoleModalProps) {
   const [formData, setFormData] = useState<UpdateRoleRequest>({
     name: '',
-    status: 'Active',
   });
 
   useEffect(() => {
     if (role) {
       setFormData({
         name: role.name,
-        status: role.status,
       });
     }
   }, [role]);
@@ -81,20 +79,19 @@ export default function EditRoleModal({ isOpen, onClose, onSubmit, role, isLoadi
                 />
               </div>
 
+              {/* Read-only status field */}
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-foreground mb-2">
-                  Trạng thái <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Inactive' })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                  disabled={isLoading}
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">Trạng thái</label>
+                <div className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${role?.status === 'Active'
+                        ? 'bg-chart-2/10 text-chart-2 border-chart-2/20'
+                        : 'bg-muted text-muted-foreground border-border'
+                      }`}
+                  >
+                    {role?.status}
+                  </span>
+                </div>
               </div>
             </div>
 

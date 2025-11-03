@@ -15,7 +15,6 @@ export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isL
     name: museum.name,
     location: museum.location,
     description: museum.description,
-    status: museum.status,
   });
 
   useEffect(() => {
@@ -24,7 +23,6 @@ export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isL
         name: museum.name,
         location: museum.location,
         description: museum.description,
-        status: museum.status,
       });
     }
   }, [isOpen, museum]);
@@ -110,23 +108,19 @@ export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isL
                 />
               </div>
 
-              {/* Status */}
+              {/* Read-only Status */}
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
-                  Trạng thái <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as Museum['status'] })}
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-ring outline-none transition"
-                  required
-                  disabled={isLoading}
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Pending">Pending</option>
-                </select>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Trạng thái</label>
+                <div className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${museum.status === 'Active'
+                      ? 'bg-chart-2/10 text-chart-2 border-chart-2/20'
+                      : 'bg-muted text-muted-foreground border-border'
+                      }`}
+                  >
+                    {museum.status}
+                  </span>
+                </div>
               </div>
             </div>
 

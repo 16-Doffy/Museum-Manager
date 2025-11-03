@@ -46,10 +46,46 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({
-          message: `HTTP ${response.status}: ${response.statusText}`,
-        }));
-        throw new Error(error.message || 'Request failed');
+        // Try to parse error response from backend
+        const errorData = await response.json().catch(() => null);
+        
+        // Extract error message from various possible formats
+        let errorMessage = 'Đã xảy ra lỗi';
+        
+        if (errorData) {
+          // Check for common error message fields (both lowercase and uppercase)
+          errorMessage = 
+            errorData.Message ||      // Backend uses uppercase "Message"
+            errorData.message || 
+            errorData.Error ||         // Backend might use uppercase "Error"
+            errorData.error || 
+            errorData.title ||
+            errorData.Title ||
+            errorData.detail ||
+            errorData.Detail ||
+            (errorData.errors && typeof errorData.errors === 'string' ? errorData.errors : null) ||
+            (errorData.Errors && typeof errorData.Errors === 'string' ? errorData.Errors : null) ||
+            `HTTP ${response.status}: ${response.statusText}`;
+          
+          // If errors is an object/array, try to extract first error
+          const errorsField = errorData.errors || errorData.Errors;
+          if (errorsField && typeof errorsField === 'object') {
+            if (Array.isArray(errorsField) && errorsField.length > 0) {
+              errorMessage = errorsField[0].message || errorsField[0].Message || errorsField[0];
+            } else {
+              const firstError = Object.values(errorsField)[0];
+              if (Array.isArray(firstError) && firstError.length > 0) {
+                errorMessage = firstError[0];
+              } else if (typeof firstError === 'string') {
+                errorMessage = firstError;
+              }
+            }
+          }
+        } else {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return await response.json();

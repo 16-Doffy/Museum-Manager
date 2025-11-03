@@ -3,10 +3,10 @@ import ScrollToTop from '@/components/ScrollToTop';
 import { AdminDashboard, SubscriptionAdminPage } from '@/features/admin';
 import AuthPage from '@/features/auth/AuthPage';
 import NotPermittedPage from '@/features/auth/NotPermittedPage';
-import { MuseumDetailPage, MuseumRequestDetailPage, MuseumRequestsPage, MuseumsPage } from '@/features/museum';
+import { MuseumDetailPage, MuseumsPage } from '@/features/museum';
 import { OrderListPage, PayoutListPage, PlanListPage, SubscriptionListPage } from '@/features/payment';
-import { PermissionPage, RolePage, RolePermissionsPage } from '@/features/rolebase';
-import { UsersPage } from '@/features/users';
+import { RoleDetailPage, RolePage } from '@/features/rolebase';
+import { AccountDetailPage, UsersPage } from '@/features/users';
 import DefaultLayout from '@/layouts/DefaultLayout';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -27,20 +27,16 @@ export default function AppRoutes() {
           <Route path="museums/admin" element={<MuseumsPage />} />
           <Route path="museums/admin/:id" element={<MuseumDetailPage />} />
 
-          {/* Museum Request Management */}
-          <Route path="museums/requests" element={<MuseumRequestsPage />} />
-          <Route path="museums/requests/:id" element={<MuseumRequestDetailPage />} />
-
           {/* Manager Subscription */}
           <Route path="subscription" element={<SubscriptionAdminPage />} />
 
           {/* User Management */}
           <Route path="users" element={<UsersPage />} />
+          <Route path="users/:id" element={<AccountDetailPage />} />
 
           {/* Role-based Access Control */}
-          <Route path="rolebase/roles" element={<RolePage />} />
-          <Route path="rolebase/roles/:roleId/permissions" element={<RolePermissionsPage />} />
-          <Route path="rolebase/permissions" element={<PermissionPage />} />
+          <Route path="roles" element={<RolePage />} />
+          <Route path="roles/:id" element={<RoleDetailPage />} />
 
           {/* Payment Management */}
           <Route path="payments/orders" element={<OrderListPage />} />
