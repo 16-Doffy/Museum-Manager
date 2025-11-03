@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useDebounce } from '../../lib/hooks/useDebounce';
-import { useVisitors } from '../../lib/api/hooks';
+// Visitors API not available yet - disabled
+// import { useVisitors } from '../../lib/api/hooks';
 import { Visitor, VisitorCreateRequest, VisitorUpdateRequest } from '../../lib/api/types';
 import VisitorForm from './VisitorForm';
 
@@ -29,16 +30,27 @@ export default function VisitorTable({ onCreate, onEdit, onDelete }: VisitorTabl
     search: debouncedSearchTerm,
   }), [pageIndex, pageSize, debouncedSearchTerm]);
 
-  const { 
-    visitors, 
-    loading, 
-    error, 
-    pagination,
-    fetchVisitors,
-    createVisitor,
-    updateVisitor,
-    deleteVisitor
-  } = useVisitors(searchParams);
+  // Visitors API not available yet - disabled
+  // const { 
+  //   visitors, 
+  //   loading, 
+  //   error, 
+  //   pagination,
+  //   fetchVisitors,
+  //   createVisitor,
+  //   updateVisitor,
+  //   deleteVisitor
+  // } = useVisitors(searchParams);
+  
+  // Mock data for now
+  const visitors: Visitor[] = [];
+  const loading = false;
+  const error: string | null = null;
+  const pagination = { pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 };
+  const fetchVisitors = () => Promise.resolve();
+  const createVisitor = async () => {};
+  const updateVisitor = async () => {};
+  const deleteVisitor = async () => {};
 
   const handleSearch = useCallback((newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);

@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { DisplayPosition } from '../../lib/api/types';
 import { DisplayPositionForm } from './DisplayPositionForm';
+import { DisplayPositionDetail } from './DisplayPositionDetail';
 
 interface DisplayPositionTableProps {
   displayPositions: DisplayPosition[];
@@ -25,7 +26,9 @@ interface DisplayPositionTableProps {
   onDelete: (id: string) => void;
   createDisplayPosition: (data: any) => Promise<DisplayPosition>;
   updateDisplayPosition: (id: string, data: any) => Promise<DisplayPosition>;
-  areas?: Array<{ id: string; name: string }>;
+  activateDisplay?: (id: string) => Promise<any>;
+  maintainDisplay?: (id: string) => Promise<any>;
+  areas?: Array<{ id: string; name: string; description?: string }>;
 }
 
 export function DisplayPositionTable({
@@ -44,11 +47,15 @@ export function DisplayPositionTable({
   onDelete,
   createDisplayPosition,
   updateDisplayPosition,
+  activateDisplay,
+  maintainDisplay,
   areas = [],
 }: DisplayPositionTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingPosition, setEditingPosition] = useState<DisplayPosition | undefined>();
+  const [viewingPosition, setViewingPosition] = useState<DisplayPosition | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [changingId, setChangingId] = useState<string | null>(null);
 
   // Helper to get area name from areaId
   const getAreaName = useCallback((areaId: string) => {
@@ -217,23 +224,50 @@ export function DisplayPositionTable({
                     <div className="text-sm text-gray-900">{getAreaName(position.areaId || '')}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {position.description || '-'}
+                    <div
+                      className="text-sm text-gray-900 max-w-xs cursor-pointer hover:text-blue-600 transition-colors"
+                      title={position.description || undefined}
+                      onClick={() => setViewingPosition(position)}
+                    >
+                      {position.description ? (
+                        <>
+                          <span className="line-clamp-2">{position.description}</span>
+                          {position.description.length > 60 && (
+                            <span className="text-blue-600 text-xs ml-1">(Xem chi tiết)</span>
+                          )}
+                        </>
+                      ) : (
+                        '-'
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      position.isDeleted 
-                        ? 'bg-red-100 text-red-800' 
-                        : position.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {position.isDeleted ? 'Đã xóa' : position.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                    </span>
+                    {(() => {
+                      const isActive = (position as any).isActive ?? ((position as any).status === 'Active');
+                      const isDeleted = (position as any).isDeleted ?? ((position as any).status === 'Deleted');
+                      return (
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            isDeleted
+                              ? 'bg-red-100 text-red-800'
+                              : isActive
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {isDeleted ? 'Đã xóa' : isActive ? 'Hoạt động' : 'Không hoạt động'}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
+                      <button
+                        onClick={() => setViewingPosition(position)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Xem
+                      </button>
                       <button
                         onClick={() => handleEdit(position)}
                         className="text-blue-600 hover:text-blue-900"
@@ -241,6 +275,45 @@ export function DisplayPositionTable({
                       >
                         Sửa
                       </button>
+                      {!((position as any).isDeleted ?? ((position as any).status === 'Deleted')) && (
+                        (((position as any).isActive ?? ((position as any).status === 'Active'))) ? (
+                          <button
+                            onClick={async () => {
+                              if (!maintainDisplay) return;
+                              try {
+                                setChangingId(position.id);
+                                await maintainDisplay(position.id);
+                              } catch (e: any) {
+                                alert(e?.message || 'Không thể chuyển sang bảo trì');
+                              } finally {
+                                setChangingId(null);
+                              }
+                            }}
+                            disabled={changingId === position.id}
+                            className="text-yellow-600 hover:text-yellow-800 disabled:opacity-50"
+                          >
+                            {changingId === position.id ? 'Đang xử lý...' : 'Bảo trì'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              if (!activateDisplay) return;
+                              try {
+                                setChangingId(position.id);
+                                await activateDisplay(position.id);
+                              } catch (e: any) {
+                                alert(e?.message || 'Không thể kích hoạt');
+                              } finally {
+                                setChangingId(null);
+                              }
+                            }}
+                            disabled={changingId === position.id}
+                            className="text-green-600 hover:text-green-800 disabled:opacity-50"
+                          >
+                            {changingId === position.id ? 'Đang xử lý...' : 'Kích hoạt'}
+                          </button>
+                        )
+                      )}
                       {!position.isDeleted && (
                         <button
                           onClick={() => handleDelete(position.id)}
@@ -296,6 +369,15 @@ export function DisplayPositionTable({
           onCancel={handleCancel}
           loading={isSubmitting}
           areas={areas}
+        />
+      )}
+
+      {/* Detail Modal */}
+      {viewingPosition && (
+        <DisplayPositionDetail
+          displayPosition={viewingPosition}
+          onClose={() => setViewingPosition(undefined)}
+          getAreaName={getAreaName}
         />
       )}
     </div>

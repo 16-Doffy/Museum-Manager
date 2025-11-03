@@ -1,11 +1,13 @@
 'use client';
 
-import { useArtifacts, useAreas } from '../../lib/api/hooks';
+import { useArtifacts, useAreas, useDisplayPositions } from '../../lib/api/hooks';
 import { useState, useMemo, useCallback } from 'react';
 import { useDebounce } from '../../lib/hooks/useDebounce';
 import ArtifactForm from './ArtifactForm';
 import ArtifactDetail from './ArtifactDetail';
 import { Artifact, ArtifactCreateRequest, ArtifactUpdateRequest } from '../../lib/api/types';
+import { apiClient } from '../../lib/api/client';
+import { artifactEndpoints } from '../../lib/api/endpoints';
 import { Plus } from 'lucide-react';
 
 export default function CollectionTable() {
@@ -16,6 +18,8 @@ export default function CollectionTable() {
   const [editingArtifact, setEditingArtifact] = useState<Artifact | null>(null);
   const [viewingArtifact, setViewingArtifact] = useState<Artifact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [assigningArtifact, setAssigningArtifact] = useState<Artifact | null>(null);
+  const [selectedDisplayId, setSelectedDisplayId] = useState<string>('');
   
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -34,7 +38,12 @@ export default function CollectionTable() {
     fetchArtifacts,
     createArtifact,
     updateArtifact,
-    deleteArtifact
+    deleteArtifact,
+    assignArtifactToDisplay,
+    removeArtifactDisplay,
+    addArtifactMedia,
+    updateArtifactMedia,
+    deleteArtifactMedia,
   } = useArtifacts(searchParams);
 
   // Get areas for dropdown
@@ -43,11 +52,25 @@ export default function CollectionTable() {
     pageSize: 100, // Get all areas
   });
 
+  // Get display positions for assignment dropdown
+  const { displayPositions } = useDisplayPositions({ pageIndex: 1, pageSize: 100 });
+
   // Helper to get area name from areaId
   const getAreaName = useCallback((areaId: string) => {
     const area = areas.find(a => a.id === areaId);
     return area?.name || 'N/A';
   }, [areas]);
+
+  const getDimensionsText = useCallback((artifact: Artifact) => {
+    const anyA = artifact as any;
+    const w = anyA.width ?? anyA.w ?? anyA.sizeWidth ?? anyA.widthCm;
+    const h = anyA.height ?? anyA.h ?? anyA.sizeHeight ?? anyA.heightCm;
+    const l = anyA.length ?? anyA.l ?? anyA.sizeLength ?? anyA.lengthCm;
+    const hasAny = [w, h, l].some(v => v !== undefined && v !== null && v !== '');
+    if (!hasAny) return 'N/A';
+    const x = `${w ?? '-'}×${h ?? '-'}×${l ?? '-'}cm`;
+    return x;
+  }, []);
 
   const handleSearch = useCallback((newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);
@@ -89,6 +112,56 @@ export default function CollectionTable() {
     }
   }, [deleteArtifact]);
 
+  const handleAssign = useCallback(async () => {
+    if (!assigningArtifact || !selectedDisplayId) return;
+    try {
+      setIsSubmitting(true);
+      await assignArtifactToDisplay(assigningArtifact.id, selectedDisplayId);
+      alert('Gán vị trí thành công');
+      setAssigningArtifact(null);
+      setSelectedDisplayId('');
+    } catch (e) {
+      alert('Không thể gán vị trí');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [assigningArtifact, selectedDisplayId, assignArtifactToDisplay]);
+
+  const handleRemoveAssign = useCallback(async (artifactId: string) => {
+    try {
+      setIsSubmitting(true);
+      await removeArtifactDisplay(artifactId);
+      alert('Bỏ gán vị trí thành công');
+    } catch (e) {
+      alert('Không thể bỏ gán vị trí');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [removeArtifactDisplay]);
+
+  // Media handlers
+  const handleAddMedia = useCallback(async (artifactId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        setIsSubmitting(true);
+        await addArtifactMedia(artifactId, file);
+        // Fetch fresh artifact detail to ensure correct shape (some upload APIs return only status)
+        const fresh = await apiClient.get<Artifact>(artifactEndpoints.getById(artifactId));
+        alert('Thêm media thành công');
+        if (fresh?.data) setViewingArtifact(fresh.data);
+      } catch (e) {
+        alert('Lỗi khi thêm media');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+    input.click();
+  }, [addArtifactMedia]);
+
   const handleSave = useCallback(async (data: ArtifactCreateRequest | ArtifactUpdateRequest) => {
     try {
       setIsSubmitting(true);
@@ -113,12 +186,14 @@ export default function CollectionTable() {
           length: data.length,
           areaId: data.areaId,
         };
-        
-        await updateArtifact(editingArtifact.id, updateData);
+        const updated = await updateArtifact(editingArtifact.id, updateData);
         alert('Cập nhật hiện vật thành công');
+        // Liên kết 3 form: sau khi cập nhật mở ngay chi tiết với dữ liệu mới nhất
+        if (updated) setViewingArtifact(updated as unknown as Artifact);
       } else {
-        await createArtifact(data as ArtifactCreateRequest);
+        const created = await createArtifact(data as ArtifactCreateRequest);
         alert('Tạo hiện vật mới thành công');
+        if (created) setViewingArtifact(created as unknown as Artifact);
       }
       setShowForm(false);
       setEditingArtifact(null);
@@ -210,44 +285,25 @@ export default function CollectionTable() {
         <table className="w-full text-left">
           <thead className="bg-emerald-50">
             <tr>
-              <th className="p-3 text-emerald-700 font-semibold">Mã hiện vật</th>
               <th className="p-3 text-emerald-700 font-semibold">Tên hiện vật</th>
               <th className="p-3 text-emerald-700 font-semibold">Thời kỳ</th>
               <th className="p-3 text-emerald-700 font-semibold">Kích thước</th>
-              <th className="p-3 text-emerald-700 font-semibold">Khu vực</th>
-              <th className="p-3 text-emerald-700 font-semibold">Trạng thái</th>
               <th className="p-3 text-emerald-700 font-semibold">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {!artifacts || artifacts.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-500">
+                <td colSpan={6} className="p-8 text-center text-gray-500">
                   Không có hiện vật nào
                 </td>
               </tr>
             ) : (
               artifacts?.map((artifact) => (
                 <tr key={artifact.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3 text-gray-800 font-medium">{artifact.code || 'N/A'}</td>
                   <td className="p-3 text-gray-800 font-medium">{artifact.name}</td>
-                  <td className="p-3 text-gray-700">{artifact.periodTime || 'N/A'}</td>
-                  <td className="p-3 text-gray-700">
-                    {artifact.width && artifact.height && artifact.length 
-                      ? `${artifact.width}×${artifact.height}×${artifact.length}cm`
-                      : 'N/A'
-                    }
-                  </td>
-                  <td className="p-3 text-gray-700">{getAreaName(artifact.areaId || '')}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      artifact.status === 'Active' || artifact.isActive
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {artifact.status === 'Active' || artifact.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                    </span>
-                  </td>
+                  <td className="p-3 text-gray-700">{artifact.periodTime || '-'}</td>
+                  <td className="p-3 text-gray-700">{getDimensionsText(artifact)}</td>
                   <td className="p-3">
                     <div className="flex space-x-2">
                       <button 
@@ -267,6 +323,24 @@ export default function CollectionTable() {
                         className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50"
                       >
                         Xóa
+                      </button>
+                      <button
+                        onClick={() => setAssigningArtifact(artifact)}
+                        className="text-indigo-600 hover:text-indigo-800 text-sm px-2 py-1 rounded hover:bg-indigo-50"
+                      >
+                        Gán vị trí
+                      </button>
+                      <button
+                        onClick={() => handleRemoveAssign(artifact.id)}
+                        className="text-yellow-700 hover:text-yellow-900 text-sm px-2 py-1 rounded hover:bg-yellow-50"
+                      >
+                        Bỏ vị trí
+                      </button>
+                      <button
+                        onClick={() => handleAddMedia(artifact.id)}
+                        className="text-gray-600 hover:text-gray-800 text-sm px-2 py-1 rounded hover:bg-gray-50"
+                      >
+                        Thêm media
                       </button>
                     </div>
                   </td>
@@ -310,6 +384,46 @@ export default function CollectionTable() {
           artifact={viewingArtifact}
           onClose={() => setViewingArtifact(null)}
         />
+      )}
+
+      {/* Assign Display Modal */}
+      {assigningArtifact && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Gán vị trí cho: {assigningArtifact.name}</h3>
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700">Chọn vị trí trưng bày</label>
+              <select
+                value={selectedDisplayId}
+                onChange={(e) => setSelectedDisplayId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">-- Chọn vị trí --</option>
+                {displayPositions.map(pos => (
+                  <option key={pos.id} value={pos.id}>
+                    {pos.displayPositionName} ({pos.positionCode}) - {pos.area?.name || 'Khu vực'}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => { setAssigningArtifact(null); setSelectedDisplayId(''); }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                disabled={isSubmitting}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleAssign}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                disabled={isSubmitting || !selectedDisplayId}
+              >
+                {isSubmitting ? 'Đang gán...' : 'Gán vị trí'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Artifact Form Modal */}

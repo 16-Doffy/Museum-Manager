@@ -44,12 +44,9 @@ export default function AreasPage() {
     }
   }, [deleteArea]);
 
-  // Mock museums for demo
-  const mockMuseums = [
-    { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam' },
-    { id: 'museum-2', name: 'Bảo tàng Mỹ thuật Việt Nam' },
-    { id: 'museum-3', name: 'Bảo tàng Dân tộc học Việt Nam' },
-  ];
+  // Museums API returns 403 - not accessible for museum-portal users
+  // Using empty array for now
+  const apiMuseums: Array<{ id: string; name: string }> = [];
 
   return (
     <div className="space-y-6">
@@ -162,7 +159,7 @@ export default function AreasPage() {
         onDelete={handleDelete}
         createArea={createArea}
         updateArea={updateArea}
-        museums={mockMuseums}
+        museums={apiMuseums.map(m => ({ id: m.id, name: m.name }))}
       />
     </div>
   );

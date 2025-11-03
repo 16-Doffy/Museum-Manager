@@ -8,7 +8,7 @@ interface DisplayPositionFormProps {
   onSave: (data: DisplayPositionCreateRequest | DisplayPositionUpdateRequest) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
-  areas?: Array<{ id: string; name: string }>;
+  areas?: Array<{ id: string; name: string; description?: string }>;
 }
 
 export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading = false, areas = [] }: DisplayPositionFormProps) {
@@ -21,12 +21,9 @@ export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Use areas from props or fallback to mock data
-  const availableAreas = areas.length > 0 ? areas : [
-    { id: '1', name: 'Khu vực Lịch sử Cổ đại' },
-    { id: '2', name: 'Khu vực Nghệ thuật Đương đại' },
-    { id: '3', name: 'Khu vực Văn hóa Dân tộc' },
-  ];
+  // Use areas from props (from API)
+  const availableAreas = areas || [];
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
 
   useEffect(() => {
     if (displayPosition) {
@@ -82,7 +79,18 @@ export function DisplayPositionForm({ displayPosition, onSave, onCancel, loading
   const handleChange = (field: keyof typeof formData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'description') {
+      setDescriptionTouched(true);
+    }
+    // Auto-fill description from selected Area if user chưa nhập gì
+    if (field === 'areaId' && !descriptionTouched) {
+      const selected = availableAreas.find(a => a.id === value);
+      if (selected?.description) {
+        setFormData(prev => ({ ...prev, description: selected.description || '' }));
+      }
+    }
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }

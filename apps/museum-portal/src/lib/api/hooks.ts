@@ -9,8 +9,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from './client';
 import { artifactEndpoints, displayPositionEndpoints, areaEndpoints, visitorEndpoints, interactionEndpoints, museumEndpoints } from './endpoints';
-import { mockArtifacts, mockDisplayPositions, mockAreas, mockVisitors } from './mockData';
-import { StorageManager } from '../utils/storage';
+// Removed mock data and StorageManager imports - using real API now
 import { accountEndpoints } from './endpoints';
 import {
   Artifact,
@@ -78,14 +77,65 @@ function useApiCall<T>() {
   return { data, loading, error, execute };
 }
 
+// Normalize API artifact to internal shape (handles casing and different field names)
+function normalizeArtifact(raw: any): Artifact {
+  if (!raw) return raw as Artifact;
+  const mediaRaw = raw.media || raw.medias || raw.artifactMedias || raw.mediantens || [];
+  const media = Array.isArray(mediaRaw)
+    ? mediaRaw.map((m: any) => ({
+        id: m.id,
+        artifactId: m.artifactId || raw.id,
+        url: m.url || m.filePath,
+        type: m.type || m.mediaType,
+        fileName: m.fileName,
+        fileSize: m.fileSize,
+        mimeType: m.mimeType,
+        caption: m.caption,
+        isActive: m.isActive ?? true,
+        isDeleted: m.isDeleted ?? false,
+        createdAt: m.createdAt || raw.createdAt,
+        updatedAt: m.updatedAt || raw.updatedAt,
+      }))
+    : [];
+
+  return {
+    id: raw.id,
+    code: raw.code || raw.artifactcode || raw.artifactCode || '',
+    name: raw.name,
+    periodTime: raw.periodTime || raw.periodtime,
+    description: raw.description,
+    isOriginal: raw.isOriginal ?? raw.isoriginal,
+    weight: raw.weight,
+    height: raw.height,
+    width: raw.width,
+    length: raw.length,
+    year: raw.year,
+    origin: raw.origin,
+    material: raw.material,
+    dimensions: raw.dimensions,
+    condition: raw.condition,
+    acquisitionDate: raw.acquisitionDate,
+    acquisitionMethod: raw.acquisitionMethod,
+    provenance: raw.provenance,
+    culturalSignificance: raw.culturalSignificance,
+    conservationNotes: raw.conservationNotes,
+    displayPositionId: raw.displayPositionId,
+    displayPosition: raw.displayPosition,
+    areaId: raw.areaId,
+    area: raw.area || (raw.areaName ? { id: raw.areaId, name: raw.areaName } : undefined),
+    museumId: raw.museumId,
+    museum: raw.museum,
+    isActive: raw.isActive ?? raw.status === 'Active',
+    isDeleted: raw.isDeleted ?? false,
+    media,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  } as Artifact;
+}
+
 // Artifact Management Hooks
 export function useArtifacts(searchParams?: ArtifactSearchParams) {
-  const [artifacts, setArtifacts] = useState<Artifact[]>(() => {
-    console.log('🔄 useArtifacts: Loading artifacts...');
-    const loaded = StorageManager.loadArtifacts(mockArtifacts);
-    console.log('🔄 useArtifacts: Loaded artifacts:', loaded);
-    return loaded;
-  });
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -95,125 +145,183 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
     totalPages: 0,
   });
 
-  // Save to localStorage whenever artifacts change
-  useEffect(() => {
-    console.log('💾 useArtifacts: Saving artifacts to localStorage:', artifacts);
-    StorageManager.saveArtifacts(artifacts);
-  }, [artifacts]);
-
   const fetchArtifacts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Use current artifacts from state (which includes localStorage data)
-      setPagination({
-        pageIndex: 1,
-        pageSize: 10,
-        totalItems: artifacts.length,
-        totalPages: 1,
-      });
+      const params: Record<string, string | number | boolean> = {
+        pageIndex: searchParams?.pageIndex || 1,
+        pageSize: searchParams?.pageSize || 10,
+      };
       
+      if (searchParams?.name) params.name = searchParams.name;
+      if (searchParams?.periodTime) params.periodTime = searchParams.periodTime;
+      if (searchParams?.includeDeleted !== undefined) params.includeDeleted = searchParams.includeDeleted;
+      
+      const response = await apiClient.get<PaginatedResponse<Artifact>>(artifactEndpoints.getAll, params);
+      
+      // API client already extracts data field, so response.data is { items: [], pagination: {} }
+      if (response.data && typeof response.data === 'object' && 'items' in response.data) {
+        const paginatedData = response.data as PaginatedResponse<Artifact>;
+        const mapped = (paginatedData.items as any[]).map(normalizeArtifact);
+        // Enrich with details for missing fields (width/height/length/area)
+        const needDetail = mapped.filter(a => a.width === undefined && a.height === undefined && a.length === undefined || !a.area?.name);
+        if (needDetail.length > 0) {
+          try {
+            const details = await Promise.all(
+              needDetail.map(a => apiClient.get<Artifact>(artifactEndpoints.getById(a.id)).then(r => normalizeArtifact(r.data as any)))
+            );
+            const detailMap = new Map(details.map(d => [d.id, d]));
+            const merged = mapped.map(a => detailMap.has(a.id) ? { ...a, ...detailMap.get(a.id)! } : a);
+            setArtifacts(merged);
+          } catch {
+            setArtifacts(mapped || []);
+          }
+        } else {
+          setArtifacts(mapped || []);
+        }
+        setPagination(paginatedData.pagination || {
+          pageIndex: 1,
+          pageSize: 10,
+          totalItems: 0,
+          totalPages: 0,
+        });
+      } else if (Array.isArray(response.data)) {
+        // Fallback: if API returns array directly
+        const mapped = (response.data as any[]).map(normalizeArtifact);
+        setArtifacts(mapped);
+        setPagination({
+          pageIndex: 1,
+          pageSize: response.data.length || 10,
+          totalItems: response.data.length || 0,
+          totalPages: 1,
+        });
+      } else {
+        setArtifacts([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      }
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      // Gracefully handle 401/403 - set empty list instead of crashing
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setArtifacts([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
-  }, [artifacts]);
+  }, [searchParams?.pageIndex, searchParams?.pageSize, searchParams?.name, searchParams?.periodTime, searchParams?.includeDeleted]);
 
   useEffect(() => {
-    if (!searchParams) return;
-    
-    const timeoutId = setTimeout(() => {
-      fetchArtifacts();
-    }, 300); // Debounce 300ms
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchParams, fetchArtifacts]);
+    fetchArtifacts();
+  }, [fetchArtifacts]);
 
   const createArtifact = useCallback(async (data: ArtifactCreateRequest) => {
-    console.log('➕ createArtifact: Creating new artifact with data:', data);
-    
-    // Mock implementation - create complete artifact object
-    const newArtifact: Artifact = {
-      id: `artifact-${Date.now()}`,
-      code: `ART-${Date.now()}`,
-      name: data.name,
-      description: data.description || '',
-      periodTime: data.periodTime || '',
-      year: data.year || '',
-      isOriginal: data.isOriginal ?? true,
-      weight: data.weight || 0,
-      height: data.height || 0,
-      width: data.width || 0,
-      length: data.length || 0,
-      origin: '',
-      material: '',
-      dimensions: '',
-      condition: '',
-      acquisitionDate: '',
-      acquisitionMethod: '',
-      provenance: '',
-      culturalSignificance: '',
-      conservationNotes: '',
-        displayPositionId: undefined,
-        areaId: data.areaId || undefined,
-        area: data.areaId ? mockAreas.find(area => area.id === data.areaId) || undefined : undefined,
-      museumId: 'museum-1',
-      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
-      isActive: true,
-      isDeleted: false,
-      media: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    console.log('➕ createArtifact: Created artifact:', newArtifact);
-    setArtifacts(prev => {
-      const updated = [...prev, newArtifact];
-      console.log('➕ createArtifact: Updated artifacts array:', updated);
-      return updated;
-    });
-    return newArtifact;
-  }, []);
+    try {
+      const response = await apiClient.post<Artifact>(artifactEndpoints.create, data);
+      await fetchArtifacts(); // Refresh list
+      return normalizeArtifact(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
 
   const updateArtifact = useCallback(async (id: string, data: ArtifactUpdateRequest) => {
-    // Mock implementation - update all changed fields
-    setArtifacts(prev => prev.map(a => {
-      if (a.id === id) {
-        const updated = {
-          ...a,
-          ...data,
-          updatedAt: new Date().toISOString(),
-        };
-        
-        // If areaId is provided, update the area object
-        if (data.areaId) {
-          // Find the area by ID from mockAreas
-          const area = mockAreas.find(area => area.id === data.areaId);
-          if (area) {
-            updated.area = area;
-          }
-        }
-        
-        return updated;
-      }
-      return a;
-    }));
-    const updated = artifacts.find(a => a.id === id);
-    return { ...updated, ...data } as Artifact;
-  }, [artifacts]);
+    try {
+      const response = await apiClient.patch<Artifact>(artifactEndpoints.update(id), data);
+      await fetchArtifacts(); // Refresh list
+      return normalizeArtifact(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
 
   const deleteArtifact = useCallback(async (id: string) => {
-    // Mock implementation
-    setArtifacts(prev => prev.filter(a => a.id !== id));
-  }, []);
+    try {
+      await apiClient.delete(artifactEndpoints.delete(id));
+      await fetchArtifacts(); // Refresh list
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
 
   const activateArtifact = useCallback(async (id: string) => {
     try {
       const response = await apiClient.patch<Artifact>(artifactEndpoints.activate(id));
       await fetchArtifacts(); // Refresh list
-      return response.data;
+      return normalizeArtifact(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
+
+  const assignArtifactToDisplay = useCallback(async (artifactId: string, displayPositionId: string) => {
+    try {
+      const response = await apiClient.patch<Artifact>(
+        artifactEndpoints.assignDisplayPosition(artifactId, displayPositionId)
+      );
+      await fetchArtifacts();
+      return normalizeArtifact(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
+
+  const removeArtifactDisplay = useCallback(async (artifactId: string) => {
+    try {
+      const response = await apiClient.patch<Artifact>(artifactEndpoints.removeDisplayPosition(artifactId));
+      await fetchArtifacts();
+      return normalizeArtifact(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
+
+  const addArtifactMedia = useCallback(async (artifactId: string, file: File, caption?: string) => {
+    try {
+      const form = new FormData();
+      form.append('File', file);
+      if (caption) form.append('Caption', caption);
+      const response = await apiClient.uploadFile<any>(artifactEndpoints.addMedia(artifactId), form);
+      const payload = (response.data && typeof response.data === 'object' && 'data' in response.data)
+        ? (response.data as any).data
+        : response.data;
+      await fetchArtifacts();
+      return normalizeArtifact(payload as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
+
+  const updateArtifactMedia = useCallback(async (artifactId: string, mediaId: string, file?: File, caption?: string) => {
+    try {
+      const form = new FormData();
+      if (file) form.append('File', file);
+      if (caption) form.append('Caption', caption);
+      // Swagger requires PUT multipart for update media
+      const response = await apiClient.uploadMultipart<any>(
+        artifactEndpoints.updateMedia(artifactId, mediaId),
+        form,
+        'PUT'
+      );
+      await fetchArtifacts();
+      const payload = (response.data && typeof response.data === 'object' && 'data' in response.data)
+        ? (response.data as any).data
+        : response.data;
+      return normalizeArtifact(payload as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchArtifacts]);
+
+  const deleteArtifactMedia = useCallback(async (artifactId: string, mediaId: string) => {
+    try {
+      const response = await apiClient.delete<Artifact>(artifactEndpoints.deleteMedia(artifactId, mediaId));
+      await fetchArtifacts();
+      return normalizeArtifact(response.data as any);
     } catch (err: unknown) {
       throw new Error(getErrorMessage(err));
     }
@@ -229,6 +337,11 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
     updateArtifact,
     deleteArtifact,
     activateArtifact,
+    assignArtifactToDisplay,
+    removeArtifactDisplay,
+    addArtifactMedia,
+    updateArtifactMedia,
+    deleteArtifactMedia,
   };
 }
 
@@ -236,7 +349,7 @@ export function useArtifact(id: string) {
   const { data: artifact, loading, error, execute } = useApiCall<Artifact>();
 
   const fetchArtifact = useCallback(() => {
-    return execute(() => apiClient.get<Artifact>(artifactEndpoints.getById(id)).then(r => r.data));
+    return execute(() => apiClient.get<Artifact>(artifactEndpoints.getById(id)).then(r => normalizeArtifact(r.data as any)));
   }, [id, execute]);
 
   useEffect(() => {
@@ -250,9 +363,7 @@ export function useArtifact(id: string) {
 
 // Display Position Management Hooks
 export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) {
-  const [displayPositions, setDisplayPositions] = useState<DisplayPosition[]>(() => {
-    return StorageManager.loadDisplayPositions(mockDisplayPositions);
-  });
+  const [displayPositions, setDisplayPositions] = useState<DisplayPosition[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -262,85 +373,107 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
     totalPages: 0,
   });
 
-  // Save to localStorage whenever displayPositions change
-  useEffect(() => {
-    StorageManager.saveDisplayPositions(displayPositions);
-  }, [displayPositions]);
-
   const fetchDisplayPositions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Use current displayPositions from state (which includes localStorage data)
-      setPagination({
-        pageIndex: 1,
-        pageSize: 10,
-        totalItems: displayPositions.length,
-        totalPages: 1,
-      });
+      const params: Record<string, string | number | boolean> = {
+        pageIndex: searchParams?.pageIndex || 1,
+        pageSize: searchParams?.pageSize || 10,
+      };
       
+      if (searchParams?.artifactName) params.artifactName = searchParams.artifactName;
+      if (searchParams?.displayPositionName) params.displayPositionName = searchParams.displayPositionName;
+      if (searchParams?.areaName) params.areaName = searchParams.areaName;
+      if (searchParams?.includeDeleted !== undefined) params.includeDeleted = searchParams.includeDeleted;
+      
+      const response = await apiClient.get<PaginatedResponse<DisplayPosition>>(displayPositionEndpoints.getAll, params);
+      
+      // API client already extracts data field
+      if (response.data && typeof response.data === 'object' && 'items' in response.data) {
+        const paginatedData = response.data as PaginatedResponse<DisplayPosition>;
+        setDisplayPositions(paginatedData.items || []);
+        setPagination(paginatedData.pagination || {
+          pageIndex: 1,
+          pageSize: 10,
+          totalItems: 0,
+          totalPages: 0,
+        });
+      } else if (Array.isArray(response.data)) {
+        setDisplayPositions(response.data);
+        setPagination({
+          pageIndex: 1,
+          pageSize: response.data.length || 10,
+          totalItems: response.data.length || 0,
+          totalPages: 1,
+        });
+      } else {
+        setDisplayPositions([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      }
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setDisplayPositions([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
-  }, [displayPositions]);
+  }, [searchParams?.pageIndex, searchParams?.pageSize, searchParams?.artifactName, searchParams?.displayPositionName, searchParams?.areaName, searchParams?.includeDeleted]);
 
   useEffect(() => {
-    if (!searchParams) return;
-    
-    const timeoutId = setTimeout(() => {
-      fetchDisplayPositions();
-    }, 300); // Debounce 300ms
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchParams, fetchDisplayPositions]);
+    fetchDisplayPositions();
+  }, [fetchDisplayPositions]);
 
   const createDisplayPosition = useCallback(async (data: DisplayPositionCreateRequest) => {
-    // Mock implementation - create complete display position object
-    const newDP: DisplayPosition = {
-      id: `dp-${Date.now()}`,
-      displayPositionName: data.displayPositionName,
-      positionCode: data.positionCode,
-      description: data.description || '',
-      areaId: data.areaId,
-      museumId: 'museum-1',
-      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
-      isActive: true,
-      isDeleted: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setDisplayPositions(prev => [...prev, newDP]);
-    return newDP;
-  }, []);
+    try {
+      const response = await apiClient.post<DisplayPosition>(displayPositionEndpoints.create, data);
+      await fetchDisplayPositions(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchDisplayPositions]);
 
   const updateDisplayPosition = useCallback(async (id: string, data: DisplayPositionUpdateRequest) => {
-    // Mock implementation - update all changed fields
-    setDisplayPositions(prev => prev.map(dp => {
-      if (dp.id === id) {
-        return {
-          ...dp,
-          ...data,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return dp;
-    }));
-    const updated = displayPositions.find(dp => dp.id === id);
-    return { ...updated, ...data } as DisplayPosition;
-  }, [displayPositions]);
+    try {
+      const response = await apiClient.patch<DisplayPosition>(displayPositionEndpoints.update(id), data);
+      await fetchDisplayPositions(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchDisplayPositions]);
 
   const deleteDisplayPosition = useCallback(async (id: string) => {
-    // Mock implementation
-    setDisplayPositions(prev => prev.filter(dp => dp.id !== id));
-  }, []);
+    try {
+      await apiClient.delete(displayPositionEndpoints.delete(id));
+      await fetchDisplayPositions(); // Refresh list
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchDisplayPositions]);
 
   const activateDisplayPosition = useCallback(async (id: string) => {
     try {
       const response = await apiClient.patch<DisplayPosition>(displayPositionEndpoints.activate(id));
-      await fetchDisplayPositions(); // Refresh list
+      // Force refresh by calling fetchDisplayPositions directly
+      await fetchDisplayPositions();
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchDisplayPositions]);
+
+  const maintainDisplayPosition = useCallback(async (id: string) => {
+    try {
+      const response = await apiClient.patch<DisplayPosition>(displayPositionEndpoints.maintain(id));
+      // Force refresh by calling fetchDisplayPositions directly
+      await fetchDisplayPositions();
       return response.data;
     } catch (err: unknown) {
       throw new Error(getErrorMessage(err));
@@ -357,14 +490,13 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
     updateDisplayPosition,
     deleteDisplayPosition,
     activateDisplayPosition,
+    maintainDisplayPosition,
   };
 }
 
 // Area Management Hooks
 export function useAreas(searchParams?: AreaSearchParams) {
-  const [areas, setAreas] = useState<Area[]>(() => {
-    return StorageManager.loadAreas(mockAreas);
-  });
+  const [areas, setAreas] = useState<Area[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -374,85 +506,88 @@ export function useAreas(searchParams?: AreaSearchParams) {
     totalPages: 0,
   });
 
-  // Save to localStorage whenever areas change
-  useEffect(() => {
-    StorageManager.saveAreas(areas);
-  }, [areas]);
-
   const fetchAreas = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Use current areas from state (which includes localStorage data)
-      setPagination({
-        pageIndex: 1,
-        pageSize: 10,
-        totalItems: areas.length,
-        totalPages: 1,
-      });
+      const params: Record<string, string | number | boolean> = {
+        pageIndex: searchParams?.pageIndex || 1,
+        pageSize: searchParams?.pageSize || 10,
+      };
       
+      if (searchParams?.areaName) params.areaName = searchParams.areaName;
+      if (searchParams?.includeDeleted !== undefined) params.includeDeleted = searchParams.includeDeleted;
+      
+      const response = await apiClient.get<PaginatedResponse<Area>>(areaEndpoints.getAll, params);
+      
+      // API client already extracts data field
+      if (response.data && typeof response.data === 'object' && 'items' in response.data) {
+        const paginatedData = response.data as PaginatedResponse<Area>;
+        setAreas(paginatedData.items || []);
+        setPagination(paginatedData.pagination || {
+          pageIndex: 1,
+          pageSize: 10,
+          totalItems: 0,
+          totalPages: 0,
+        });
+      } else if (Array.isArray(response.data)) {
+        setAreas(response.data);
+        setPagination({
+          pageIndex: 1,
+          pageSize: response.data.length || 10,
+          totalItems: response.data.length || 0,
+          totalPages: 1,
+        });
+      } else {
+        setAreas([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      }
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setAreas([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
-  }, [areas]);
+  }, [searchParams?.pageIndex, searchParams?.pageSize, searchParams?.areaName, searchParams?.includeDeleted]);
 
   useEffect(() => {
-    if (!searchParams) return;
-    
-    const timeoutId = setTimeout(() => {
-      fetchAreas();
-    }, 300); // Debounce 300ms
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchParams, fetchAreas]);
+    fetchAreas();
+  }, [fetchAreas]);
 
   const createArea = useCallback(async (data: AreaCreateRequest) => {
-    // Mock implementation - create complete area object
-    const mockMuseums: Record<string, string> = {
-      'museum-1': 'Bảo tàng Lịch sử Việt Nam',
-      'museum-2': 'Bảo tàng Mỹ thuật Việt Nam',
-      'museum-3': 'Bảo tàng Dân tộc học Việt Nam',
-    };
-    
-    const newArea: Area = {
-      id: `area-${Date.now()}`,
-      name: data.name,
-      description: data.description || '',
-      museumId: data.museumId || '',
-      museum: data.museumId ? { id: data.museumId, name: mockMuseums[data.museumId] || 'Bảo tàng', isActive: true, createdAt: '', updatedAt: '' } : undefined,
-      isActive: true,
-      isDeleted: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setAreas(prev => [...prev, newArea]);
-    return newArea;
-  }, []);
+    try {
+      const response = await apiClient.post<Area>(areaEndpoints.create, data);
+      await fetchAreas(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchAreas]);
 
   const updateArea = useCallback(async (id: string, data: AreaUpdateRequest) => {
-    // Mock implementation - update all changed fields
-    setAreas(prev => prev.map(a => {
-      if (a.id === id) {
-        return {
-          ...a,
-          ...data,
-          museum: data.museumId ? { id: data.museumId, name: a.museum?.name || 'Bảo tàng', isActive: true, createdAt: '', updatedAt: '' } : a.museum,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return a;
-    }));
-    const updated = areas.find(a => a.id === id);
-    return { ...updated, ...data } as Area;
-  }, [areas]);
+    try {
+      const response = await apiClient.patch<Area>(areaEndpoints.update(id), data);
+      await fetchAreas(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchAreas]);
 
   const deleteArea = useCallback(async (id: string) => {
-    // Mock implementation
-    setAreas(prev => prev.filter(a => a.id !== id));
-  }, []);
+    try {
+      await apiClient.delete(areaEndpoints.delete(id));
+      await fetchAreas(); // Refresh list
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchAreas]);
 
   return {
     areas,
@@ -468,9 +603,7 @@ export function useAreas(searchParams?: AreaSearchParams) {
 
 // Visitor Management Hooks
 export function useVisitors(searchParams?: VisitorSearchParams) {
-  const [visitors, setVisitors] = useState<Visitor[]>(() => {
-    return StorageManager.loadVisitors(mockVisitors);
-  });
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -480,78 +613,75 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
     totalPages: 0,
   });
 
-  // Save to localStorage whenever visitors change
-  useEffect(() => {
-    StorageManager.saveVisitors(visitors);
-  }, [visitors]);
-
   const fetchVisitors = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Use current visitors from state (which includes localStorage data)
+      // Visitor API returns array directly (no pagination)
+      const response = await apiClient.get<Visitor[]>(visitorEndpoints.getAll);
+      
+      // API response format: { code, statusCode, message, data: Visitor[] }
+      let visitorsList: Visitor[] = [];
+      if (Array.isArray(response.data)) {
+        visitorsList = response.data;
+      } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+        const data = (response.data as any).data;
+        visitorsList = Array.isArray(data) ? data : [];
+      }
+      
+      setVisitors(visitorsList);
       setPagination({
         pageIndex: 1,
-        pageSize: 10,
-        totalItems: visitors.length,
+        pageSize: visitorsList.length || 10,
+        totalItems: visitorsList.length || 0,
         totalPages: 1,
       });
-      
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setVisitors([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
-  }, [visitors]);
+  }, []);
 
   useEffect(() => {
-    if (!searchParams) return;
-    
-    const timeoutId = setTimeout(() => {
-      fetchVisitors();
-    }, 300); // Debounce 300ms
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchParams, fetchVisitors]);
+    fetchVisitors();
+  }, [fetchVisitors]);
 
   const createVisitor = useCallback(async (data: VisitorCreateRequest) => {
-    // Mock implementation - create complete visitor object
-    const newVisitor: Visitor = {
-      id: `visitor-${Date.now()}`,
-      phoneNumber: data.phoneNumber,
-      status: data.status,
-      name: data.name || '',
-      email: data.email || '',
-      nationality: data.nationality || '',
-      visitDate: data.visitDate || new Date().toISOString(),
-      groupSize: data.groupSize || 1,
-      museumId: 'museum-1',
-      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setVisitors(prev => [...prev, newVisitor]);
-    return newVisitor;
-  }, []);
+    try {
+      const response = await apiClient.post<Visitor>(visitorEndpoints.create, data);
+      await fetchVisitors(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchVisitors]);
 
   const updateVisitor = useCallback(async (id: string, data: VisitorUpdateRequest) => {
-    // Mock implementation - update in mock array
-    setVisitors(prev => prev.map(v => {
-      if (v.id === id) {
-        const updated = { ...v, ...data, updatedAt: new Date().toISOString() };
-        return updated;
-      }
-      return v;
-    }));
-    const updated = visitors.find(v => v.id === id);
-    return { ...updated, ...data } as Visitor;
-  }, [visitors]);
+    try {
+      const response = await apiClient.put<Visitor>(visitorEndpoints.update(id), data);
+      await fetchVisitors(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchVisitors]);
 
   const deleteVisitor = useCallback(async (id: string) => {
-    // Mock implementation - remove from mock array
-    setVisitors(prev => prev.filter(v => v.id !== id));
-  }, []);
+    try {
+      await apiClient.delete(visitorEndpoints.delete(id));
+      await fetchVisitors(); // Refresh list
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchVisitors]);
 
   return {
     visitors,
@@ -567,9 +697,7 @@ export function useVisitors(searchParams?: VisitorSearchParams) {
 
 // Interaction Management Hooks
 export function useInteractions(searchParams?: InteractionSearchParams) {
-  const [interactions, setInteractions] = useState<Interaction[]>(() => {
-    return StorageManager.loadInteractions([]);
-  });
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -579,71 +707,75 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
     totalPages: 0,
   });
 
-  // Save to localStorage whenever interactions change
-  useEffect(() => {
-    StorageManager.saveInteractions(interactions);
-  }, [interactions]);
-
   const fetchInteractions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Use current interactions from state (which includes localStorage data)
+      // Interaction API returns array directly (no pagination)
+      const response = await apiClient.get<Interaction[]>(interactionEndpoints.getAll);
+      
+      // API response format: { code, statusCode, message, data: Interaction[] }
+      let interactionsList: Interaction[] = [];
+      if (Array.isArray(response.data)) {
+        interactionsList = response.data;
+      } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+        const data = (response.data as any).data;
+        interactionsList = Array.isArray(data) ? data : [];
+      }
+      
+      setInteractions(interactionsList);
       setPagination({
         pageIndex: 1,
-        pageSize: 10,
-        totalItems: interactions.length,
+        pageSize: interactionsList.length || 10,
+        totalItems: interactionsList.length || 0,
         totalPages: 1,
       });
-      
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setInteractions([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
-  }, [interactions]);
+  }, []);
 
   useEffect(() => {
-    if (!searchParams) return;
-    
-    const timeoutId = setTimeout(() => {
-      fetchInteractions();
-    }, 300); // Debounce 300ms
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchParams, fetchInteractions]);
+    fetchInteractions();
+  }, [fetchInteractions]);
 
   const createInteraction = useCallback(async (data: InteractionCreateRequest) => {
-    // Mock implementation - create complete interaction object
-    const newInteraction: Interaction = {
-      id: `interaction-${Date.now()}`,
-      visitorId: data.visitorId,
-      artifactId: data.artifactId,
-      interactionType: data.interactionType,
-      comment: data.comment || '',
-      rating: data.rating || 0,
-      duration: 0,
-      feedback: '',
-      museumId: 'museum-1',
-      museum: { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam', isActive: true, createdAt: '', updatedAt: '' },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setInteractions(prev => [...prev, newInteraction]);
-    return newInteraction;
-  }, []);
+    try {
+      const response = await apiClient.post<Interaction>(interactionEndpoints.create, data);
+      await fetchInteractions(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchInteractions]);
 
   const updateInteraction = useCallback(async (id: string, data: InteractionUpdateRequest) => {
-    // Mock implementation
-    setInteractions(prev => prev.map(i => i.id === id ? { ...i, ...data, updatedAt: new Date().toISOString() } : i));
-    return { ...data, id } as Interaction;
-  }, []);
+    try {
+      const response = await apiClient.put<Interaction>(interactionEndpoints.update(id), data);
+      await fetchInteractions(); // Refresh list
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchInteractions]);
 
   const deleteInteraction = useCallback(async (id: string) => {
-    // Mock implementation
-    setInteractions(prev => prev.filter(i => i.id !== id));
-  }, []);
+    try {
+      await apiClient.delete(interactionEndpoints.delete(id));
+      await fetchInteractions(); // Refresh list
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchInteractions]);
 
   return {
     interactions,
@@ -661,15 +793,73 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
 export function useMuseum(id: string) {
   const { data: museum, loading, error, execute } = useApiCall<Museum>();
 
-  const fetchMuseum = useCallback(() => {
+  const fetchMuseum = useCallback(async () => {
+    if (!id) {
+      // Fallback: try infer museum from first area when museumId missing
+      try {
+        const areasResp = await apiClient.get<PaginatedResponse<Area>>(areaEndpoints.getAll, {
+          pageIndex: 1,
+          pageSize: 1,
+        });
+        const firstArea = (areasResp.data as any)?.items?.[0];
+        if (firstArea?.museum) {
+          return execute(async () => firstArea.museum as Museum);
+        }
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
     return execute(() => apiClient.get<Museum>(museumEndpoints.getById(id)).then(r => r.data));
   }, [id, execute]);
 
   useEffect(() => {
-    if (id) {
-      fetchMuseum();
-    }
-  }, [id, fetchMuseum]);
+    fetchMuseum();
+  }, [fetchMuseum]);
 
   return { museum, loading, error, refetch: fetchMuseum };
+}
+
+// Get all museums (for SuperAdmin/Admin)
+export function useMuseums() {
+  const [museums, setMuseums] = useState<Museum[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMuseums = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.get<PaginatedResponse<Museum>>(museumEndpoints.getAll, {
+        pageIndex: 1,
+        pageSize: 100,
+      });
+      
+      if (response.data && typeof response.data === 'object' && 'items' in response.data) {
+        const paginatedData = response.data as PaginatedResponse<Museum>;
+        setMuseums(paginatedData.items || []);
+      } else if (Array.isArray(response.data)) {
+        setMuseums(response.data);
+      } else {
+        setMuseums([]);
+      }
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err);
+      // Gracefully handle 401/403 - set empty list
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setMuseums([]);
+      } else {
+        setError(errorMsg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMuseums();
+  }, [fetchMuseums]);
+
+  return { museums, loading, error, refetch: fetchMuseums };
 }

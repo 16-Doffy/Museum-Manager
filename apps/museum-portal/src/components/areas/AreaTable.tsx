@@ -2,7 +2,9 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { Area } from '../../lib/api/types';
+import { useAuthStore } from '../../stores/auth-store';
 import { AreaForm } from './AreaForm';
+import { AreaDetail } from './AreaDetail';
 
 interface AreaTableProps {
   areas: Area[];
@@ -42,8 +44,10 @@ export function AreaTable({
   updateArea,
   museums = [],
 }: AreaTableProps) {
+  const { user } = useAuthStore();
   const [showForm, setShowForm] = useState(false);
   const [editingArea, setEditingArea] = useState<Area | undefined>();
+  const [viewingArea, setViewingArea] = useState<Area | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreate = useCallback(() => {
@@ -159,9 +163,6 @@ export function AreaTable({
                 Bảo tàng
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Trạng thái
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Thao tác
               </th>
             </tr>
@@ -169,13 +170,13 @@ export function AreaTable({
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                   Đang tải...
                 </td>
               </tr>
             ) : filteredAreas.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                   Không có khu vực nào
                 </td>
               </tr>
@@ -186,26 +187,34 @@ export function AreaTable({
                     <div className="text-sm font-medium text-gray-900">{area.name}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {area.description || '-'}
+                    <div
+                      className="text-sm text-gray-900 max-w-xs cursor-pointer hover:text-blue-600 transition-colors"
+                      title={area.description || undefined}
+                      onClick={() => setViewingArea(area)}
+                    >
+                      {area.description ? (
+                        <>
+                          <span className="line-clamp-2">{area.description}</span>
+                          {area.description.length > 60 && (
+                            <span className="text-blue-600 text-xs ml-1">(Xem chi tiết)</span>
+                          )}
+                        </>
+                      ) : (
+                        '-'
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{area.museum?.name || '-'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      area.isDeleted 
-                        ? 'bg-red-100 text-red-800' 
-                        : area.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {area.isDeleted ? 'Đã xóa' : area.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                    </span>
+                    <div className="text-sm text-gray-900">{area.museum?.name || user?.museum?.name || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
+                      <button
+                        onClick={() => setViewingArea(area)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Xem
+                      </button>
                       <button
                         onClick={() => handleEdit(area)}
                         className="text-blue-600 hover:text-blue-900"
@@ -213,14 +222,6 @@ export function AreaTable({
                       >
                         Sửa
                       </button>
-                      {!area.isActive && !area.isDeleted && (
-                        <button
-                          onClick={() => handleActivate(area.id)}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          Kích hoạt
-                        </button>
-                      )}
                       {!area.isDeleted && (
                         <button
                           onClick={() => handleDelete(area.id)}
@@ -277,6 +278,11 @@ export function AreaTable({
           loading={isSubmitting}
           museums={museums}
         />
+      )}
+
+      {/* Detail Modal */}
+      {viewingArea && (
+        <AreaDetail area={viewingArea} onClose={() => setViewingArea(undefined)} />
       )}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Area, AreaCreateRequest, AreaUpdateRequest } from '../../lib/api/types';
+import { useAuthStore } from '../../stores/auth-store';
 
 interface AreaFormProps {
   area?: Area;
@@ -12,6 +13,7 @@ interface AreaFormProps {
 }
 
 export function AreaForm({ area, onSave, onCancel, loading = false, museums = [] }: AreaFormProps) {
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -25,16 +27,16 @@ export function AreaForm({ area, onSave, onCancel, loading = false, museums = []
       setFormData({
         name: area.name,
         description: area.description || '',
-        museumId: area.museumId || '',
+        museumId: area.museumId || user?.museumId || '',
       });
     } else {
       setFormData({
         name: '',
         description: '',
-        museumId: '',
+        museumId: user?.museumId || '',
       });
     }
-  }, [area]);
+  }, [area, user?.museumId]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -113,25 +115,27 @@ export function AreaForm({ area, onSave, onCancel, loading = false, museums = []
             />
           </div>
 
-          <div>
-            <label htmlFor="museumId" className="block text-sm font-medium text-gray-700 mb-1">
-              Bảo tàng
-            </label>
-            <select
-              id="museumId"
-              value={formData.museumId}
-              onChange={handleChange('museumId')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={loading}
-            >
-              <option value="">Chọn bảo tàng</option>
-              {museums.map(museum => (
-                <option key={museum.id} value={museum.id}>
-                  {museum.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {museums.length > 0 ? (
+            <div>
+              <label htmlFor="museumId" className="block text-sm font-medium text-gray-700 mb-1">
+                Bảo tàng
+              </label>
+              <select
+                id="museumId"
+                value={formData.museumId}
+                onChange={handleChange('museumId')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading}
+              >
+                <option value="">Chọn bảo tàng</option>
+                {museums.map(museum => (
+                  <option key={museum.id} value={museum.id}>
+                    {museum.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
           <div className="flex justify-end space-x-3 pt-4">
             <button

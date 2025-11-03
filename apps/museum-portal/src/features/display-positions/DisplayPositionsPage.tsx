@@ -19,7 +19,9 @@ export default function DisplayPositionsPage() {
     fetchDisplayPositions,
     createDisplayPosition,
     updateDisplayPosition,
-    deleteDisplayPosition
+    deleteDisplayPosition,
+    activateDisplayPosition,
+    maintainDisplayPosition,
   } = useDisplayPositions({
     displayPositionName: searchTerm || undefined,
     areaName: areaName || undefined,
@@ -171,7 +173,9 @@ export default function DisplayPositionsPage() {
         onDelete={handleDelete}
         createDisplayPosition={createDisplayPosition}
         updateDisplayPosition={updateDisplayPosition}
-        areas={areas.map(area => ({ id: area.id, name: area.name }))}
+        activateDisplay={activateDisplayPosition}
+        maintainDisplay={maintainDisplayPosition}
+        areas={areas.map(area => ({ id: area.id, name: area.name, description: area.description }))}
       />
     </div>
   );

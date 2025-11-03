@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useInteractions, useVisitors, useArtifacts } from '../../lib/api/hooks';
+import { useArtifacts } from '../../lib/api/hooks';
+// Interactions and Visitors API not available yet - disabled
+// import { useInteractions, useVisitors } from '../../lib/api/hooks';
 import { useDebounce } from '../../lib/hooks/useDebounce';
 import InteractionForm from '../../components/interactions/InteractionForm';
 import { Interaction, InteractionCreateRequest, InteractionUpdateRequest } from '../../lib/api/types';
@@ -21,20 +23,32 @@ export default function InteractionsPage() {
     ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
   }), [pageIndex, pageSize, debouncedSearchTerm]);
 
-  const {
-    interactions,
-    loading,
-    error,
-    pagination,
-    fetchInteractions,
-    createInteraction,
-    updateInteraction,
-    deleteInteraction,
-  } = useInteractions(searchParams);
+  // Interactions and Visitors API not available yet - disabled
+  // const {
+  //   interactions,
+  //   loading,
+  //   error,
+  //   pagination,
+  //   fetchInteractions,
+  //   createInteraction,
+  //   updateInteraction,
+  //   deleteInteraction,
+  // } = useInteractions(searchParams);
 
-  // Get visitors and artifacts for form dropdowns
-  const { visitors } = useVisitors({ pageIndex: 1, pageSize: 100 });
+  // Mock data for now
+  const interactions: Interaction[] = [];
+  const loading = false;
+  const error: string | null = null;
+  const pagination = { pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 };
+  const fetchInteractions = () => Promise.resolve();
+  const createInteraction = async () => {};
+  const updateInteraction = async () => {};
+  const deleteInteraction = async () => {};
+
+  // Get artifacts for form dropdowns
   const { artifacts } = useArtifacts({ pageIndex: 1, pageSize: 100 });
+  // Visitors API not available
+  const visitors: any[] = [];
 
   const handleCreate = useCallback(() => {
     setEditingInteraction(null);

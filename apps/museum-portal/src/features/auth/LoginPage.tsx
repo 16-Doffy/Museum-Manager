@@ -21,9 +21,27 @@ export default function LoginPage() {
       await login(email, password);
       toast.success('Đăng nhập thành công!');
       navigate('/dashboard');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
-      toast.error(errorMessage);
+    } catch (err: any) {
+      let errorMessage = 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (err?.statusCode === 502) {
+        errorMessage = err.message || 'Máy chủ không phản hồi. Vui lòng thử lại sau.';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      // Show error with line breaks if needed
+      const errorLines = errorMessage.split('\n');
+      if (errorLines.length > 1) {
+        toast.error(errorLines[0], {
+          description: errorLines.slice(1).join('\n'),
+          duration: 5000,
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

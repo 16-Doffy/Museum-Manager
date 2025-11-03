@@ -10,7 +10,7 @@ export interface PaginationParams {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
+  items: T[];
   pagination: {
     pageIndex: number;
     pageSize: number;

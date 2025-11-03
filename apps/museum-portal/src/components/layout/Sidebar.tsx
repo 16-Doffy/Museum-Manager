@@ -11,6 +11,7 @@ import {
 import type { IconType } from "react-icons";
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "../../stores/auth-store";
+import { useMuseum } from "../../lib/api/hooks";
 
 interface NavItem {
   id: string;
@@ -62,6 +63,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthStore();
+  const { museum } = useMuseum(user?.museumId || '');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -113,8 +115,8 @@ export default function Sidebar() {
             <FiArchive className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-emerald-400">Museum Portal</h1>
-            <p className="text-sm text-slate-300">Quản lý bảo tàng</p>
+            <h1 className="text-xl font-bold text-emerald-400">{user?.museum?.name || museum?.name || 'Museum Portal'}</h1>
+            <p className="text-sm text-slate-300">Quản lý bảo tàng • {user?.role || ''}</p>
           </div>
         </div>
       </div>
