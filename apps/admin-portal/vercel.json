@@ -1,0 +1,7 @@
+{
+  "buildCommand": "turbo run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "pnpm install",
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+}
