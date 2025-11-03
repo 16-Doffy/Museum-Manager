@@ -264,7 +264,18 @@ QR Code: ${artifact.code}
             <h3 className="text-lg font-semibold text-gray-900 mb-4">QR Code</h3>
             <div className="flex items-center gap-4">
               <div className="w-24 h-24 bg-white border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                <span className="text-xs text-gray-500">QR Code</span>
+                {(() => {
+                  const publicBase = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
+                  const url = `${publicBase}/visitor/artifacts/${current.id}`;
+                  return (
+                    <img
+                      alt="QR"
+                      width={84}
+                      height={84}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}`}
+                    />
+                  );
+                })()}
               </div>
               <div>
                 <p className="text-sm text-gray-600">Mã QR: <span className="font-mono font-semibold">{current.code}</span></p>

@@ -42,7 +42,7 @@ class ApiClient {
     const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/logout');
     const token = this.getAuthToken();
 
-    // If no token and not auth endpoint, throw error to use mock data
+    // If no token and not auth endpoint, throw error (visitor endpoints still need token)
     if (!token && !isAuthEndpoint) {
       const error = new Error('No authentication token') as Error & { statusCode: number };
       error.statusCode = 401;
@@ -52,7 +52,8 @@ class ApiClient {
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        // Only send token for non-auth endpoints
+        // For visitor endpoints, still send token if available (required for /visitors/artifacts/{id})
+        // Only skip token for auth endpoints (login, logout)
         ...(token && !isAuthEndpoint && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },

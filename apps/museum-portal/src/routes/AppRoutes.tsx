@@ -9,11 +9,15 @@ import InteractionsPage from '../features/interactions/InteractionsPage';
 import PersonnelPage from '../features/personnel/PersonnelPage';
 import SettingsPage from '../features/settings/SettingsPage';
 import ProtectedRoute from '../components/layout/ProtectedLayout';
+import PublicArtifactDetailPage from '../features/artifacts/PublicArtifactDetailPage';
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      
+      {/* Public routes (no auth required) */}
+      <Route path="/visitor/artifacts/:id" element={<PublicArtifactDetailPage />} />
       
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<DashboardPage />} />
