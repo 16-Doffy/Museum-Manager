@@ -12,6 +12,11 @@ export const rolesApi = {
     return response.data;
   },
 
+  getById: async (id: string) => {
+    const response = await apiClient.get<Role>(`/roles/${id}`);
+    return response.data;
+  },
+
   create: async (data: CreateRoleRequest) => {
     const response = await apiClient.post<Role>('/roles', data);
     return response.data;
@@ -27,4 +32,3 @@ export const rolesApi = {
     return response.data;
   },
 };
-

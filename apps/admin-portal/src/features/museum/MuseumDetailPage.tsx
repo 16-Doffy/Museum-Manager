@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/error-utils';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -25,8 +26,6 @@ export default function MuseumDetailPage() {
         return 'bg-chart-2/10 text-chart-2 border-chart-2/20';
       case 'Inactive':
         return 'bg-muted text-muted-foreground border-border';
-      case 'Pending':
-        return 'bg-chart-3/10 text-chart-3 border-chart-3/20';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }
@@ -48,7 +47,7 @@ export default function MuseumDetailPage() {
       toast.success('Cập nhật bảo tàng thành công!');
       setIsEditModalOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Cập nhật thất bại');
+      toast.error(getErrorMessage(error, 'Cập nhật thất bại'));
     }
   };
 
@@ -58,7 +57,7 @@ export default function MuseumDetailPage() {
       toast.success('Xóa bảo tàng thành công!');
       navigate('/museums/admin');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Xóa thất bại');
+      toast.error(getErrorMessage(error, 'Xóa thất bại'));
     }
   };
 

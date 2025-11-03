@@ -1,14 +1,37 @@
+import { getErrorMessage } from '@/lib/error-utils';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import CreateMuseumModal from './components/CreateMuseumModal';
+import { useCreateMuseum } from './hooks/useCreateMuseum';
 import { useMuseums } from './hooks/useMuseums';
-import { Museum } from './types';
+import { CreateMuseumRequest, Museum } from './types';
 
 export default function MuseumsPage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(10);
+  const [statusFilter, setStatusFilter] = useState<'Active' | 'Inactive'>('Active');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useMuseums({ pageIndex, pageSize });
+  const { data, isLoading, error } = useMuseums({ pageIndex, pageSize, Status: statusFilter });
+  const createMutation = useCreateMuseum();
+
+  // Reset to page 1 when filter changes
+  const handleStatusFilterChange = (newStatus: typeof statusFilter) => {
+    setStatusFilter(newStatus);
+    setPageIndex(1);
+  };
+
+  const handleCreate = async (data: CreateMuseumRequest) => {
+    try {
+      await createMutation.mutateAsync(data);
+      toast.success('Tạo bảo tàng thành công!');
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Tạo bảo tàng thất bại'));
+    }
+  };
 
   const getStatusColor = (status: Museum['status']) => {
     switch (status) {
@@ -16,8 +39,6 @@ export default function MuseumsPage() {
         return 'bg-chart-2/10 text-chart-2 border-chart-2/20';
       case 'Inactive':
         return 'bg-muted text-muted-foreground border-border';
-      case 'Pending':
-        return 'bg-chart-3/10 text-chart-3 border-chart-3/20';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }
@@ -39,18 +60,33 @@ export default function MuseumsPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Danh sách bảo tàng</h1>
           <p className="text-muted-foreground">Quản lý tất cả bảo tàng trong hệ thống</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm">
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className="flex items-center gap-3">
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => handleStatusFilterChange(e.target.value as typeof statusFilter)}
+            className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Thêm bảo tàng
-        </button>
+            <option value="Active">Đang hoạt động</option>
+            <option value="Inactive">Đã xóa</option>
+          </select>
+
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all shadow-sm hover:shadow"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Thêm bảo tàng
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -198,6 +234,14 @@ export default function MuseumsPage() {
           </div>
         )}
       </div>
+
+      {/* Create Modal */}
+      <CreateMuseumModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreate}
+        isLoading={createMutation.isPending}
+      />
     </div>
   );
 }

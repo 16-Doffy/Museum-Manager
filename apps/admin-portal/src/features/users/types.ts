@@ -50,15 +50,11 @@ export interface CreateAccountRequest {
   password: string;
   roleId: string;
   museumId: string;
-  status: 'Active' | 'Inactive';
 }
 
 export interface UpdateAccountRequest {
-  email?: string;
-  fullName?: string;
-  password?: string;
-  roleId?: string;
-  museumId?: string;
-  status?: 'Active' | 'Inactive';
+  email: string;
+  fullName: string;
+  password?: string; // Optional - only if changing password
 }
 

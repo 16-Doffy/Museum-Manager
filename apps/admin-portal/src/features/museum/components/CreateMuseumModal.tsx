@@ -1,31 +1,31 @@
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Museum, UpdateMuseumRequest } from '../types';
+import { CreateMuseumRequest } from '../types';
 
-interface EditMuseumModalProps {
-  museum: Museum;
+interface CreateMuseumModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: UpdateMuseumRequest) => void;
+  onSubmit: (data: CreateMuseumRequest) => void;
   isLoading?: boolean;
 }
 
-export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isLoading }: EditMuseumModalProps) {
-  const [formData, setFormData] = useState<UpdateMuseumRequest>({
-    name: museum.name,
-    location: museum.location,
-    description: museum.description,
+export default function CreateMuseumModal({ isOpen, onClose, onSubmit, isLoading }: CreateMuseumModalProps) {
+  const [formData, setFormData] = useState<CreateMuseumRequest>({
+    name: '',
+    location: '',
+    description: '',
   });
 
   useEffect(() => {
     if (isOpen) {
+      // Reset form when modal opens
       setFormData({
-        name: museum.name,
-        location: museum.location,
-        description: museum.description,
+        name: '',
+        location: '',
+        description: '',
       });
     }
-  }, [isOpen, museum]);
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +44,7 @@ export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isL
         <div className="relative w-full max-w-lg bg-card rounded-xl border border-border shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <h2 className="text-xl font-semibold text-card-foreground">Chỉnh sửa bảo tàng</h2>
+            <h2 className="text-xl font-semibold text-card-foreground">Thêm bảo tàng mới</h2>
             <button
               onClick={onClose}
               className="rounded-lg p-2 hover:bg-accent transition-colors"
@@ -107,21 +107,6 @@ export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isL
                   disabled={isLoading}
                 />
               </div>
-
-              {/* Read-only Status */}
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">Trạng thái</label>
-                <div className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${museum.status === 'Active'
-                      ? 'bg-chart-2/10 text-chart-2 border-chart-2/20'
-                      : 'bg-muted text-muted-foreground border-border'
-                      }`}
-                  >
-                    {museum.status}
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* Footer */}
@@ -136,10 +121,10 @@ export default function EditMuseumModal({ museum, isOpen, onClose, onSubmit, isL
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
                 disabled={isLoading}
               >
-                {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+                {isLoading ? 'Đang tạo...' : 'Tạo bảo tàng'}
               </button>
             </div>
           </form>

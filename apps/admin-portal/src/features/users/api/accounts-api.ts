@@ -24,12 +24,11 @@ export const accountsApi = {
   },
 
   create: async (data: CreateAccountRequest) => {
-    const { roleId, museumId, email, fullName, password, status } = data;
+    const { roleId, museumId, email, fullName, password } = data;
     const response = await apiClient.post<Account>(`/accounts/${roleId}/${museumId}`, {
       email,
       fullName,
       password,
-      status,
     });
     return response.data;
   },

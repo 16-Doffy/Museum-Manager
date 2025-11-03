@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client';
-import { Museum, MuseumListParams, MuseumListResponse, UpdateMuseumRequest } from '../types';
+import { CreateMuseumRequest, Museum, MuseumListParams, MuseumListResponse, UpdateMuseumRequest } from '../types';
 
 export const museumsApi = {
   getAll: async (params: MuseumListParams = { pageIndex: 1, pageSize: 10 }) => {
@@ -8,12 +8,22 @@ export const museumsApi = {
       pageSize: String(params.pageSize || 10),
     });
 
+    // Add Status filter if provided
+    if (params.Status) {
+      searchParams.append('Status', params.Status);
+    }
+
     const response = await apiClient.get<MuseumListResponse>(`/museums?${searchParams.toString()}`);
     return response.data;
   },
 
   getById: async (id: string) => {
     const response = await apiClient.get<Museum>(`/museums/${id}`);
+    return response.data;
+  },
+
+  create: async (data: CreateMuseumRequest) => {
+    const response = await apiClient.post<Museum>('/museums', data);
     return response.data;
   },
 

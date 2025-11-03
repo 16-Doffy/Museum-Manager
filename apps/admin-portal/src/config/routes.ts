@@ -7,8 +7,9 @@ const routes = {
   users: '/users',
   settings: '/settings',
   policies: '/policies',
-  rolebase: {
-    roles: '/rolebase/roles',
+  roles: {
+    list: '/roles',
+    detail: (id: string) => `/roles/${id}`,
   },
   payments: {
     orders: '/payments/orders',

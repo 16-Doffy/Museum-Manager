@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useMuseums } from '../../museum/hooks/useMuseums';
-import { useRoles } from '../hooks/useRoles';
 import { Account, UpdateAccountRequest } from '../types';
 
 interface EditAccountModalProps {
@@ -16,23 +14,14 @@ export default function EditAccountModal({ isOpen, onClose, onSubmit, account, i
     email: '',
     fullName: '',
     password: '',
-    roleId: '',
-    museumId: '',
-    status: 'Active',
   });
-
-  const { data: rolesData } = useRoles({ pageIndex: 1, pageSize: 10 });
-  const { data: museumsData } = useMuseums({ pageIndex: 1, pageSize: 10 });
 
   useEffect(() => {
     if (account) {
       setFormData({
-        email: account.email,
-        fullName: account.fullName,
+        email: account.email || '',
+        fullName: account.fullName || '',
         password: '', // Don't pre-fill password
-        roleId: account.roleId,
-        museumId: account.museumId,
-        status: account.status,
       });
     }
   }, [account]);
@@ -43,9 +32,6 @@ export default function EditAccountModal({ isOpen, onClose, onSubmit, account, i
     const dataToSubmit: UpdateAccountRequest = {
       email: formData.email,
       fullName: formData.fullName,
-      roleId: formData.roleId,
-      museumId: formData.museumId,
-      status: formData.status,
     };
     // Only include password if it's not empty
     if (formData.password && formData.password.trim()) {
@@ -137,69 +123,35 @@ export default function EditAccountModal({ isOpen, onClose, onSubmit, account, i
                 />
               </div>
 
+              {/* Read-only fields */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label htmlFor="roleId" className="block text-sm font-medium text-foreground mb-2">
-                    Vai trò <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    id="roleId"
-                    value={formData.roleId}
-                    onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    required
-                    disabled={isLoading}
-                  >
-                    <option value="">Chọn vai trò</option>
-                    {rolesData?.items.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">Vai trò</label>
+                  <div className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30 text-foreground">
+                    {account?.roleName}
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="museumId" className="block text-sm font-medium text-foreground mb-2">
-                    Bảo tàng <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    id="museumId"
-                    value={formData.museumId}
-                    onChange={(e) => setFormData({ ...formData, museumId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    required
-                    disabled={isLoading}
-                  >
-                    <option value="">Chọn bảo tàng</option>
-                    {museumsData?.items.map((museum) => (
-                      <option key={museum.id} value={museum.id}>
-                        {museum.name}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">Bảo tàng</label>
+                  <div className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30 text-foreground">
+                    {account?.museumName}
+                  </div>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-foreground mb-2">
-                  Trạng thái <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Inactive' })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isLoading || account?.status === 'Inactive'}
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-                {account?.status === 'Inactive' && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Không thể thay đổi trạng thái của tài khoản đã bị vô hiệu hóa
-                  </p>
-                )}
+                <label className="block text-sm font-medium text-muted-foreground mb-2">Trạng thái</label>
+                <div className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${account?.status === 'Active'
+                      ? 'bg-chart-2/10 text-chart-2 border-chart-2/20'
+                      : 'bg-muted text-muted-foreground border-border'
+                      }`}
+                  >
+                    {account?.status}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -215,9 +167,7 @@ export default function EditAccountModal({ isOpen, onClose, onSubmit, account, i
               </button>
               <button
                 type="submit"
-                disabled={
-                  isLoading || !formData.email || !formData.fullName || !formData.roleId || !formData.museumId
-                }
+                disabled={isLoading || !formData.email || !formData.fullName}
                 className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
               >
                 {isLoading ? (
