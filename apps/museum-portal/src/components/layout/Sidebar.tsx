@@ -45,18 +45,18 @@ const navigationItems: NavItem[] = [
     icon: FiEye,
     href: "/display-positions",
   },
-  {
-    id: "visitors",
-    label: "Khách tham quan",
-    icon: FiUsers,
-    href: "/visitors",
-  },
-  {
-    id: "interactions",
-    label: "Tương tác",
-    icon: FiMessageSquare,
-    href: "/interactions",
-  },
+  // {
+  //   id: "visitors",
+  //   label: "Khách tham quan",
+  //   icon: FiUsers,
+  //   href: "/visitors",
+  // },
+  // {
+  //   id: "interactions",
+  //   label: "Tương tác",
+  //   icon: FiMessageSquare,
+  //   href: "/interactions",
+  // },
 ];
 
 export default function Sidebar() {

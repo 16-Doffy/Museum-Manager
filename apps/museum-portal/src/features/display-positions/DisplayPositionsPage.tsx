@@ -69,8 +69,8 @@ export default function DisplayPositionsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Stats Cards - Hidden */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -112,7 +112,7 @@ export default function DisplayPositionsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Search and Filter */}
       <div className="bg-white rounded-lg shadow p-6">
