@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter museum-portal build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+
