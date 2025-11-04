@@ -256,8 +256,8 @@ export default function CollectionTable() {
       )}
       
       <div className="bg-white rounded-xl shadow overflow-hidden">
-      {/* Search Bar */}
-      <div className="p-4 border-b border-gray-200">
+      {/* Search Bar - Hidden */}
+      {/* <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-4">
           <div className="flex-1">
             <input
@@ -278,7 +278,7 @@ export default function CollectionTable() {
             {pagination.totalItems} hiện vật
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Table */}
       <div className="overflow-x-auto">
