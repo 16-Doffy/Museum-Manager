@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ClientThemeProvider } from '@/components/ClientThemeProvider';
-import { Navigation } from '@/components/Navigation';
-import { Footer } from '@/components/Footer';
+import ChatAIWidget from '@/components/ChatAIWidget';
+import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: 'Bảo Tàng Lịch Sử Việt Nam - Cổng Thông Tin Khách Tham Quan', 
@@ -15,15 +15,15 @@ const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <body className={inter.className}>
         <ClientThemeProvider>
           <div className="min-h-screen flex flex-col">
-            <Navigation />
-            <main className="flex-1">
+            <Header />
+            <main className="flex-1 flex items-center justify-center p-6">
               {children}
             </main>
-            <Footer />
+            <ChatAIWidget />
           </div>
         </ClientThemeProvider>
       </body>

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { DisplayPositionTable } from '../../components/display-positions/DisplayPositionTable';
 import { useDisplayPositions, useAreas } from '../../lib/api/hooks';
 import { DisplayPosition } from '../../lib/api/types';
-import { Plus, Layout, Filter } from 'lucide-react';
+import { Layout, Filter } from 'lucide-react';
 
 export default function DisplayPositionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,7 +19,9 @@ export default function DisplayPositionsPage() {
     fetchDisplayPositions,
     createDisplayPosition,
     updateDisplayPosition,
-    deleteDisplayPosition
+    deleteDisplayPosition,
+    activateDisplayPosition,
+    maintainDisplayPosition,
   } = useDisplayPositions({
     displayPositionName: searchTerm || undefined,
     areaName: areaName || undefined,
@@ -38,10 +40,6 @@ export default function DisplayPositionsPage() {
     setPageIndex(page);
   }, []);
 
-  const handleCreate = useCallback(async () => {
-    await fetchDisplayPositions();
-  }, [fetchDisplayPositions]);
-
   const handleEdit = useCallback(async (displayPosition: DisplayPosition) => {
     await fetchDisplayPositions();
   }, [fetchDisplayPositions]);
@@ -53,14 +51,6 @@ export default function DisplayPositionsPage() {
       console.error('Delete display position error:', error);
     }
   }, [deleteDisplayPosition]);
-
-  const handleActivate = useCallback(async (id: string) => {
-    try {
-      await fetchDisplayPositions();
-    } catch (error) {
-      console.error('Activate display position error:', error);
-    }
-  }, [fetchDisplayPositions]);
 
   return (
     <div className="space-y-6">
@@ -77,17 +67,10 @@ export default function DisplayPositionsPage() {
             </div>
           </div>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm vị trí</span>
-        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Stats Cards - Hidden */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -129,7 +112,7 @@ export default function DisplayPositionsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Search and Filter */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -186,13 +169,13 @@ export default function DisplayPositionsPage() {
         includeDeleted={includeDeleted}
         setIncludeDeleted={setIncludeDeleted}
         onPageChange={handlePageChange}
-        onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onActivate={handleActivate}
         createDisplayPosition={createDisplayPosition}
         updateDisplayPosition={updateDisplayPosition}
-        areas={areas.map(area => ({ id: area.id, name: area.name }))}
+        activateDisplay={activateDisplayPosition}
+        maintainDisplay={maintainDisplayPosition}
+        areas={areas.map(area => ({ id: area.id, name: area.name, description: area.description }))}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { AreaTable } from '../../components/areas/AreaTable';
 import { useAreas } from '../../lib/api/hooks';
 import { Area } from '../../lib/api/types';
-import { Plus, MapPin, Filter } from 'lucide-react';
+import { MapPin, Filter } from 'lucide-react';
 
 export default function AreasPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,10 +32,6 @@ export default function AreasPage() {
     setPageIndex(page);
   }, []);
 
-  const handleCreate = useCallback(async () => {
-    await fetchAreas();
-  }, [fetchAreas]);
-
   const handleEdit = useCallback(async (area: Area) => {
     await fetchAreas();
   }, [fetchAreas]);
@@ -48,20 +44,9 @@ export default function AreasPage() {
     }
   }, [deleteArea]);
 
-  const handleActivate = useCallback(async (id: string) => {
-    try {
-      await fetchAreas();
-    } catch (error) {
-      console.error('Activate area error:', error);
-    }
-  }, [fetchAreas]);
-
-  // Mock museums for demo
-  const mockMuseums = [
-    { id: 'museum-1', name: 'Bảo tàng Lịch sử Việt Nam' },
-    { id: 'museum-2', name: 'Bảo tàng Mỹ thuật Việt Nam' },
-    { id: 'museum-3', name: 'Bảo tàng Dân tộc học Việt Nam' },
-  ];
+  // Museums API returns 403 - not accessible for museum-portal users
+  // Using empty array for now
+  const apiMuseums: Array<{ id: string; name: string }> = [];
 
   return (
     <div className="space-y-6">
@@ -78,17 +63,10 @@ export default function AreasPage() {
             </div>
           </div>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm khu vực</span>
-        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Stats Cards - Hidden */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -130,7 +108,7 @@ export default function AreasPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Search and Filter */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -177,13 +155,11 @@ export default function AreasPage() {
         includeDeleted={includeDeleted}
         setIncludeDeleted={setIncludeDeleted}
         onPageChange={handlePageChange}
-        onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onActivate={handleActivate}
         createArea={createArea}
         updateArea={updateArea}
-        museums={mockMuseums}
+        museums={apiMuseums.map(m => ({ id: m.id, name: m.name }))}
       />
     </div>
   );

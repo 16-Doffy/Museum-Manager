@@ -38,46 +38,94 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
+    // Don't send token for auth endpoints (login, logout)
+    const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/logout');
     const token = this.getAuthToken();
 
-    // If no token and not auth endpoint, throw error to use mock data
-    if (!token && !endpoint.includes('/auth/') && !endpoint.includes('/login')) {
+    // If no token and not auth endpoint, throw error (visitor endpoints still need token)
+    if (!token && !isAuthEndpoint) {
       const error = new Error('No authentication token') as Error & { statusCode: number };
       error.statusCode = 401;
       throw error;
     }
-
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
+        // For visitor endpoints, still send token if available (required for /visitors/artifacts/{id})
+        // Only skip token for auth endpoints (login, logout)
+        ...(token && !isAuthEndpoint && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
     };
 
     try {
-      console.log('Making request to:', url);
-      console.log('Request config:', config);
-      
       const response = await fetch(url, config);
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.log('Error response data:', errorData);
-        console.log('Full response:', response);
+        // Try to parse error response, but handle empty responses for 502
+        let errorData = {};
+        try {
+          const text = await response.text();
+          if (text) {
+            errorData = JSON.parse(text);
+          }
+        } catch {
+          // Response body is empty or invalid JSON
+        }
+        
+        // Handle 502 Bad Gateway specifically
+        if (response.status === 502) {
+          throw {
+            message: 'Máy chủ API không phản hồi (502 Bad Gateway). Vui lòng:\n1. Kiểm tra server API có đang chạy không\n2. Thử lại sau vài giây\n3. Liên hệ quản trị viên nếu vấn đề tiếp tục',
+            statusCode: 502,
+            errors: errorData.errors || ['Server không phản hồi'],
+          } as ApiError;
+        }
+        
+        // API returns { code, statusCode, message, errors? } on error
         throw {
-          message: errorData.message || errorData.error || 'An error occurred',
+          message: errorData.message || errorData.error || `Lỗi ${response.status}: ${response.statusText}`,
           statusCode: response.status,
           errors: errorData.errors,
         } as ApiError;
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
+      
+      // API returns { code, statusCode, message, data: T } format
+      // Extract data field from response
+      if (responseData.code !== undefined && responseData.data !== undefined) {
+        // Handle nested paginated response: { code, data: { items: [], pagination: {} } }
+        const apiData = responseData.data;
+        
+        // If data contains items and pagination, return as PaginatedResponse
+        if (apiData && typeof apiData === 'object' && 'items' in apiData && 'pagination' in apiData) {
+          return {
+            data: {
+              items: apiData.items || [],
+              pagination: apiData.pagination || {
+                pageIndex: 1,
+                pageSize: 10,
+                totalItems: 0,
+                totalPages: 0,
+              },
+            },
+            success: responseData.code === 200,
+          };
+        }
+        
+        // Otherwise return data as-is
+        return {
+          data: apiData,
+          success: responseData.code === 200,
+        };
+      }
+      
+      // Fallback: if response is already the data (backward compatibility)
       return {
-        data,
+        data: responseData,
         success: true,
       };
     } catch (error: unknown) {
@@ -123,11 +171,16 @@ class ApiClient {
 
   // File upload method
   async uploadFile<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+    return this.uploadMultipart<T>(endpoint, formData, 'POST');
+  }
+
+  // Generic multipart uploader with method control (POST/PUT/PATCH)
+  async uploadMultipart<T>(endpoint: string, formData: FormData, method: 'POST' | 'PUT' | 'PATCH'): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getAuthToken();
 
     const config: RequestInit = {
-      method: 'POST',
+      method,
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
@@ -136,29 +189,22 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw {
-          message: errorData.message || 'Upload failed',
+          message: (errorData as any).message || 'Upload failed',
           statusCode: response.status,
-          errors: errorData.errors,
+          errors: (errorData as any).errors,
         } as ApiError;
       }
 
       const data = await response.json();
-      return {
-        data,
-        success: true,
-      };
+      return { data, success: true };
     } catch (error: unknown) {
       if (error instanceof Error) {
-        throw {
-          message: error.message,
-          statusCode: 500,
-        } as ApiError;
+        throw { message: error.message, statusCode: 500 } as ApiError;
       }
-      throw error;
+      throw error as ApiError;
     }
   }
 }

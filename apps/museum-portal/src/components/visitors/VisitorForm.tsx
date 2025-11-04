@@ -13,6 +13,8 @@ interface VisitorFormProps {
 export default function VisitorForm({ visitor, onSave, onCancel, isLoading = false }: VisitorFormProps) {
   const [formData, setFormData] = useState({
     phoneNumber: '',
+    name: '',
+    email: '',
     status: 'Active',
   });
 
@@ -20,11 +22,15 @@ export default function VisitorForm({ visitor, onSave, onCancel, isLoading = fal
     if (visitor) {
       setFormData({
         phoneNumber: visitor.phoneNumber,
+        name: visitor.name || '',
+        email: visitor.email || '',
         status: visitor.status,
       });
     } else {
       setFormData({
         phoneNumber: '',
+        name: '',
+        email: '',
         status: 'Active',
       });
     }
@@ -45,10 +51,16 @@ export default function VisitorForm({ visitor, onSave, onCancel, isLoading = fal
       return;
     }
 
+    // Validate email format if provided
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      alert('Email không đúng định dạng');
+      return;
+    }
+
     onSave(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -76,6 +88,34 @@ export default function VisitorForm({ visitor, onSave, onCancel, isLoading = fal
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               placeholder="Nhập số điện thoại"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tên khách tham quan
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Nhập tên khách tham quan"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Nhập email"
             />
           </div>
 

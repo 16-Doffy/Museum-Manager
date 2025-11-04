@@ -1,16 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Interaction, InteractionCreateRequest, InteractionUpdateRequest } from '../../lib/api/types';
+import { Interaction, InteractionCreateRequest, InteractionUpdateRequest, Visitor, Artifact } from '../../lib/api/types';
 
 interface InteractionFormProps {
   interaction?: Interaction;
   onSave: (data: InteractionCreateRequest | InteractionUpdateRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  visitors?: Visitor[];
+  artifacts?: Artifact[];
 }
 
-export default function InteractionForm({ interaction, onSave, onCancel, isLoading = false }: InteractionFormProps) {
+export default function InteractionForm({ 
+  interaction, 
+  onSave, 
+  onCancel, 
+  isLoading = false, 
+  visitors = [], 
+  artifacts = [] 
+}: InteractionFormProps) {
   const [formData, setFormData] = useState({
     visitorId: '',
     artifactId: '',
@@ -19,19 +28,7 @@ export default function InteractionForm({ interaction, onSave, onCancel, isLoadi
     rating: 5,
   });
 
-  // Mock data for dropdowns
-  const mockVisitors = [
-    { id: 'visitor-1', phoneNumber: '0123456789' },
-    { id: 'visitor-2', phoneNumber: '0987654321' },
-    { id: 'visitor-3', phoneNumber: '+1234567890' },
-  ];
-
-  const mockArtifacts = [
-    { id: 'artifact-1', name: 'Trống đồng Đông Sơn' },
-    { id: 'artifact-2', name: 'Tượng Phật A Di Đà' },
-    { id: 'artifact-3', name: 'Bình gốm Chu Đậu' },
-  ];
-
+  // Remove mock data, use props instead
   const interactionTypes = [
     { value: 'VIEW', label: 'Xem' },
     { value: 'TOUCH', label: 'Chạm' },
@@ -109,9 +106,9 @@ export default function InteractionForm({ interaction, onSave, onCancel, isLoadi
               required
             >
               <option value="">Chọn khách tham quan</option>
-              {mockVisitors.map(visitor => (
+              {visitors.map(visitor => (
                 <option key={visitor.id} value={visitor.id}>
-                  {visitor.phoneNumber}
+                  {visitor.phoneNumber} {visitor.name ? `(${visitor.name})` : ''}
                 </option>
               ))}
             </select>
@@ -129,7 +126,7 @@ export default function InteractionForm({ interaction, onSave, onCancel, isLoadi
               required
             >
               <option value="">Chọn hiện vật</option>
-              {mockArtifacts.map(artifact => (
+              {artifacts.map(artifact => (
                 <option key={artifact.id} value={artifact.id}>
                   {artifact.name}
                 </option>

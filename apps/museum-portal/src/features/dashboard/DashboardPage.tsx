@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useAreas, useArtifacts, useVisitors } from '../../lib/api/hooks';
+import { useAreas, useArtifacts, useDisplayPositions } from '../../lib/api/hooks';
 import { Users, MapPin, Package, TrendingUp } from 'lucide-react';
+import { useAuthStore } from '../../stores/auth-store';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -12,19 +13,22 @@ export default function DashboardPage() {
 
   // Memoize search params to prevent infinite re-renders
   const searchParams = useMemo(() => ({ pageIndex: 1, pageSize: 100 }), []);
-  
+  const { user } = useAuthStore();
   const { areas } = useAreas(searchParams);
   const { artifacts } = useArtifacts(searchParams);
-  const { visitors } = useVisitors(searchParams);
+  const { displayPositions } = useDisplayPositions(searchParams);
+  // Visitors API not available yet - disabled
+  // const { visitors } = useVisitors(searchParams);
 
   useEffect(() => {
     setStats({
-      totalVisitors: visitors?.length || 0,
+      totalVisitors: 0, // Visitors API not available
       totalArtifacts: artifacts?.length || 0,
       totalAreas: areas?.length || 0,
-      activeAreas: areas?.filter(area => area.isActive).length || 0,
+      // API không có trạng thái khu vực; tính theo số vị trí trưng bày đang hoạt động
+      activeAreas: displayPositions?.filter((p: any) => p.isActive || p.status === 'Active').length || 0,
     });
-  }, [areas, artifacts, visitors]);
+  }, [areas, artifacts, displayPositions]);
 
   const statCards = [
     {
@@ -98,11 +102,11 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium text-gray-500">Tên bảo tàng</p>
-              <p className="text-lg text-gray-900">Bảo tàng Lịch sử Việt Nam</p>
+              <p className="text-lg text-gray-900">{(user as any)?.museum?.name || (user as any)?.museumName || '—'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Địa chỉ</p>
-              <p className="text-lg text-gray-900">1 Tràng Tiền, Hoàn Kiếm, Hà Nội</p>
+              <p className="text-lg text-gray-900">{(user as any)?.museum?.address || (user as any)?.museumLocation || '—'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Giờ mở cửa</p>
@@ -120,7 +124,9 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Trạng thái</p>
-              <p className="text-lg text-green-600 font-medium">Đang hoạt động</p>
+              <p className={`text-lg font-medium ${stats.activeAreas > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {stats.activeAreas > 0 ? 'Đang hoạt động' : 'Không hoạt động'}
+              </p>
             </div>
           </div>
         </div>

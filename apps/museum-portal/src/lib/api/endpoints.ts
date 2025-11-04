@@ -97,3 +97,10 @@ export const roleEndpoints = {
   update: (id: string) => `/roles/${id}`,
   delete: (id: string) => `/roles/${id}`,
 } as const;
+
+// Visitor Public API endpoints (for public artifact viewing)
+export const visitorPublicEndpoints = {
+  register: '/visitors/register',
+  login: '/visitors/login',
+  getArtifactById: (id: string) => `/visitors/artifacts/${id}`,
+} as const;
