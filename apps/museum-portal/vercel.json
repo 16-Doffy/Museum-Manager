@@ -1,8 +1,8 @@
 {
-  "buildCommand": "pnpm --filter museum-portal build",
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter museum-portal build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "pnpm install",
+  "installCommand": "cd ../.. && pnpm install",
   "rewrites": [
     {
       "source": "/(.*)",
