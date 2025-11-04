@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/error-utils';
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -20,8 +21,7 @@ export default function LoginPage() {
       toast.success('Đăng nhập thành công!');
       navigate('/');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(err, 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'));
     } finally {
       setIsLoading(false);
     }

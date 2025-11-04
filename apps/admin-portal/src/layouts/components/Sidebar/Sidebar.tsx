@@ -19,18 +19,7 @@ const navItems = [
     title: 'Quản lý bảo tàng',
     url: routes.museums.list,
     icon: Building2,
-    items: [
-      {
-        title: 'Danh sách bảo tàng',
-        url: routes.museums.list,
-        icon: Building2,
-      },
-      {
-        title: 'Phê duyệt bảo tàng',
-        url: routes.museums.requests,
-        icon: Gavel,
-      },
-    ],
+    items: [],
   },
   {
     title: 'Quản lý người dùng',
@@ -39,21 +28,10 @@ const navItems = [
     items: [],
   },
   {
-    title: 'Quản lý quyền',
-    url: routes.rolebase.roles,
+    title: 'Quản lý vai trò',
+    url: routes.roles.list,
     icon: Gavel,
-    items: [
-      {
-        title: 'Vai trò',
-        url: routes.rolebase.roles,
-        icon: Gavel,
-      },
-      {
-        title: 'Quyền',
-        url: routes.rolebase.permissions,
-        icon: Gavel,
-      },
-    ],
+    items: [],
   },
   {
     title: 'Quản lý thanh toán',
@@ -118,7 +96,6 @@ export default function AdminSidebar() {
             <Building2 className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-sidebar-foreground">MuseTrip360</span>
             <span className="truncate text-xs text-sidebar-foreground/70">Admin Portal</span>
           </div>
         </Link>
