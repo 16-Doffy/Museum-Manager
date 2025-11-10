@@ -30,6 +30,8 @@ export default function UsersPage() {
     switch (status) {
       case 'Active':
         return 'bg-chart-2/10 text-chart-2 border-chart-2/20';
+      case 'Pending':
+        return 'bg-chart-4/10 text-chart-4 border-chart-4/20';
       case 'Inactive':
         return 'bg-muted text-muted-foreground border-border';
       default:
@@ -144,12 +146,18 @@ export default function UsersPage() {
                         <div className="text-sm text-muted-foreground">{account.fullName}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                          {account.roleName}
-                        </span>
+                        {account.roleName ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                            {account.roleName}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">Chưa có</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-muted-foreground max-w-xs truncate">{account.museumName}</div>
+                        <div className="text-sm text-muted-foreground max-w-xs truncate">
+                          {account.museumName || <span className="italic">Chưa có</span>}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
