@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from './client';
-import { artifactEndpoints, displayPositionEndpoints, areaEndpoints, visitorEndpoints, interactionEndpoints, museumEndpoints } from './endpoints';
+import { artifactEndpoints, displayPositionEndpoints, areaEndpoints, visitorEndpoints, interactionEndpoints, museumEndpoints, exhibitionEndpoints, historicalContextEndpoints, dashboardAdminEndpoints } from './endpoints';
 // Removed mock data and StorageManager imports - using real API now
 import { accountEndpoints } from './endpoints';
 import {
@@ -39,6 +39,17 @@ import {
   AccountSearchParams,
   PaginatedResponse,
   PaginationParams,
+  Exhibition,
+  ExhibitionCreateRequest,
+  ExhibitionUpdateRequest,
+  ExhibitionSearchParams,
+  HistoricalContext,
+  HistoricalContextCreateRequest,
+  HistoricalContextUpdateRequest,
+  HistoricalContextSearchParams,
+  HistoricalContextStatus,
+  ArtifactStats,
+  StaffStats,
 } from './types';
 
 // Helper function to handle error types
@@ -131,6 +142,29 @@ function normalizeArtifact(raw: any): Artifact {
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
   } as Artifact;
+}
+
+function normalizeHistoricalContext(raw: any): HistoricalContext {
+  if (!raw) return raw as HistoricalContext;
+
+  const status =
+    raw.status ??
+    (raw.isDeleted ? HistoricalContextStatus.DELETED : HistoricalContextStatus.ACTIVE);
+
+  return {
+    id: raw.id ?? raw.historicalContextId ?? '',
+    title: raw.title ?? '',
+    period: raw.period ?? raw.periodTime,
+    description: raw.description ?? raw.note,
+    status,
+    artifacts: Array.isArray(raw.artifacts)
+      ? raw.artifacts.map((artifact: any) => normalizeArtifact(artifact))
+      : [],
+    museumId: raw.museumId,
+    museum: raw.museum,
+    createdAt: raw.createdAt ?? '',
+    updatedAt: raw.updatedAt ?? '',
+  } as HistoricalContext;
 }
 
 // Artifact Management Hooks
@@ -777,6 +811,15 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
     }
   }, [fetchInteractions]);
 
+  const getInteractionById = useCallback(async (id: string): Promise<Interaction> => {
+    try {
+      const response = await apiClient.get<Interaction>(interactionEndpoints.getById(id));
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, []);
+
   return {
     interactions,
     loading,
@@ -786,6 +829,7 @@ export function useInteractions(searchParams?: InteractionSearchParams) {
     createInteraction,
     updateInteraction,
     deleteInteraction,
+    getInteractionById,
   };
 }
 
@@ -862,4 +906,283 @@ export function useMuseums() {
   }, [fetchMuseums]);
 
   return { museums, loading, error, refetch: fetchMuseums };
+}
+
+// Exhibition Management Hooks
+export function useExhibitions(searchParams?: ExhibitionSearchParams) {
+  const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    pageIndex: 1,
+    pageSize: 10,
+    totalItems: 0,
+    totalPages: 0,
+  });
+
+  const fetchExhibitions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params: Record<string, string | number | boolean> = {
+        pageIndex: searchParams?.pageIndex || 1,
+        pageSize: searchParams?.pageSize || 10,
+      };
+      
+      if (searchParams?.name) params.name = searchParams.name;
+      if (searchParams?.statusFilter) params.statusFilter = searchParams.statusFilter;
+      
+      const response = await apiClient.get<PaginatedResponse<Exhibition>>(exhibitionEndpoints.getAll, params);
+      
+      if (response.data && typeof response.data === 'object' && 'items' in response.data) {
+        const paginatedData = response.data as PaginatedResponse<Exhibition>;
+        setExhibitions(paginatedData.items || []);
+        setPagination(paginatedData.pagination || {
+          pageIndex: 1,
+          pageSize: 10,
+          totalItems: 0,
+          totalPages: 0,
+        });
+      } else if (Array.isArray(response.data)) {
+        setExhibitions(response.data);
+        setPagination({
+          pageIndex: 1,
+          pageSize: response.data.length || 10,
+          totalItems: response.data.length || 0,
+          totalPages: 1,
+        });
+      } else {
+        setExhibitions([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      }
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err);
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setExhibitions([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [searchParams?.pageIndex, searchParams?.pageSize, searchParams?.name, searchParams?.statusFilter]);
+
+  useEffect(() => {
+    fetchExhibitions();
+  }, [fetchExhibitions]);
+
+  const createExhibition = useCallback(async (data: ExhibitionCreateRequest) => {
+    try {
+      const response = await apiClient.post<Exhibition>(exhibitionEndpoints.create, data);
+      await fetchExhibitions();
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchExhibitions]);
+
+  const updateExhibition = useCallback(async (id: string, data: ExhibitionUpdateRequest) => {
+    try {
+      const response = await apiClient.put<Exhibition>(exhibitionEndpoints.update(id), data);
+      await fetchExhibitions();
+      return response.data;
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchExhibitions]);
+
+  const deleteExhibition = useCallback(async (id: string) => {
+    try {
+      await apiClient.delete(exhibitionEndpoints.delete(id));
+      await fetchExhibitions();
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchExhibitions]);
+
+  return {
+    exhibitions,
+    loading,
+    error,
+    pagination,
+    fetchExhibitions,
+    createExhibition,
+    updateExhibition,
+    deleteExhibition,
+  };
+}
+
+// Historical Context Management Hooks
+export function useHistoricalContexts(searchParams?: HistoricalContextSearchParams) {
+  const [historicalContexts, setHistoricalContexts] = useState<HistoricalContext[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    pageIndex: 1,
+    pageSize: 10,
+    totalItems: 0,
+    totalPages: 0,
+  });
+
+  const fetchHistoricalContexts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params: Record<string, string | number | boolean> = {
+        pageIndex: searchParams?.pageIndex || 1,
+        pageSize: searchParams?.pageSize || 10,
+      };
+      
+      if (searchParams?.title) params.title = searchParams.title;
+      if (searchParams?.statusFilter) params.statusFilter = searchParams.statusFilter;
+      
+      const response = await apiClient.get<PaginatedResponse<HistoricalContext>>(historicalContextEndpoints.getAll, params);
+      
+      if (response.data && typeof response.data === 'object' && 'items' in response.data) {
+        const paginatedData = response.data as PaginatedResponse<HistoricalContext>;
+        const normalizedItems = (paginatedData.items as any[]).map(normalizeHistoricalContext);
+        setHistoricalContexts(normalizedItems);
+        setPagination(paginatedData.pagination || {
+          pageIndex: 1,
+          pageSize: 10,
+          totalItems: 0,
+          totalPages: 0,
+        });
+      } else if (Array.isArray(response.data)) {
+        const normalizedItems = (response.data as any[]).map(normalizeHistoricalContext);
+        setHistoricalContexts(normalizedItems);
+        setPagination({
+          pageIndex: 1,
+          pageSize: response.data.length || 10,
+          totalItems: response.data.length || 0,
+          totalPages: 1,
+        });
+      } else {
+        setHistoricalContexts([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      }
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err);
+      if (typeof err === 'object' && err !== null && 'statusCode' in err && ((err as any).statusCode === 401 || (err as any).statusCode === 403)) {
+        setHistoricalContexts([]);
+        setPagination({ pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+      } else {
+        setError(errorMsg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [searchParams?.pageIndex, searchParams?.pageSize, searchParams?.title, searchParams?.statusFilter]);
+
+  useEffect(() => {
+    fetchHistoricalContexts();
+  }, [fetchHistoricalContexts]);
+
+  const createHistoricalContext = useCallback(async (data: HistoricalContextCreateRequest) => {
+    try {
+      const response = await apiClient.post<HistoricalContext>(historicalContextEndpoints.create, data);
+      await fetchHistoricalContexts();
+      return normalizeHistoricalContext(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchHistoricalContexts]);
+
+  const updateHistoricalContext = useCallback(async (id: string, data: HistoricalContextUpdateRequest) => {
+    try {
+      const response = await apiClient.put<HistoricalContext>(historicalContextEndpoints.update(id), data);
+      await fetchHistoricalContexts();
+      return normalizeHistoricalContext(response.data as any);
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchHistoricalContexts]);
+
+  const deleteHistoricalContext = useCallback(async (id: string) => {
+    try {
+      await apiClient.delete(historicalContextEndpoints.delete(id));
+      await fetchHistoricalContexts();
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err));
+    }
+  }, [fetchHistoricalContexts]);
+
+  return {
+    historicalContexts,
+    loading,
+    error,
+    pagination,
+    fetchHistoricalContexts,
+    createHistoricalContext,
+    updateHistoricalContext,
+    deleteHistoricalContext,
+  };
+}
+
+// Dashboard Admin Hooks (Admin role only)
+export function useArtifactStats() {
+  const [stats, setStats] = useState<ArtifactStats | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchArtifactStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.get<ArtifactStats>(dashboardAdminEndpoints.artifactStats);
+      setStats(response.data);
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err);
+      setError(errorMsg);
+      setStats(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchArtifactStats();
+  }, [fetchArtifactStats]);
+
+  return {
+    stats,
+    loading,
+    error,
+    refetch: fetchArtifactStats,
+  };
+}
+
+export function useStaffStats() {
+  const [stats, setStats] = useState<StaffStats | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStaffStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.get<StaffStats>(dashboardAdminEndpoints.staffStats);
+      setStats(response.data);
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err);
+      setError(errorMsg);
+      setStats(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStaffStats();
+  }, [fetchStaffStats]);
+
+  return {
+    stats,
+    loading,
+    error,
+    refetch: fetchStaffStats,
+  };
 }

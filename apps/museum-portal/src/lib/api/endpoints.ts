@@ -104,3 +104,32 @@ export const visitorPublicEndpoints = {
   login: '/visitors/login',
   getArtifactById: (id: string) => `/visitors/artifacts/${id}`,
 } as const;
+
+// Exhibition Management endpoints
+export const exhibitionEndpoints = {
+  getAll: '/exhibition',
+  getById: (id: string) => `/exhibition/${id}`,
+  create: '/exhibition',
+  update: (id: string) => `/exhibition/${id}`,
+  delete: (id: string) => `/exhibition/${id}`,
+  removeHistorical: (id: string) => `/exhibition/${id}/remove-historical`,
+} as const;
+
+// Historical Context Management endpoints
+export const historicalContextEndpoints = {
+  getAll: '/historicalcontext',
+  getById: (id: string) => `/historicalcontext/${id}`,
+  create: '/historicalcontext',
+  update: (id: string) => `/historicalcontext/${id}`,
+  delete: (id: string) => `/historicalcontext/${id}`,
+  assignArtifacts: (historicalContextId: string) => 
+    `/historicalcontext/${historicalContextId}/assign-artifacts`,
+  removeArtifacts: (historicalContextId: string) => 
+    `/historicalcontext/${historicalContextId}/remove-artifacts`,
+} as const;
+
+// Dashboard Admin endpoints (for Admin role only)
+export const dashboardAdminEndpoints = {
+  artifactStats: '/admin/dashboards/artifact-stats',
+  staffStats: '/admin/dashboards/staff-stats',
+} as const;

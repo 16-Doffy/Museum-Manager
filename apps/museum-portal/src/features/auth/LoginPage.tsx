@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/auth-store';
 import { FiEye, FiEyeOff, FiArchive } from 'react-icons/fi';
-
+import { Landmark } from 'lucide-react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +32,7 @@ export default function LoginPage() {
         errorMessage = err.message;
       }
       
-      // Show error with line breaks if needed
+     
       const errorLines = errorMessage.split('\n');
       if (errorLines.length > 1) {
         toast.error(errorLines[0], {
@@ -48,32 +48,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <FiArchive className="w-8 h-8 text-white" />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+      {/* Left panel - content */}
+      <div className="relative bg-[#06204e] text-white flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          <div className="mb-10">
+            {/* <div className="w-14 h-14 rounded-xl bg-gray-500/20 flex items-center justify-center ">
+             <Landmark className="w-10 h-12 text-white " />
+            </div> */}
+            <h1 className="leading-none font-extrabold tracking-tight text-3xl bg-gradient-to-r from-white via-sky-200 to-green-500 inline-block text-transparent bg-clip-text">
+              <span className="block text-center"> WELCOME TO THE MUSEUM</span>
+              <span className="block text-center ">WORLD OF ART</span>
+              <span className="block text-center">AND</span>
+              <span className="block text-center">HISTORY</span>
+            </h1>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Museum Portal
-          </h1>
-          <p className="text-gray-600">
-            Hệ thống quản lý bảo tàng
-          </p>
-        </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
-            Đăng nhập
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                Enter your email
               </label>
               <input
                 id="email"
@@ -81,16 +75,15 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                placeholder="Nhập email của bạn"
+                className="w-full px-4 py-3 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                placeholder="you@example.com"
                 disabled={isLoading}
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Mật khẩu
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                Enter your password
               </label>
               <div className="relative">
                 <input
@@ -99,14 +92,14 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                  placeholder="Nhập mật khẩu"
+                  className="w-full px-4 py-3 pr-12 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  placeholder="••••••••"
                   disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white"
                   disabled={isLoading}
                 >
                   {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
@@ -114,35 +107,33 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-md bg-black/10 hover:bg-blue-600 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
-                 {/* Demo Credentials */}
-                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                   <h3 className="text-sm font-medium text-gray-700 mb-2">Test Credentials:</h3>
-                   <div className="text-xs text-gray-600 space-y-1">
-                     <p><strong>SuperAdmin:</strong> superadmin@museum.com / @llpasSsW0rd1234!</p>
-                     <p><strong>Admin:</strong> admin@museum1.com / (password unknown)</p>
-                     <p><strong>Admin:</strong> huhu@gmail.com / (password unknown)</p>
-                     <p><strong>Staff:</strong> staff01@museum.com / (password unknown)</p>
-                     <p className="text-red-600"><strong>Note:</strong> SuperAdmin password might be different!</p>
-                   </div>
-                 </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-sm text-gray-500">
-            © 2024 Museum Management System
+          <p className="mt-10 text-xs text-gray-400">
+            © 2025 Museum Management System
           </p>
         </div>
+
+        {/* vignette */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/30" />
+      </div>
+
+      {/* Right panel - image */}
+      <div
+        className="hidden lg:block relative bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://www.islands.com/img/gallery/a-bustling-yet-underrated-connecticut-city-is-home-to-americas-oldest-public-art-museum/l-intro-1733933490.jpg')",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/25" />
       </div>
     </div>
   );

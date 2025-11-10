@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useAreas, useArtifacts, useDisplayPositions } from '../../lib/api/hooks';
-import { Users, MapPin, Package, TrendingUp } from 'lucide-react';
+import { useAreas, useArtifacts, useDisplayPositions, useArtifactStats, useStaffStats } from '../../lib/api/hooks';
+import { Users, MapPin, Package, TrendingUp, BarChart3 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth-store';
 
 export default function DashboardPage() {
@@ -17,20 +17,33 @@ export default function DashboardPage() {
   const { areas } = useAreas(searchParams);
   const { artifacts } = useArtifacts(searchParams);
   const { displayPositions } = useDisplayPositions(searchParams);
+  
+  // Check user role - Admin can access dashboard stats APIs
+  const userRole = (user as any)?.role?.name || (user as any)?.role || '';
+  const isAdmin = userRole === 'Admin' || userRole === 'admin';
+  
+  // Dashboard stats APIs (Admin only)
+  const { stats: artifactStats, loading: artifactStatsLoading, error: artifactStatsError } = useArtifactStats();
+  const { stats: staffStats, loading: staffStatsLoading, error: staffStatsError } = useStaffStats();
+
   // Visitors API not available yet - disabled
   // const { visitors } = useVisitors(searchParams);
 
   useEffect(() => {
+    // Use API stats if available (Admin), otherwise fallback to basic counts
+    const artifactCount = artifactStats?.totalArtifacts ?? artifacts?.length ?? 0;
+    
     setStats({
       totalVisitors: 0, // Visitors API not available
-      totalArtifacts: artifacts?.length || 0,
+      totalArtifacts: artifactCount,
       totalAreas: areas?.length || 0,
       // API không có trạng thái khu vực; tính theo số vị trí trưng bày đang hoạt động
       activeAreas: displayPositions?.filter((p: any) => p.isActive || p.status === 'Active').length || 0,
     });
-  }, [areas, artifacts, displayPositions]);
+  }, [areas, artifacts, displayPositions, artifactStats]);
 
-  const statCards = [
+  // Build stat cards based on role
+  const baseStatCards = [
     {
       title: 'Tổng khách tham quan',
       value: stats.totalVisitors.toLocaleString(),
@@ -65,6 +78,29 @@ export default function DashboardPage() {
     },
   ];
 
+  // Admin-specific stats cards
+  const adminStatCards = isAdmin && artifactStats ? [
+    ...baseStatCards,
+    {
+      title: 'Hiện vật đang trưng bày',
+      value: (artifactStats.onDisplayArtifacts || 0).toLocaleString(),
+      icon: BarChart3,
+      color: 'indigo',
+      bgColor: 'bg-indigo-100',
+      textColor: 'text-indigo-600',
+    },
+    {
+      title: 'Hiện vật trong kho',
+      value: (artifactStats.inStorageArtifacts || 0).toLocaleString(),
+      icon: Package,
+      color: 'amber',
+      bgColor: 'bg-amber-100',
+      textColor: 'text-amber-600',
+    },
+  ] : baseStatCards;
+
+  const statCards = adminStatCards;
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -94,6 +130,72 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Admin Dashboard Stats Section */}
+      {isAdmin && artifactStats && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Thống kê Hiện vật (Admin)</h2>
+          {artifactStatsLoading ? (
+            <p className="text-gray-500">Đang tải...</p>
+          ) : artifactStatsError ? (
+            <p className="text-red-500">Lỗi: {artifactStatsError}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Tổng hiện vật</p>
+                <p className="text-2xl font-bold text-gray-900">{artifactStats.totalArtifacts?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Hiện vật hoạt động</p>
+                <p className="text-2xl font-bold text-green-600">{artifactStats.activeArtifacts?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Hiện vật không hoạt động</p>
+                <p className="text-2xl font-bold text-red-600">{artifactStats.inactiveArtifacts?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Đang trưng bày</p>
+                <p className="text-2xl font-bold text-blue-600">{artifactStats.onDisplayArtifacts?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Trong kho</p>
+                <p className="text-2xl font-bold text-amber-600">{artifactStats.inStorageArtifacts?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Bảo trì</p>
+                <p className="text-2xl font-bold text-orange-600">{artifactStats.maintenanceArtifacts?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Staff Stats Section (Admin only) */}
+      {isAdmin && staffStats && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Thống kê Nhân viên (Admin)</h2>
+          {staffStatsLoading ? (
+            <p className="text-gray-500">Đang tải...</p>
+          ) : staffStatsError ? (
+            <p className="text-red-500">Lỗi: {staffStatsError}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Tổng nhân viên</p>
+                <p className="text-2xl font-bold text-gray-900">{staffStats.totalStaff?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Nhân viên hoạt động</p>
+                <p className="text-2xl font-bold text-green-600">{staffStats.activeStaff?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Nhân viên không hoạt động</p>
+                <p className="text-2xl font-bold text-red-600">{staffStats.inactiveStaff?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Museum Info */}
       <div className="bg-white rounded-lg shadow p-6">
