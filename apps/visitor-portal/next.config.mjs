@@ -12,6 +12,8 @@ const nextConfig = {
   // Fix Next.js workspace root inference warning when multiple lockfiles exist
   // Point tracing to the monorepo root (Museum-Manager)
   outputFileTracingRoot: path.join(__dirname, '..', '..'),
+  // Transpile workspace packages for development
+  transpilePackages: ['@museum-manager/ui-core'],
   async rewrites() {
     // Dev proxy: if BACKEND_URL provided, forward /api/* to backend to avoid 404/CORS
     if (!BACKEND_URL) return [];

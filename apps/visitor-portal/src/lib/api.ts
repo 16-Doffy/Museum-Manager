@@ -120,5 +120,10 @@ export async function getArtifactDetail(artifactId: string): Promise<any>
 { const res = await apiFetch<any>(`/visitors/artifacts/${artifactId}`, { auth: true });
   return res?.data || res; }
 
+// Retrieve artifact by its public code (for QR / deep link use-cases)
+export async function getArtifactByCode(artifactCode: string): Promise<any>
+{ const res = await apiFetch<any>(`/artifacts/code/${encodeURIComponent(artifactCode)}`, { auth: true });
+  return res?.data || res; }
+
 
 
