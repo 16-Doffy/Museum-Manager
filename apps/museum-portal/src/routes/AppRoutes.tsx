@@ -10,6 +10,8 @@ import PersonnelPage from '../features/personnel/PersonnelPage';
 import SettingsPage from '../features/settings/SettingsPage';
 import ProtectedRoute from '../components/layout/ProtectedLayout';
 import PublicArtifactDetailPage from '../features/artifacts/PublicArtifactDetailPage';
+import ExhibitionsPage from '../features/exhibitions/ExhibitionsPage';
+import HistoricalContextsPage from '../features/historical-contexts/HistoricalContextsPage';
 
 export default function AppRoutes() {
   return (
@@ -29,6 +31,8 @@ export default function AppRoutes() {
         <Route path="/interactions" element={<InteractionsPage />} />
         <Route path="/personnel" element={<PersonnelPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/exhibitions" element={<ExhibitionsPage />} />
+        <Route path="/historical-contexts" element={<HistoricalContextsPage />} />
       </Route>
     </Routes>
   );

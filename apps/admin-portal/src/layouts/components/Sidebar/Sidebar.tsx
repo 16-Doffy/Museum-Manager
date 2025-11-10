@@ -19,7 +19,18 @@ const navItems = [
     title: 'Quản lý bảo tàng',
     url: routes.museums.list,
     icon: Building2,
-    items: [],
+    items: [
+      {
+        title: 'Danh sách bảo tàng',
+        url: routes.museums.list,
+        icon: Building2,
+      },
+      {
+        title: 'Phê duyệt bảo tàng',
+        url: routes.museums.approval,
+        icon: Gavel,
+      },
+    ],
   },
   {
     title: 'Quản lý người dùng',

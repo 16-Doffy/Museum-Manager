@@ -7,6 +7,8 @@ import {
   FiEye,
   FiMapPin,
   FiMessageSquare,
+  FiCalendar,
+  FiBook,
 } from "react-icons/fi";
 import type { IconType } from "react-icons";
 import { cn } from "../../lib/utils";
@@ -45,18 +47,30 @@ const navigationItems: NavItem[] = [
     icon: FiEye,
     href: "/display-positions",
   },
+  {
+    id: "exhibitions",
+    label: "Triển lãm",
+    icon: FiCalendar,
+    href: "/exhibitions",
+  },
+  {
+    id: "historical-contexts",
+    label: "Ngữ cảnh lịch sử",
+    icon: FiBook,
+    href: "/historical-contexts",
+  },
   // {
   //   id: "visitors",
   //   label: "Khách tham quan",
   //   icon: FiUsers,
   //   href: "/visitors",
   // },
-  // {
-  //   id: "interactions",
-  //   label: "Tương tác",
-  //   icon: FiMessageSquare,
-  //   href: "/interactions",
-  // },
+  {
+    id: "interactions",
+    label: "Tương tác",
+    icon: FiMessageSquare,
+    href: "/interactions",
+  },
 ];
 
 export default function Sidebar() {

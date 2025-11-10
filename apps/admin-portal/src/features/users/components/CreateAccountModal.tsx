@@ -140,26 +140,28 @@ export default function CreateAccountModal({ isOpen, onClose, onSubmit, isLoadin
                 </select>
               </div>
 
-              {/* Museum */}
+              {/* Museum (Optional) */}
               <div>
                 <label htmlFor="museumId" className="block text-sm font-medium text-foreground mb-1">
-                  Bảo tàng <span className="text-destructive">*</span>
+                  Bảo tàng <span className="text-muted-foreground text-xs">(Tùy chọn)</span>
                 </label>
                 <select
                   id="museumId"
-                  value={formData.museumId}
-                  onChange={(e) => setFormData({ ...formData, museumId: e.target.value })}
+                  value={formData.museumId || ''}
+                  onChange={(e) => setFormData({ ...formData, museumId: e.target.value || undefined })}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-ring outline-none transition"
-                  required
                   disabled={isLoading}
                 >
-                  <option value="">Chọn bảo tàng</option>
+                  <option value="">Không chọn (tạo Pending account)</option>
                   {museumsData?.items.map((museum) => (
                     <option key={museum.id} value={museum.id}>
                       {museum.name}
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nếu không chọn bảo tàng, tài khoản sẽ ở trạng thái Pending và cần phê duyệt sau
+                </p>
               </div>
 
             </div>
