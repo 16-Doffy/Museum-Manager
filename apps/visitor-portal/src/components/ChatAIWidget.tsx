@@ -10,7 +10,11 @@ export default function ChatAIWidget() {
   const [museums, setMuseums] = useState<any[]>([]);
   const [artifactsByMuseum, setArtifactsByMuseum] = useState<Record<string, any[]>>({});
 
-  const base = process.env.NEXT_PUBLIC_API_BASE || '';
+  // Use same API base as other API calls (with /api/v1 prefix)
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    process.env.VITE_API_URL ||
+    'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1';
   const token =
     typeof window !== 'undefined'
       ? localStorage.getItem('auth_token') || localStorage.getItem('vp_token')
@@ -18,7 +22,7 @@ export default function ChatAIWidget() {
 
   async function fetchMuseums() {
     try {
-      const res = await fetch(`${base}/visitors/museums?pageIndex=1&pageSize=100`, {
+      const res = await fetch(`${API_BASE}/visitors/museums?pageIndex=1&pageSize=100`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -34,7 +38,7 @@ export default function ChatAIWidget() {
 
   async function fetchArtifacts(museumId: string) {
     try {
-      const res = await fetch(`${base}/visitors/museums/${museumId}/artifacts?pageIndex=1&pageSize=100`, {
+      const res = await fetch(`${API_BASE}/visitors/museums/${museumId}/artifacts?pageIndex=1&pageSize=100`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -115,9 +119,24 @@ export default function ChatAIWidget() {
       const local = answerFromLocal(p);
       if (local) {
         setMessages((prev) => [...prev, { role: 'ai', text: local }]);
+        setLoading(false);
         return;
       }
-      const res = await fetch(`${base}/chat/generate`, {
+      
+      // API endpoint not available yet - show helpful message
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'ai',
+          text: 'Xin lỗi, tôi chưa thể trả lời câu hỏi này. Hiện tại tôi chỉ có thể trả lời về:\n- Danh sách bảo tàng\n- Thông tin và hiện vật của các bảo tàng\n- Mô tả chi tiết về hiện vật\n\nVui lòng thử lại với câu hỏi khác!',
+        },
+      ]);
+      setLoading(false);
+      return;
+
+      // TODO: Uncomment when /chat/generate endpoint is available on backend
+      /*
+      const res = await fetch(`${API_BASE}/chat/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +145,25 @@ export default function ChatAIWidget() {
         body: JSON.stringify({ prompt: p }),
       });
 
+      // Check if response is ok
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '');
+        // Check if error is HTML (like 404 page)
+        if (errorText.trim().startsWith('<!DOCTYPE') || errorText.trim().startsWith('<html')) {
+          throw new Error(`API endpoint không khả dụng (${res.status}). Vui lòng kiểm tra kết nối với server.`);
+        }
+        throw new Error(`Lỗi API: ${res.status} - ${errorText || res.statusText}`);
+      }
+
+      // Check content type
+      const contentType = res.headers.get('content-type') || '';
       const raw = await res.text();
+      
+      // If response is HTML, it's an error
+      if (raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html')) {
+        throw new Error('Server trả về HTML thay vì JSON. Endpoint có thể không tồn tại hoặc có lỗi cấu hình.');
+      }
+
       let text = raw;
       try {
         const data = raw ? JSON.parse(raw) : null;
@@ -140,10 +177,12 @@ export default function ChatAIWidget() {
           data?.data?.message ||
           raw;
       } catch {
-        // raw text is final
+        // If it's not JSON and not HTML, use raw text
+        text = raw || 'Không có phản hồi.';
       }
 
       setMessages((prev) => [...prev, { role: 'ai', text: text || 'Không có phản hồi.' }]);
+      */
     } catch (err: any) {
       setMessages((prev) => [...prev, { role: 'ai', text: err?.message || 'Lỗi gọi Chat AI.' }]);
     } finally {

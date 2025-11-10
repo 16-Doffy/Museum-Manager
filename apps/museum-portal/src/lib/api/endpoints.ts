@@ -9,6 +9,7 @@ export const authEndpoints = {
   login: '/auth/login',
   loginGoogle: '/auth/login/google',
   logout: '/auth/logout',
+  register: '/auth/register',
 } as const;
 
 // Artifact Management endpoints
