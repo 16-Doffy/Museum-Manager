@@ -10,7 +10,7 @@ import { CreateMuseumRequest, Museum } from './types';
 export default function MuseumsPage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(10);
-  const [statusFilter, setStatusFilter] = useState<'Active' | 'Inactive'>('Active');
+  const [statusFilter, setStatusFilter] = useState<'Active' | 'Inactive' | 'Pending'>('Active');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -37,6 +37,8 @@ export default function MuseumsPage() {
     switch (status) {
       case 'Active':
         return 'bg-chart-2/10 text-chart-2 border-chart-2/20';
+      case 'Pending':
+        return 'bg-chart-4/10 text-chart-4 border-chart-4/20';
       case 'Inactive':
         return 'bg-muted text-muted-foreground border-border';
       default:
@@ -68,6 +70,7 @@ export default function MuseumsPage() {
             className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
           >
             <option value="Active">Đang hoạt động</option>
+            <option value="Pending">Chờ phê duyệt</option>
             <option value="Inactive">Đã xóa</option>
           </select>
 
