@@ -3,6 +3,7 @@ const routes = {
   museums: {
     list: '/museums/admin',
     detail: (id: string) => `/museums/admin/${id}`,
+    approval: '/museums/approval',
   },
   users: '/users',
   settings: '/settings',

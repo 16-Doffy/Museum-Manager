@@ -15,6 +15,7 @@ export default function ArtifactDetailPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [interactions, setInteractions] = useState<any[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(false);
   const [myRating, setMyRating] = useState<number>(0);
@@ -114,203 +115,439 @@ export default function ArtifactDetailPage() {
   const img = data?.mediaItems?.[0]?.filePath;
 
   return (
-    <div className="w-full max-w-6xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-extrabold">Chi tiết hiện vật</h1>
-        <Button variant="outline" className="h-11 px-6 text-base" onClick={() => router.back()}>Quay lại</Button>
-      </div>
-      {error ? <div className="text-red-600 text-sm">{error}</div> : null}
-      <Card className="border-none shadow-xl" style={{ background: '#ede7dd' }}>
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold">{data?.name || 'Hiện vật'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {img ? (
-            <>
-              <img
-                src={img}
-                alt={data?.name || 'artifact'}
-                className="w-full h-[28rem] object-cover rounded-xl mb-5 cursor-zoom-in shadow"
-                onClick={() => setPreviewOpen(true)}
-              />
-              {previewOpen ? (
-                <div
-                  className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-                  onClick={() => setPreviewOpen(false)}
-                >
-                  <button
-                    className="absolute top-4 right-4 rounded-full bg-white/90 px-3 py-1 text-sm font-medium shadow"
-                    onClick={() => setPreviewOpen(false)}
-                  >
-                    Đóng
-                  </button>
+    <div className="w-full min-h-screen bg-black text-white">
+      {/* Hero Section - British Museum Style */}
+      <div className="relative w-full min-h-[90vh] flex flex-col">
+        {/* Background Image */}
+        {img ? (
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${img})`,
+            }}
+          >
+            <div className="absolute inset-0 bg-black/70" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-800" />
+        )}
+
+        {/* Content */}
+        <div className="relative z-10 flex-1 flex flex-col">
+          {/* Header with back button */}
+          <div className="flex items-center justify-between p-6 md:p-8">
+            <button
+              onClick={() => router.back()}
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              ← Quay lại
+            </button>
+          </div>
+
+          {/* Main Hero Content */}
+          <div className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-16 pb-16">
+            <div className="max-w-6xl w-full">
+              {/* Welcome Text */}
+              <div className="text-white/90 italic text-xl md:text-2xl lg:text-3xl font-sans mb-4 text-center font-light tracking-wide">
+                Chi tiết hiện vật
+              </div>
+
+              {/* Artifact Name - Large Typography */}
+              <div className="mb-8 md:mb-12">
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-sans font-extrabold text-white leading-none tracking-tight">
+                  <span className="block text-left">{data?.name?.split(' ').slice(0, Math.ceil((data?.name?.split(' ').length || 1) / 2)).join(' ') || 'HIỆN VẬT'}</span>
+                  {data?.name && data.name.split(' ').length > 1 && (
+                    <span className="block text-right mt-2">
+                      {data.name.split(' ').slice(Math.ceil((data.name.split(' ').length || 1) / 2)).join(' ')}
+                    </span>
+                  )}
+                </h1>
+              </div>
+
+              {/* Center Image Section */}
+              {img && (
+                <div className="my-8 md:my-12">
                   <img
                     src={img}
-                    alt={data?.name || 'artifact'}
-                    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-                    onClick={(e) => e.stopPropagation()}
+                    alt={data?.name || 'Hiện vật'}
+                    className="w-full h-[400px] md:h-[500px] lg:h-[600px] object-cover rounded-lg shadow-2xl cursor-zoom-in"
+                    onClick={() => {
+                      setPreviewImage(img);
+                      setPreviewOpen(true);
+                    }}
                   />
+                  {previewOpen ? (
+                    <div
+                      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+                      onClick={() => setPreviewOpen(false)}
+                    >
+                      <button
+                        className="absolute top-4 right-4 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow text-black hover:bg-white transition-colors"
+                        onClick={() => setPreviewOpen(false)}
+                      >
+                        Đóng
+                      </button>
+                      <img
+                        src={previewImage || ''}
+                        alt={data?.name || 'artifact'}
+                        className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </>
-          ) : null}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            {data?.artifactCode ? (
-              <div>
-                <div className="font-medium">Mã số</div>
-                <div>{data?.artifactCode}</div>
-              </div>
-            ) : null}
-            {data?.periodTime ? (
-              <div>
-                <div className="font-medium">Niên đại</div>
-                <span className="inline-flex rounded-full px-2.5 py-1 text-xs" style={{ background: '#FFB6AF' }}>{data.periodTime}</span>
-              </div>
-            ) : null}
-            {data?.areaName ? (
-              <div>
-                <div className="font-medium">Khu vực</div>
-                <span className="inline-flex rounded-full px-2.5 py-1 text-xs" style={{ background: '#FAE0C7' }}>{data.areaName}</span>
-              </div>
-            ) : null}
-            {data?.displayPositionName ? (
-              <div>
-                <div className="font-medium">Vị trí trưng bày</div>
-                <span className="inline-flex rounded-full px-2.5 py-1 text-xs" style={{ background: '#FBC193' }}>{data.displayPositionName}</span>
-              </div>
-            ) : null}
-            {data?.status ? (
-              <div>
-                <div className="font-medium">Trạng thái</div>
-                <span className="inline-flex rounded-full px-2.5 py-1 text-xs text-white" style={{ background: '#4EB09B' }}>{data.status}</span>
-              </div>
-            ) : null}
-          </div>
-          {data?.description ? (
-            <div className="mt-4">
-              <div className="font-medium">Mô tả</div>
-              <p className="text-neutral-700">{data.description}</p>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+              )}
 
-      {/* Interactions Section */}
-      <Card className="border-none shadow-xl" style={{ background: '#ede7dd' }}>
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Đánh giá & Bình luận</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Rating Summary */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="text-3xl font-bold">{avgRating > 0 ? avgRating.toFixed(1) : '—'}</div>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-5 h-5 ${star <= Math.round(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-300'}`}
-                  />
-                ))}
+              {/* Call to Action Button - Scroll to details */}
+              <div className="flex justify-end mt-8 md:mt-12">
+                <button
+                  onClick={() => {
+                    const detailsSection = document.getElementById('details-section');
+                    detailsSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-white/80 hover:border-white transition-all flex items-center justify-center group"
+                >
+                  <span className="text-white text-sm md:text-base font-medium text-center px-4 group-hover:scale-105 transition-transform">
+                    XEM CHI TIẾT
+                  </span>
+                </button>
               </div>
-            </div>
-            <div className="text-sm text-neutral-600">
-              ({ratings.length} đánh giá{ratings.length !== 1 ? '' : ''})
             </div>
           </div>
 
-          {/* Submit Interaction Form */}
-          <div className="space-y-4 pt-4 border-t border-neutral-300">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Đánh giá của bạn</label>
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setMyRating(star)}
-                    className="focus:outline-none"
-                  >
-                    <Star
-                      className={`w-6 h-6 transition-colors ${star <= myRating ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-300 hover:text-yellow-300'}`}
-                    />
-                  </button>
-                ))}
-                {myRating > 0 ? (
-                  <span className="text-sm text-neutral-600 ml-2">{myRating} sao</span>
+          {/* Description at bottom left */}
+          {data?.description && (
+            <div className="absolute bottom-8 left-6 md:left-12 lg:left-16 max-w-md">
+              <p className="text-white/80 text-sm md:text-base leading-relaxed">
+                {data.description}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Details Section */}
+      <div id="details-section" className="bg-neutral-900 py-16 px-6 md:px-12 lg:px-16">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {error ? <div className="text-red-400 text-sm bg-red-900/20 p-4 rounded-lg">{error}</div> : null}
+          
+          {/* Artifact Information */}
+          <Card className="border border-neutral-800 bg-neutral-800/50 shadow-xl backdrop-blur-sm">
+            <CardHeader className="p-6">
+              <CardTitle className="text-2xl md:text-3xl font-bold text-white">Thông tin hiện vật</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-base">
+                {data?.artifactCode ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Mã số / QR Code</div>
+                    {data.artifactCode.startsWith('data:image') ? (
+                      <div className="flex flex-col gap-2">
+                        <img
+                          src={data.artifactCode}
+                          alt="QR Code"
+                          className="w-32 h-32 object-contain bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
+                          onClick={() => {
+                            setPreviewImage(data.artifactCode);
+                            setPreviewOpen(true);
+                          }}
+                        />
+                        <p className="text-xs text-white/60">Click vào QR code để phóng to</p>
+                      </div>
+                    ) : (
+                      <div className="text-white/80 break-all font-mono text-sm">{data.artifactCode}</div>
+                    )}
+                  </div>
+                ) : null}
+                {data?.periodTime ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Niên đại</div>
+                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{data.periodTime}</span>
+                  </div>
+                ) : null}
+                {data?.isOriginal !== undefined ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Tính chất</div>
+                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">
+                      {data.isOriginal ? 'Bản gốc' : 'Bản sao'}
+                    </span>
+                  </div>
+                ) : null}
+                {data?.status ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Trạng thái</div>
+                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-green-600/80 text-white">{data.status}</span>
+                  </div>
+                ) : null}
+                {data?.areaName ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Khu vực</div>
+                    <div className="text-white/80">
+                      <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white mb-1">{data.areaName}</span>
+                      {data?.areaDescription ? (
+                        <p className="text-sm text-white/60 mt-1">{data.areaDescription}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+                {data?.displayPositionName ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Vị trí trưng bày</div>
+                    <div className="text-white/80">
+                      <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white mb-1">{data.displayPositionName}</span>
+                      {data?.displayPositionDescription ? (
+                        <p className="text-sm text-white/60 mt-1">{data.displayPositionDescription}</p>
+                      ) : null}
+                    </div>
+                  </div>
                 ) : null}
               </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Bình luận của bạn</label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Chia sẻ suy nghĩ của bạn về hiện vật này..."
-                  value={myComment}
-                  onChange={(e) => setMyComment(e.target.value)}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={handleSubmitInteraction}
-                  disabled={submitting || (!myRating && !myComment.trim())}
-                  style={{ background: '#4EB09B' }}
-                >
-                  {submitting ? 'Đang gửi...' : 'Gửi'}
-                </Button>
-              </div>
-            </div>
-            {submitError ? <div className="text-sm text-red-600">{submitError}</div> : null}
-          </div>
 
-          {/* Comments List */}
-          {loadingInteractions ? (
-            <div className="text-sm text-neutral-500">Đang tải bình luận...</div>
-          ) : comments.length > 0 ? (
-            <div className="space-y-4 pt-4 border-t border-neutral-300">
-              <div className="font-medium text-sm">Bình luận ({comments.length})</div>
-              <div className="space-y-3">
-                {comments.slice(0, 20).map((interaction, idx) => (
-                  <div key={idx} className="bg-white/60 rounded-lg p-4 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="font-medium text-sm text-neutral-800">
-                        {interaction.visitorName || interaction.visitor?.username || interaction.username || 'Người dùng'}
+              {/* Physical Dimensions */}
+              {(data?.weight || data?.height || data?.width || data?.length) && (
+                <div className="mt-6 pt-6 border-t border-neutral-700">
+                  <div className="font-medium text-white/90 mb-4 text-lg">Kích thước & Trọng lượng</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {data?.weight !== undefined && data?.weight !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Trọng lượng</div>
+                        <div className="text-white/80 font-medium">{data.weight} kg</div>
                       </div>
-                      {interaction.createdAt ? (
-                        <div className="text-xs text-neutral-500">
-                          {new Date(interaction.createdAt).toLocaleDateString('vi-VN', {
+                    ) : null}
+                    {data?.height !== undefined && data?.height !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Chiều cao</div>
+                        <div className="text-white/80 font-medium">{data.height} cm</div>
+                      </div>
+                    ) : null}
+                    {data?.width !== undefined && data?.width !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Chiều rộng</div>
+                        <div className="text-white/80 font-medium">{data.width} cm</div>
+                      </div>
+                    ) : null}
+                    {data?.length !== undefined && data?.length !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Chiều dài</div>
+                        <div className="text-white/80 font-medium">{data.length} cm</div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+
+              {/* Media Gallery */}
+              {data?.mediaItems && Array.isArray(data.mediaItems) && data.mediaItems.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-neutral-700">
+                  <div className="font-medium text-white/90 mb-4 text-lg">Hình ảnh</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {data.mediaItems.map((media: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                        onClick={() => {
+                          if (media.filePath) {
+                            setPreviewImage(media.filePath);
+                            setPreviewOpen(true);
+                          }
+                        }}
+                      >
+                        <img
+                          src={media.filePath}
+                          alt={media.fileName || `Hình ảnh ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Metadata */}
+              {(data?.createdAt || data?.updatedAt) && (
+                <div className="mt-6 pt-6 border-t border-neutral-700">
+                  <div className="font-medium text-white/90 mb-4 text-lg">Thông tin bổ sung</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    {data?.createdAt ? (
+                      <div>
+                        <div className="text-white/60 mb-1">Ngày tạo</div>
+                        <div className="text-white/80">
+                          {new Date(data.createdAt).toLocaleDateString('vi-VN', {
                             year: 'numeric',
-                            month: 'short',
+                            month: 'long',
                             day: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </div>
-                      ) : null}
-                    </div>
-                    {interaction.rating && interaction.rating > 0 ? (
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${star <= interaction.rating ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-300'}`}
-                          />
-                        ))}
                       </div>
                     ) : null}
-                    {interaction.comment ? (
-                      <p className="text-sm text-neutral-700">{interaction.comment}</p>
+                    {data?.updatedAt ? (
+                      <div>
+                        <div className="text-white/60 mb-1">Cập nhật lần cuối</div>
+                        <div className="text-white/80">
+                          {new Date(data.updatedAt).toLocaleDateString('vi-VN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
                     ) : null}
                   </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm text-neutral-500 pt-4 border-t border-neutral-300">
-              Chưa có bình luận nào. Hãy là người đầu tiên đánh giá!
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Image Preview Modal */}
+          {previewOpen && previewImage && (
+            <div
+              className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+              onClick={() => {
+                setPreviewOpen(false);
+                setPreviewImage(null);
+              }}
+            >
+              <button
+                className="absolute top-4 right-4 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow text-black hover:bg-white transition-colors z-10"
+                onClick={() => {
+                  setPreviewOpen(false);
+                  setPreviewImage(null);
+                }}
+              >
+                Đóng
+              </button>
+              <img
+                src={previewImage}
+                alt={data?.name || 'artifact'}
+                className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Interactions Section */}
+          <Card className="border border-neutral-800 bg-neutral-800/50 shadow-xl backdrop-blur-sm">
+            <CardHeader className="p-6">
+              <CardTitle className="text-2xl md:text-3xl font-bold text-white">Đánh giá & Bình luận</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-0 space-y-6">
+              {/* Rating Summary */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="text-4xl font-bold text-white">{avgRating > 0 ? avgRating.toFixed(1) : '—'}</div>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-6 h-6 ${star <= Math.round(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-600'}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="text-sm text-white/60">
+                  ({ratings.length} đánh giá{ratings.length !== 1 ? '' : ''})
+                </div>
+              </div>
+
+              {/* Submit Interaction Form */}
+              <div className="space-y-4 pt-4 border-t border-neutral-700">
+                <div>
+                  <label className="text-sm font-medium mb-2 block text-white/90">Đánh giá của bạn</label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setMyRating(star)}
+                        className="focus:outline-none"
+                      >
+                        <Star
+                          className={`w-6 h-6 transition-colors ${star <= myRating ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-600 hover:text-yellow-400'}`}
+                        />
+                      </button>
+                    ))}
+                    {myRating > 0 ? (
+                      <span className="text-sm text-white/60 ml-2">{myRating} sao</span>
+                    ) : null}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block text-white/90">Bình luận của bạn</label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Chia sẻ suy nghĩ của bạn về hiện vật này..."
+                      value={myComment}
+                      onChange={(e) => setMyComment(e.target.value)}
+                      className="flex-1 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-400 focus:border-white"
+                    />
+                    <Button
+                      onClick={handleSubmitInteraction}
+                      disabled={submitting || (!myRating && !myComment.trim())}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      {submitting ? 'Đang gửi...' : 'Gửi'}
+                    </Button>
+                  </div>
+                </div>
+                {submitError ? <div className="text-sm text-red-400 bg-red-900/20 p-3 rounded-lg">{submitError}</div> : null}
+              </div>
+
+              {/* Comments List */}
+              {loadingInteractions ? (
+                <div className="text-sm text-white/60 text-center py-8">Đang tải bình luận...</div>
+              ) : comments.length > 0 ? (
+                <div className="space-y-4 pt-4 border-t border-neutral-700">
+                  <div className="font-medium text-base text-white">Bình luận ({comments.length})</div>
+                  <div className="space-y-3">
+                    {comments.slice(0, 20).map((interaction, idx) => (
+                      <div key={idx} className="bg-neutral-800/50 rounded-lg p-4 space-y-2 border border-neutral-700">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-medium text-sm text-white">
+                            {interaction.visitorName || interaction.visitor?.username || interaction.username || 'Người dùng'}
+                          </div>
+                          {interaction.createdAt ? (
+                            <div className="text-xs text-white/50">
+                              {new Date(interaction.createdAt).toLocaleDateString('vi-VN', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          ) : null}
+                        </div>
+                        {interaction.rating && interaction.rating > 0 ? (
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${star <= interaction.rating ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-600'}`}
+                              />
+                            ))}
+                          </div>
+                        ) : null}
+                        {interaction.comment ? (
+                          <p className="text-sm text-white/80">{interaction.comment}</p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-white/60 pt-4 border-t border-neutral-700 text-center py-8">
+                  Chưa có bình luận nào. Hãy là người đầu tiên đánh giá!
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

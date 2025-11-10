@@ -340,3 +340,121 @@ export interface InteractionSearchParams extends PaginationParams {
   interactionType?: string;
   rating?: number;
 }
+
+// Exhibition types
+export enum ExhibitionStatus {
+  UPCOMING = 'Upcoming',
+  ACTIVE = 'Active',
+  EXPIRED = 'Expired',
+  DAILY = 'Daily',
+  DELETED = 'Deleted',
+}
+
+export interface Exhibition {
+  id: string;
+  name: string;
+  description?: string;
+  priority: number;
+  status: ExhibitionStatus;
+  startDate: string;
+  endDate: string;
+  historicalContexts?: HistoricalContext[];
+  museumId: string;
+  museum?: Museum;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExhibitionCreateRequest {
+  name: string;
+  description?: string;
+  priority?: number;
+  startDate: string;
+  endDate: string;
+  historicalContextIds?: string[];
+}
+
+export interface ExhibitionUpdateRequest {
+  name?: string;
+  description?: string;
+  priority?: number;
+  status?: ExhibitionStatus;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ExhibitionSearchParams extends PaginationParams {
+  name?: string;
+  statusFilter?: ExhibitionStatus | 'Upcoming' | 'Active' | 'Expired' | 'Daily' | 'Deleted';
+}
+
+export interface RemoveHistoricalContextRequest {
+  historicalContextIds: string[];
+}
+
+// Historical Context types
+export enum HistoricalContextStatus {
+  ACTIVE = 'Active',
+  DELETED = 'Deleted',
+}
+
+export interface HistoricalContext {
+  id: string;
+  title: string;
+  period?: string;
+  description?: string;
+  status: HistoricalContextStatus;
+  artifacts?: Artifact[];
+  museumId?: string;
+  museum?: Museum;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HistoricalContextCreateRequest {
+  title: string;
+  period?: string;
+  description?: string;
+  artifactIds?: string[];
+}
+
+export interface HistoricalContextUpdateRequest {
+  title?: string;
+  period?: string;
+  description?: string;
+  status?: HistoricalContextStatus;
+}
+
+export interface HistoricalContextSearchParams extends PaginationParams {
+  title?: string;
+  statusFilter?: HistoricalContextStatus | 'Active' | 'Deleted';
+}
+
+export interface AssignArtifactsRequest {
+  artifactIds: string[];
+}
+
+export interface RemoveArtifactsRequest {
+  artifactIds: string[];
+}
+
+// Dashboard Stats types
+export interface ArtifactStats {
+  totalArtifacts: number;
+  activeArtifacts: number;
+  inactiveArtifacts: number;
+  onDisplayArtifacts: number;
+  inStorageArtifacts: number;
+  maintenanceArtifacts: number;
+  artifactsByPeriod?: Record<string, number>;
+  artifactsByMaterial?: Record<string, number>;
+  artifactsByStatus?: Record<string, number>;
+}
+
+export interface StaffStats {
+  totalStaff: number;
+  activeStaff: number;
+  inactiveStaff: number;
+  staffByRole?: Record<string, number>;
+  staffByDepartment?: Record<string, number>;
+}

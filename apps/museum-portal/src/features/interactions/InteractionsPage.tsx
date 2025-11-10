@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useArtifacts } from '../../lib/api/hooks';
-// Interactions and Visitors API not available yet - disabled
-// import { useInteractions, useVisitors } from '../../lib/api/hooks';
+import { useArtifacts, useInteractions } from '../../lib/api/hooks';
+// Visitors API not available yet - disabled
+// import { useVisitors } from '../../lib/api/hooks';
 import { useDebounce } from '../../lib/hooks/useDebounce';
 import InteractionForm from '../../components/interactions/InteractionForm';
 import { Interaction, InteractionCreateRequest, InteractionUpdateRequest } from '../../lib/api/types';
@@ -23,27 +23,17 @@ export default function InteractionsPage() {
     ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
   }), [pageIndex, pageSize, debouncedSearchTerm]);
 
-  // Interactions and Visitors API not available yet - disabled
-  // const {
-  //   interactions,
-  //   loading,
-  //   error,
-  //   pagination,
-  //   fetchInteractions,
-  //   createInteraction,
-  //   updateInteraction,
-  //   deleteInteraction,
-  // } = useInteractions(searchParams);
-
-  // Mock data for now
-  const interactions: Interaction[] = [];
-  const loading = false;
-  const error: string | null = null;
-  const pagination = { pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 };
-  const fetchInteractions = () => Promise.resolve();
-  const createInteraction = async () => {};
-  const updateInteraction = async () => {};
-  const deleteInteraction = async () => {};
+  // Use real API for interactions (Admin, Staff)
+  const {
+    interactions,
+    loading,
+    error,
+    pagination,
+    fetchInteractions,
+    createInteraction,
+    updateInteraction,
+    deleteInteraction,
+  } = useInteractions(searchParams);
 
   // Get artifacts for form dropdowns
   const { artifacts } = useArtifacts({ pageIndex: 1, pageSize: 100 });
@@ -64,13 +54,15 @@ export default function InteractionsPage() {
     if (window.confirm('Bạn có chắc chắn muốn xóa tương tác này?')) {
       try {
         await deleteInteraction(id);
+        setPageIndex(1); // Reset to first page
+        await fetchInteractions(); // Refetch data
         alert('Xóa tương tác thành công');
       } catch (error) {
         console.error('Delete error:', error);
         alert('Lỗi khi xóa tương tác');
       }
     }
-  }, [deleteInteraction]);
+  }, [deleteInteraction, fetchInteractions]);
 
   const handleSave = useCallback(async (data: InteractionCreateRequest | InteractionUpdateRequest) => {
     try {
@@ -85,13 +77,15 @@ export default function InteractionsPage() {
       }
       setShowForm(false);
       setEditingInteraction(null);
+      setPageIndex(1); // Reset to first page
+      await fetchInteractions(); // Refetch data
     } catch (error) {
       console.error('Save error:', error);
       alert('Lỗi khi lưu tương tác');
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingInteraction, createInteraction, updateInteraction]);
+  }, [editingInteraction, createInteraction, updateInteraction, fetchInteractions]);
 
   const handleCancel = useCallback(() => {
     setShowForm(false);

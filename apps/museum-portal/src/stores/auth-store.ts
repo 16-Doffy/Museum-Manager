@@ -19,7 +19,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   checkAuth: () => {
-    const token = localStorage.getItem('auth_token');
+    const normalizeToken = (value: string | null) => {
+      if (!value) return null;
+      return value.startsWith('Bearer ') ? value.substring(7) : value;
+    };
+
+    const rawToken = localStorage.getItem('auth_token');
+    const token = normalizeToken(rawToken);
+    if (rawToken && token && rawToken !== token) {
+      localStorage.setItem('auth_token', token);
+    }
     const userStr = localStorage.getItem('auth_user');
 
     if (!token || !userStr) {
@@ -98,8 +107,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       
       // API response format: { code, statusCode, message, data: { token } }
       // response.data is already the data field from API response
-      const token = response.data?.token || 
-                   response.data?.accessToken;
+      const rawToken = response.data?.token || response.data?.accessToken;
+      const normalizeToken = (value: string | undefined | null) => {
+        if (!value) return null;
+        return value.startsWith('Bearer ') ? value.substring(7) : value;
+      };
+      const token = normalizeToken(rawToken);
       
       if (!token) {
         throw new Error('Không nhận được token từ server. Vui lòng kiểm tra lại thông tin đăng nhập.');

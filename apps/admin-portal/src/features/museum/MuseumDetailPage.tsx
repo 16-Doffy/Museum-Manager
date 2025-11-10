@@ -26,6 +26,8 @@ export default function MuseumDetailPage() {
         return 'bg-chart-2/10 text-chart-2 border-chart-2/20';
       case 'Inactive':
         return 'bg-muted text-muted-foreground border-border';
+      case 'Pending':
+        return 'bg-chart-4/10 text-chart-4 border-chart-4/20';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }

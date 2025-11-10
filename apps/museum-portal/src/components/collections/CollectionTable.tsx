@@ -1,7 +1,7 @@
 'use client';
 
 import { useArtifacts, useAreas, useDisplayPositions } from '../../lib/api/hooks';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useDebounce } from '../../lib/hooks/useDebounce';
 import ArtifactForm from './ArtifactForm';
 import ArtifactDetail from './ArtifactDetail';
@@ -20,21 +20,22 @@ export default function CollectionTable() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [assigningArtifact, setAssigningArtifact] = useState<Artifact | null>(null);
   const [selectedDisplayId, setSelectedDisplayId] = useState<string>('');
+  const [allArtifacts, setAllArtifacts] = useState<Artifact[]>([]); // Store all artifacts for client-side pagination
   
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   const searchParams = useMemo(() => ({
-    pageIndex,
-    pageSize,
+    pageIndex: 1, // Always fetch all, then paginate client-side
+    pageSize: 1000, // Fetch all artifacts
     search: debouncedSearchTerm,
-  }), [pageIndex, pageSize, debouncedSearchTerm]);
+  }), [debouncedSearchTerm]);
 
   const { 
-    artifacts, 
+    artifacts: allArtifactsFromAPI, 
     loading, 
     error, 
-    pagination,
+    pagination: apiPagination,
     fetchArtifacts,
     createArtifact,
     updateArtifact,
@@ -45,6 +46,30 @@ export default function CollectionTable() {
     updateArtifactMedia,
     deleteArtifactMedia,
   } = useArtifacts(searchParams);
+
+  // Store all artifacts and implement client-side pagination
+  useEffect(() => {
+    setAllArtifacts(allArtifactsFromAPI);
+  }, [allArtifactsFromAPI]);
+
+  // Client-side pagination: filter and slice artifacts
+  const paginatedArtifacts = useMemo(() => {
+    const startIndex = (pageIndex - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return allArtifacts.slice(startIndex, endIndex);
+  }, [allArtifacts, pageIndex, pageSize]);
+
+  // Calculate pagination info
+  const clientPagination = useMemo(() => {
+    const totalItems = allArtifacts.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    return {
+      pageIndex,
+      pageSize,
+      totalItems,
+      totalPages,
+    };
+  }, [allArtifacts.length, pageIndex, pageSize]);
 
   // Get areas for dropdown
   const { areas } = useAreas({
@@ -83,25 +108,27 @@ export default function CollectionTable() {
   }, []);
 
   const handleEdit = useCallback((id: string) => {
-    const artifact = artifacts.find(a => a.id === id);
+    const artifact = allArtifacts.find(a => a.id === id);
     if (artifact) {
       setEditingArtifact(artifact);
       setShowForm(true);
     }
-  }, [artifacts]);
+  }, [allArtifacts]);
 
   const handleView = useCallback((id: string) => {
-    const artifact = artifacts.find(a => a.id === id);
+    const artifact = allArtifacts.find(a => a.id === id);
     if (artifact) {
       setViewingArtifact(artifact);
     }
-  }, [artifacts]);
+  }, [allArtifacts]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (confirm('Bạn có chắc chắn muốn xóa hiện vật này?')) {
       try {
         setIsSubmitting(true);
         await deleteArtifact(id);
+        setPageIndex(1); // Reset to first page
+        await fetchArtifacts(); // Refetch data
         alert('Xóa hiện vật thành công');
       } catch (error) {
         console.error('Delete error:', error);
@@ -110,13 +137,14 @@ export default function CollectionTable() {
         setIsSubmitting(false);
       }
     }
-  }, [deleteArtifact]);
+  }, [deleteArtifact, fetchArtifacts]);
 
   const handleAssign = useCallback(async () => {
     if (!assigningArtifact || !selectedDisplayId) return;
     try {
       setIsSubmitting(true);
       await assignArtifactToDisplay(assigningArtifact.id, selectedDisplayId);
+      await fetchArtifacts(); // Refetch data
       alert('Gán vị trí thành công');
       setAssigningArtifact(null);
       setSelectedDisplayId('');
@@ -125,19 +153,20 @@ export default function CollectionTable() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [assigningArtifact, selectedDisplayId, assignArtifactToDisplay]);
+  }, [assigningArtifact, selectedDisplayId, assignArtifactToDisplay, fetchArtifacts]);
 
   const handleRemoveAssign = useCallback(async (artifactId: string) => {
     try {
       setIsSubmitting(true);
       await removeArtifactDisplay(artifactId);
+      await fetchArtifacts(); // Refetch data
       alert('Bỏ gán vị trí thành công');
     } catch (e) {
       alert('Không thể bỏ gán vị trí');
     } finally {
       setIsSubmitting(false);
     }
-  }, [removeArtifactDisplay]);
+  }, [removeArtifactDisplay, fetchArtifacts]);
 
   // Media handlers
   const handleAddMedia = useCallback(async (artifactId: string) => {
@@ -190,10 +219,14 @@ export default function CollectionTable() {
         alert('Cập nhật hiện vật thành công');
         // Liên kết 3 form: sau khi cập nhật mở ngay chi tiết với dữ liệu mới nhất
         if (updated) setViewingArtifact(updated as unknown as Artifact);
+        setPageIndex(1); // Reset to first page
+        await fetchArtifacts(); // Refetch data
       } else {
         const created = await createArtifact(data as ArtifactCreateRequest);
         alert('Tạo hiện vật mới thành công');
         if (created) setViewingArtifact(created as unknown as Artifact);
+        setPageIndex(1); // Reset to first page
+        await fetchArtifacts(); // Refetch data
       }
       setShowForm(false);
       setEditingArtifact(null);
@@ -203,7 +236,7 @@ export default function CollectionTable() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingArtifact, createArtifact, updateArtifact]);
+  }, [editingArtifact, createArtifact, updateArtifact, fetchArtifacts]);
 
   const handleCancel = useCallback(() => {
     setShowForm(false);
@@ -256,8 +289,8 @@ export default function CollectionTable() {
       )}
       
       <div className="bg-white rounded-xl shadow overflow-hidden">
-      {/* Search Bar - Hidden */}
-      {/* <div className="p-4 border-b border-gray-200">
+      {/* Search Bar */}
+      <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-4">
           <div className="flex-1">
             <input
@@ -275,10 +308,10 @@ export default function CollectionTable() {
             <span>Thêm hiện vật</span>
           </button>
           <div className="text-sm text-gray-500">
-            {pagination.totalItems} hiện vật
+            {clientPagination.totalItems} hiện vật
           </div>
         </div>
-      </div> */}
+      </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -292,14 +325,14 @@ export default function CollectionTable() {
             </tr>
           </thead>
           <tbody>
-            {!artifacts || artifacts.length === 0 ? (
+            {!paginatedArtifacts || paginatedArtifacts.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-8 text-center text-gray-500">
-                  Không có hiện vật nào
+                  {allArtifacts.length === 0 ? 'Không có hiện vật nào' : 'Không có hiện vật nào trong trang này'}
                 </td>
               </tr>
             ) : (
-              artifacts?.map((artifact) => (
+              paginatedArtifacts?.map((artifact) => (
                 <tr key={artifact.id} className="border-t hover:bg-gray-50">
                   <td className="p-3 text-gray-800 font-medium">{artifact.name}</td>
                   <td className="p-3 text-gray-700">{artifact.periodTime || '-'}</td>
@@ -352,26 +385,68 @@ export default function CollectionTable() {
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
+      {clientPagination.totalPages > 1 && (
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Trang {pagination.pageIndex} / {pagination.totalPages}
+              Hiển thị {((clientPagination.pageIndex - 1) * clientPagination.pageSize) + 1} -{' '}
+              {Math.min(clientPagination.pageIndex * clientPagination.pageSize, clientPagination.totalItems)} trên {clientPagination.totalItems} hiện vật
             </div>
-            <div className="flex space-x-2">
+            <div className="flex items-center space-x-2">
               <button
-                disabled={pagination.pageIndex === 1}
+                disabled={clientPagination.pageIndex === 1}
+                onClick={() => setPageIndex(1)}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Đầu
+              </button>
+              <button
+                disabled={clientPagination.pageIndex === 1}
                 onClick={() => setPageIndex(prev => prev - 1)}
                 className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
               >
                 Trước
               </button>
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(clientPagination.totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (clientPagination.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (clientPagination.pageIndex <= 3) {
+                    pageNum = i + 1;
+                  } else if (clientPagination.pageIndex >= clientPagination.totalPages - 2) {
+                    pageNum = clientPagination.totalPages - 4 + i;
+                  } else {
+                    pageNum = clientPagination.pageIndex - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPageIndex(pageNum)}
+                      className={`px-3 py-1 border border-gray-300 rounded text-sm ${
+                        clientPagination.pageIndex === pageNum
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
               <button
-                disabled={pagination.pageIndex === pagination.totalPages}
+                disabled={clientPagination.pageIndex === clientPagination.totalPages}
                 onClick={() => setPageIndex(prev => prev + 1)}
                 className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
               >
                 Sau
+              </button>
+              <button
+                disabled={clientPagination.pageIndex === clientPagination.totalPages}
+                onClick={() => setPageIndex(clientPagination.totalPages)}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Cuối
               </button>
             </div>
           </div>

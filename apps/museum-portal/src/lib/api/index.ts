@@ -13,6 +13,9 @@ export { ArtifactService } from './artifactService';
 export { DisplayPositionService } from './displayPositionService';
 export { VisitorService } from './visitorService';
 export { RoleService } from './roleService';
+export { ExhibitionService } from './exhibitionService';
+export { HistoricalContextService } from './historicalContextService';
+export { DashboardService } from './dashboardService';
 
 // Export Service Types
 export type { 
