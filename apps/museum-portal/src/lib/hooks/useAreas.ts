@@ -34,7 +34,7 @@ export function useAreas() {
       };
 
       const response: PaginatedResponse<Area> = await AreaService.getAll(searchParams);
-      setAreas(response.data);
+      setAreas(response.items);
       setPagination(response.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch areas');

@@ -16,7 +16,7 @@ export class HistoricalContextService {
   ): Promise<PaginatedResponse<HistoricalContext>> {
     const response = await apiClient.get<PaginatedResponse<HistoricalContext>>(
       historicalContextEndpoints.getAll,
-      params as Record<string, string | number | boolean>
+      params ? (params as unknown as Record<string, string | number | boolean>) : undefined
     );
     return response.data;
   }

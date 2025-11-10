@@ -7,7 +7,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, LoginRequest, GoogleLoginRequest, LoginResponse } from '../api/types';
+import { User, UserRole, LoginRequest, GoogleLoginRequest, LoginResponse } from '../api/types';
 import { authEndpoints } from '../api/endpoints';
 
 interface AuthContextType {
@@ -109,15 +109,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       // Fallback to mock data
-      const mockUser = {
+      const mockUser: User = {
         id: "1",
         email: credentials.email,
         name: credentials.email.includes('admin') ? 'Super Admin' : 
               credentials.email.includes('manager') ? 'Museum Manager' : 'Museum Staff',
-        role: credentials.email.includes('admin') ? 'SuperAdmin' : 
-              credentials.email.includes('manager') ? 'Manager' : 'Staff',
+        role: (credentials.email.includes('admin') ? UserRole.SUPER_ADMIN : 
+              credentials.email.includes('manager') ? UserRole.MANAGER : UserRole.STAFF) as UserRole,
         museumId: "1",
-        museum: { id: "1", name: "Bảo tàng Lịch sử Việt Nam" },
+        museum: { id: "1", name: "Bảo tàng Lịch sử Việt Nam", isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

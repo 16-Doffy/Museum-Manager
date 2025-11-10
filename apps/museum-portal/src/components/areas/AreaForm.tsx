@@ -64,7 +64,7 @@ export function AreaForm({ area, onSave, onCancel, loading = false, museums = []
   };
 
   const handleChange = (field: keyof typeof formData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
     if (errors[field]) {

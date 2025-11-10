@@ -6,7 +6,7 @@ export class DisplayPositionService {
   static async getAll(params?: PaginationParams): Promise<PaginatedResponse<DisplayPosition>> {
     const response = await apiClient.get<PaginatedResponse<DisplayPosition>>(
       displayPositionEndpoints.getAll,
-      params as Record<string, string | number | boolean>
+      params ? (params as unknown as Record<string, string | number | boolean>) : undefined
     );
     return response.data;
   }

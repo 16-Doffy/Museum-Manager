@@ -80,15 +80,18 @@ class ApiClient {
           throw {
             message: 'Máy chủ API không phản hồi (502 Bad Gateway). Vui lòng:\n1. Kiểm tra server API có đang chạy không\n2. Thử lại sau vài giây\n3. Liên hệ quản trị viên nếu vấn đề tiếp tục',
             statusCode: 502,
-            errors: errorData.errors || ['Server không phản hồi'],
+            errors: (errorData && typeof errorData === 'object' && 'errors' in errorData) ? errorData.errors : ['Server không phản hồi'],
           } as ApiError;
         }
         
         // API returns { code, statusCode, message, errors? } on error
+        const errorObj = errorData as any;
         throw {
-          message: errorData.message || errorData.error || `Lỗi ${response.status}: ${response.statusText}`,
+          message: (errorData && typeof errorData === 'object' && ('message' in errorData || 'error' in errorData)) 
+            ? (errorObj.message || errorObj.error) 
+            : `Lỗi ${response.status}: ${response.statusText}`,
           statusCode: response.status,
-          errors: errorData.errors,
+          errors: (errorData && typeof errorData === 'object' && 'errors' in errorData) ? errorObj.errors : undefined,
         } as ApiError;
       }
 
@@ -111,7 +114,7 @@ class ApiClient {
                 totalItems: 0,
                 totalPages: 0,
               },
-            },
+            } as T,
             success: responseData.code === 200,
           };
         }

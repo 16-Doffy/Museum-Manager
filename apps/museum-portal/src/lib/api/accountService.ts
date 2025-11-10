@@ -6,7 +6,7 @@ export class AccountService {
   static async getAll(params?: PaginationParams): Promise<PaginatedResponse<Account>> {
     const response = await apiClient.get<PaginatedResponse<Account>>(
       accountEndpoints.getAll,
-      params as Record<string, string | number | boolean>
+      params ? (params as unknown as Record<string, string | number | boolean>) : undefined
     );
     return response.data;
   }
@@ -18,7 +18,7 @@ export class AccountService {
 
   static async create(roleId: string, museumId: string, data: AccountCreateRequest): Promise<Account> {
     const response = await apiClient.post<Account>(
-      accountEndpoints.create(roleId, museumId), 
+      `${accountEndpoints.create}?roleId=${encodeURIComponent(roleId)}&museumId=${encodeURIComponent(museumId)}`, 
       data
     );
     return response.data;

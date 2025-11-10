@@ -224,11 +224,12 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
       } else if (Array.isArray(response.data)) {
         // Fallback: if API returns array directly
         const mapped = (response.data as any[]).map(normalizeArtifact);
+        const dataArray = response.data as any[];
         setArtifacts(mapped);
         setPagination({
           pageIndex: 1,
-          pageSize: response.data.length || 10,
-          totalItems: response.data.length || 0,
+          pageSize: dataArray.length || 10,
+          totalItems: dataArray.length || 0,
           totalPages: 1,
         });
       } else {
@@ -435,11 +436,12 @@ export function useDisplayPositions(searchParams?: DisplayPositionSearchParams) 
           totalPages: 0,
         });
       } else if (Array.isArray(response.data)) {
-        setDisplayPositions(response.data);
+        const dataArray = response.data as any[];
+        setDisplayPositions(dataArray);
         setPagination({
           pageIndex: 1,
-          pageSize: response.data.length || 10,
-          totalItems: response.data.length || 0,
+          pageSize: dataArray.length || 10,
+          totalItems: dataArray.length || 0,
           totalPages: 1,
         });
       } else {
@@ -566,11 +568,12 @@ export function useAreas(searchParams?: AreaSearchParams) {
           totalPages: 0,
         });
       } else if (Array.isArray(response.data)) {
-        setAreas(response.data);
+        const dataArray = response.data as any[];
+        setAreas(dataArray);
         setPagination({
           pageIndex: 1,
-          pageSize: response.data.length || 10,
-          totalItems: response.data.length || 0,
+          pageSize: dataArray.length || 10,
+          totalItems: dataArray.length || 0,
           totalPages: 1,
         });
       } else {
@@ -945,11 +948,12 @@ export function useExhibitions(searchParams?: ExhibitionSearchParams) {
           totalPages: 0,
         });
       } else if (Array.isArray(response.data)) {
-        setExhibitions(response.data);
+        const dataArray = response.data as any[];
+        setExhibitions(dataArray);
         setPagination({
           pageIndex: 1,
-          pageSize: response.data.length || 10,
-          totalItems: response.data.length || 0,
+          pageSize: dataArray.length || 10,
+          totalItems: dataArray.length || 0,
           totalPages: 1,
         });
       } else {
@@ -1052,12 +1056,13 @@ export function useHistoricalContexts(searchParams?: HistoricalContextSearchPara
           totalPages: 0,
         });
       } else if (Array.isArray(response.data)) {
-        const normalizedItems = (response.data as any[]).map(normalizeHistoricalContext);
+        const dataArray = response.data as any[];
+        const normalizedItems = dataArray.map(normalizeHistoricalContext);
         setHistoricalContexts(normalizedItems);
         setPagination({
           pageIndex: 1,
-          pageSize: response.data.length || 10,
-          totalItems: response.data.length || 0,
+          pageSize: dataArray.length || 10,
+          totalItems: dataArray.length || 0,
           totalPages: 1,
         });
       } else {
