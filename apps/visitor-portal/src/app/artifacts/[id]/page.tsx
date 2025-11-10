@@ -8,6 +8,7 @@ import { Badge } from '@museum-manager/ui-core/badge';
 import { Input } from '@museum-manager/ui-core/input';
 import { getArtifactDetail, postInteraction, getInteractionsByArtifact, getInteractions, visitorMe } from '@/lib/api';
 import { Star } from 'lucide-react';
+import QRCode from 'react-qr-code';
 
 export default function ArtifactDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -222,22 +223,29 @@ export default function ArtifactDetailPage() {
                 {data?.artifactCode ? (
                   <div>
                     <div className="font-medium text-white/90 mb-2">Mã số / QR Code</div>
-                    {data.artifactCode.startsWith('data:image') ? (
-                      <div className="flex flex-col gap-2">
-                        <img
-                          src={data.artifactCode}
-                          alt="QR Code"
-                          className="w-32 h-32 object-contain bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
+                    <div className="flex flex-col gap-2">
+                      {/* Generate QR code with full URL */}
+                      {typeof window !== 'undefined' && (
+                        <div 
+                          className="w-32 h-32 bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity inline-flex items-center justify-center"
                           onClick={() => {
-                            setPreviewImage(data.artifactCode);
+                            // Create a larger QR code for preview
+                            const qrUrl = `${window.location.origin}/artifacts/code/${encodeURIComponent(data.artifactCode)}`;
+                            // We'll use a data URL approach or show QR code in modal
+                            setPreviewImage(qrUrl);
                             setPreviewOpen(true);
                           }}
-                        />
-                        <p className="text-xs text-white/60">Click vào QR code để phóng to</p>
-                      </div>
-                    ) : (
-                      <div className="text-white/80 break-all font-mono text-sm">{data.artifactCode}</div>
-                    )}
+                        >
+                          <QRCode
+                            value={`${window.location.origin}/artifacts/code/${encodeURIComponent(data.artifactCode)}`}
+                            size={120}
+                            style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                            viewBox="0 0 256 256"
+                          />
+                        </div>
+                      )}
+                      <p className="text-xs text-white/60">Click vào QR code để phóng to</p>
+                    </div>
                   </div>
                 ) : null}
                 {data?.periodTime ? (
@@ -402,12 +410,24 @@ export default function ArtifactDetailPage() {
               >
                 Đóng
               </button>
-              <img
-                src={previewImage}
-                alt={data?.name || 'artifact'}
-                className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-                onClick={(e) => e.stopPropagation()}
-              />
+              {previewImage.startsWith('http') && data?.artifactCode ? (
+                // Show QR code if preview is a URL
+                <div className="bg-white p-8 rounded-lg" onClick={(e) => e.stopPropagation()}>
+                  <QRCode
+                    value={previewImage}
+                    size={400}
+                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                    viewBox="0 0 256 256"
+                  />
+                </div>
+              ) : (
+                <img
+                  src={previewImage}
+                  alt={data?.name || 'artifact'}
+                  className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
             </div>
           )}
 
