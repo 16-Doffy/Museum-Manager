@@ -220,30 +220,36 @@ export default function ArtifactDetailPage() {
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-base">
-                {data?.artifactCode ? (
+                {(data?.artifactCode || data?.id) ? (
                   <div>
                     <div className="font-medium text-white/90 mb-2">Mã số / QR Code</div>
                     <div className="flex flex-col gap-2">
                       {/* Generate QR code with full URL */}
-                      {typeof window !== 'undefined' && (
-                        <div 
-                          className="w-32 h-32 bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity inline-flex items-center justify-center"
-                          onClick={() => {
-                            // Create a larger QR code for preview
-                            const qrUrl = `${window.location.origin}/artifacts/code/${encodeURIComponent(data.artifactCode)}`;
-                            // We'll use a data URL approach or show QR code in modal
-                            setPreviewImage(qrUrl);
-                            setPreviewOpen(true);
-                          }}
-                        >
-                          <QRCode
-                            value={`${window.location.origin}/artifacts/code/${encodeURIComponent(data.artifactCode)}`}
-                            size={120}
-                            style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                            viewBox="0 0 256 256"
-                          />
-                        </div>
-                      )}
+                      {typeof window !== 'undefined' && (() => {
+                        // Check if artifactCode is a data URL (base64 image)
+                        // If so, use the artifact ID instead
+                        const codeForQR = data.artifactCode && !data.artifactCode.startsWith('data:') 
+                          ? data.artifactCode 
+                          : (data.id || '');
+                        const qrUrl = `${window.location.origin}/artifacts/code/${encodeURIComponent(codeForQR)}`;
+                        
+                        return (
+                          <div 
+                            className="w-32 h-32 bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity inline-flex items-center justify-center"
+                            onClick={() => {
+                              setPreviewImage(qrUrl);
+                              setPreviewOpen(true);
+                            }}
+                          >
+                            <QRCode
+                              value={qrUrl}
+                              size={120}
+                              style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                              viewBox="0 0 256 256"
+                            />
+                          </div>
+                        );
+                      })()}
                       <p className="text-xs text-white/60">Click vào QR code để phóng to</p>
                     </div>
                   </div>
@@ -410,17 +416,17 @@ export default function ArtifactDetailPage() {
               >
                 Đóng
               </button>
-              {previewImage.startsWith('http') && data?.artifactCode ? (
-                // Show QR code if preview is a URL
-                <div className="bg-white p-8 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                  <QRCode
-                    value={previewImage}
-                    size={400}
-                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                    viewBox="0 0 256 256"
-                  />
-                </div>
-              ) : (
+                    {previewImage && previewImage.startsWith('http') && (data?.artifactCode || data?.id) ? (
+                      // Show QR code if preview is a URL
+                      <div className="bg-white p-8 rounded-lg" onClick={(e) => e.stopPropagation()}>
+                        <QRCode
+                          value={previewImage}
+                          size={400}
+                          style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                          viewBox="0 0 256 256"
+                        />
+                      </div>
+                    ) : (
                 <img
                   src={previewImage}
                   alt={data?.name || 'artifact'}

@@ -90,17 +90,42 @@ export default function ArtifactByCodePage() {
             code = pathParts[codeIndex + 1];
           }
         }
-
-        // Get artifact by code first to get the ID
-        const artifact = await getArtifactByCode(code);
-        const id = artifact?.id || artifact?.artifactId;
         
-        if (!id) {
-          throw new Error('Không tìm thấy ID hiện vật trong phản hồi từ server.');
+        // If code is a data URL (base64 image), it means the QR code was generated incorrectly
+        // In this case, we can't use it to fetch artifact, so throw an error
+        if (code.startsWith('data:')) {
+          throw new Error('QR code không hợp lệ. Vui lòng sử dụng QR code mới từ trang chi tiết hiện vật.');
+        }
+
+        // Try to get artifact by code first
+        let artifactDetail = null;
+        let id = null;
+        
+        try {
+          const artifact = await getArtifactByCode(code);
+          id = artifact?.id || artifact?.artifactId;
+          if (id) {
+            // Get full artifact details using the ID from the code lookup
+            artifactDetail = await getArtifactDetail(String(id));
+          }
+        } catch (codeError: any) {
+          // If getArtifactByCode fails (404), the code might actually be an ID
+          // This can happen if QR code was generated with artifact ID instead of artifactCode
+          console.log('Failed to get artifact by code, trying as ID:', codeError);
+          try {
+            // Try to use the code directly as an artifact ID
+            artifactDetail = await getArtifactDetail(code);
+            id = artifactDetail?.id || code;
+          } catch (idError: any) {
+            // Both methods failed
+            throw new Error(`Không tìm thấy hiện vật với mã "${code}". ${idError?.message || codeError?.message || ''}`);
+          }
         }
         
-        // Get full artifact details
-        const artifactDetail = await getArtifactDetail(String(id));
+        if (!artifactDetail) {
+          throw new Error('Không thể tải thông tin hiện vật.');
+        }
+        
         setData(artifactDetail);
         
         // Load interactions
@@ -273,28 +298,36 @@ export default function ArtifactByCodePage() {
               </CardHeader>
               <CardContent className="p-6 pt-0">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-base">
-                  {data?.artifactCode ? (
+                  {(data?.artifactCode || data?.id) ? (
                     <div>
                       <div className="font-medium text-white/90 mb-2">Mã số / QR Code</div>
                       <div className="flex flex-col gap-2">
                         {/* Generate QR code with full URL */}
-                        {typeof window !== 'undefined' && (
-                          <div 
-                            className="w-32 h-32 bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity inline-flex items-center justify-center"
-                            onClick={() => {
-                              const qrUrl = `${window.location.origin}/artifacts/code/${encodeURIComponent(data.artifactCode)}`;
-                              setPreviewImage(qrUrl);
-                              setPreviewOpen(true);
-                            }}
-                          >
-                            <QRCode
-                              value={`${window.location.origin}/artifacts/code/${encodeURIComponent(data.artifactCode)}`}
-                              size={120}
-                              style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                              viewBox="0 0 256 256"
-                            />
-                          </div>
-                        )}
+                        {typeof window !== 'undefined' && (() => {
+                          // Check if artifactCode is a data URL (base64 image)
+                          // If so, use the artifact ID instead
+                          const codeForQR = data.artifactCode && !data.artifactCode.startsWith('data:') 
+                            ? data.artifactCode 
+                            : (data.id || '');
+                          const qrUrl = `${window.location.origin}/artifacts/code/${encodeURIComponent(codeForQR)}`;
+                          
+                          return (
+                            <div 
+                              className="w-32 h-32 bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity inline-flex items-center justify-center"
+                              onClick={() => {
+                                setPreviewImage(qrUrl);
+                                setPreviewOpen(true);
+                              }}
+                            >
+                              <QRCode
+                                value={qrUrl}
+                                size={120}
+                                style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                                viewBox="0 0 256 256"
+                              />
+                            </div>
+                          );
+                        })()}
                         <p className="text-xs text-white/60">Click vào QR code để phóng to</p>
                       </div>
                     </div>
@@ -576,7 +609,7 @@ export default function ArtifactByCodePage() {
           >
             Đóng
           </button>
-          {previewImage.startsWith('http') && data?.artifactCode ? (
+          {previewImage && previewImage.startsWith('http') && (data?.artifactCode || data?.id) ? (
             // Show QR code if preview is a URL
             <div className="bg-white p-8 rounded-lg" onClick={(e) => e.stopPropagation()}>
               <QRCode
