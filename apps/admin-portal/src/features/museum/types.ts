@@ -22,10 +22,8 @@ export interface MuseumListParams {
   Status?: 'Active' | 'Inactive' | 'Pending';
 }
 
-export interface CreateMuseumRequest {
-  name: string;
-  location: string;
-  description: string;
+export interface ConfirmMuseumRequest {
+  ConfirmStatus: 'Confirmed' | 'Rejected';
 }
 
 export interface UpdateMuseumRequest {

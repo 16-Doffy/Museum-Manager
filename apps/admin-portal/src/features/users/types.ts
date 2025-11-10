@@ -2,13 +2,13 @@ export interface Account {
   id: string;
   email: string;
   fullName: string;
-  status: 'Active' | 'Inactive' | 'Pending';
+  status: 'Active' | 'Inactive';
   createAt: string;
   updateAt: string | null;
-  roleId: string | null;
-  roleName: string | null;
-  museumId: string | null;
-  museumName: string | null;
+  roleId: string;
+  roleName: string;
+  museumId: string;
+  museumName: string;
 }
 
 export interface AccountListResponse {
@@ -49,7 +49,7 @@ export interface CreateAccountRequest {
   fullName: string;
   password: string;
   roleId: string;
-  museumId?: string; // Optional - if empty, account will be Pending
+  museumId: string;
 }
 
 export interface UpdateAccountRequest {

@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client';
-import { CreateMuseumRequest, Museum, MuseumListParams, MuseumListResponse, UpdateMuseumRequest } from '../types';
+import { ConfirmMuseumRequest, Museum, MuseumListParams, MuseumListResponse, UpdateMuseumRequest } from '../types';
 
 export const museumsApi = {
   getAll: async (params: MuseumListParams = { pageIndex: 1, pageSize: 10 }) => {
@@ -22,11 +22,6 @@ export const museumsApi = {
     return response.data;
   },
 
-  create: async (data: CreateMuseumRequest) => {
-    const response = await apiClient.post<Museum>('/museums', data);
-    return response.data;
-  },
-
   update: async (id: string, data: UpdateMuseumRequest) => {
     const response = await apiClient.put<Museum>(`/museums/${id}`, data);
     return response.data;
@@ -34,6 +29,11 @@ export const museumsApi = {
 
   delete: async (id: string) => {
     const response = await apiClient.delete<null>(`/museums/${id}`);
+    return response.data;
+  },
+
+  confirm: async (id: string, confirmStatus: ConfirmMuseumRequest['ConfirmStatus']) => {
+    const response = await apiClient.put<Museum>(`/museums/${id}/confirm?ConfirmStatus=${confirmStatus}`, null);
     return response.data;
   },
 };
