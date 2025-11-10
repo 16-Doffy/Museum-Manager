@@ -25,10 +25,7 @@ export const accountsApi = {
 
   create: async (data: CreateAccountRequest) => {
     const { roleId, museumId, email, fullName, password } = data;
-    // If museumId is provided, create active account with museum
-    // If not, create pending account without museum
-    const url = museumId ? `/accounts/${roleId}/${museumId}` : `/accounts/${roleId}`;
-    const response = await apiClient.post<Account>(url, {
+    const response = await apiClient.post<Account>(`/accounts/${roleId}/${museumId}`, {
       email,
       fullName,
       password,

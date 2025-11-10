@@ -1,10 +1,9 @@
 import Error from '@/components/common';
 import ScrollToTop from '@/components/ScrollToTop';
 import { AdminDashboard, SubscriptionAdminPage } from '@/features/admin';
-import { MuseumApprovalPage } from '@/features/approval';
 import AuthPage from '@/features/auth/AuthPage';
 import NotPermittedPage from '@/features/auth/NotPermittedPage';
-import { MuseumDetailPage, MuseumsPage } from '@/features/museum';
+import { MuseumApprovalPage, MuseumDetailPage, MuseumsPage } from '@/features/museum';
 import { OrderListPage, PayoutListPage, PlanListPage, SubscriptionListPage } from '@/features/payment';
 import { RoleDetailPage, RolePage } from '@/features/rolebase';
 import { AccountDetailPage, UsersPage } from '@/features/users';
@@ -27,8 +26,6 @@ export default function AppRoutes() {
           {/* Museum Management */}
           <Route path="museums/admin" element={<MuseumsPage />} />
           <Route path="museums/admin/:id" element={<MuseumDetailPage />} />
-          
-          {/* Museum Approval */}
           <Route path="museums/approval" element={<MuseumApprovalPage />} />
 
           {/* Manager Subscription */}
