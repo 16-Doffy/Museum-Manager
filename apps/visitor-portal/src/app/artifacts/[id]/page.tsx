@@ -155,14 +155,12 @@ export default function ArtifactDetailPage() {
             </>
           ) : null}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="font-medium">Mã hiện vật</div>
-              <div>{data?.id}</div>
-            </div>
-            <div>
-              <div className="font-medium">Mã số</div>
-              <div>{data?.artifactCode}</div>
-            </div>
+            {data?.artifactCode ? (
+              <div>
+                <div className="font-medium">Mã số</div>
+                <div>{data?.artifactCode}</div>
+              </div>
+            ) : null}
             {data?.periodTime ? (
               <div>
                 <div className="font-medium">Niên đại</div>
