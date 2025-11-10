@@ -15,6 +15,7 @@ export default function ArtifactDetailPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [interactions, setInteractions] = useState<any[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(false);
   const [myRating, setMyRating] = useState<number>(0);
@@ -170,27 +171,11 @@ export default function ArtifactDetailPage() {
                     src={img}
                     alt={data?.name || 'Hiện vật'}
                     className="w-full h-[400px] md:h-[500px] lg:h-[600px] object-cover rounded-lg shadow-2xl cursor-zoom-in"
-                    onClick={() => setPreviewOpen(true)}
+                    onClick={() => {
+                      setPreviewImage(img);
+                      setPreviewOpen(true);
+                    }}
                   />
-                  {previewOpen ? (
-                    <div
-                      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-                      onClick={() => setPreviewOpen(false)}
-                    >
-                      <button
-                        className="absolute top-4 right-4 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow text-black hover:bg-white transition-colors"
-                        onClick={() => setPreviewOpen(false)}
-                      >
-                        Đóng
-                      </button>
-                      <img
-                        src={img}
-                        alt={data?.name || 'artifact'}
-                        className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                  ) : null}
                 </div>
               )}
 
@@ -236,8 +221,23 @@ export default function ArtifactDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-base">
                 {data?.artifactCode ? (
                   <div>
-                    <div className="font-medium text-white/90 mb-2">Mã số</div>
-                    <div className="text-white/80">{data?.artifactCode}</div>
+                    <div className="font-medium text-white/90 mb-2">Mã số / QR Code</div>
+                    {data.artifactCode.startsWith('data:image') ? (
+                      <div className="flex flex-col gap-2">
+                        <img
+                          src={data.artifactCode}
+                          alt="QR Code"
+                          className="w-32 h-32 object-contain bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
+                          onClick={() => {
+                            setPreviewImage(data.artifactCode);
+                            setPreviewOpen(true);
+                          }}
+                        />
+                        <p className="text-xs text-white/60">Click vào QR code để phóng to</p>
+                      </div>
+                    ) : (
+                      <div className="text-white/80 break-all font-mono text-sm">{data.artifactCode}</div>
+                    )}
                   </div>
                 ) : null}
                 {data?.periodTime ? (
@@ -246,16 +246,12 @@ export default function ArtifactDetailPage() {
                     <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{data.periodTime}</span>
                   </div>
                 ) : null}
-                {data?.areaName ? (
+                {data?.isOriginal !== undefined ? (
                   <div>
-                    <div className="font-medium text-white/90 mb-2">Khu vực</div>
-                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{data.areaName}</span>
-                  </div>
-                ) : null}
-                {data?.displayPositionName ? (
-                  <div>
-                    <div className="font-medium text-white/90 mb-2">Vị trí trưng bày</div>
-                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{data.displayPositionName}</span>
+                    <div className="font-medium text-white/90 mb-2">Tính chất</div>
+                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">
+                      {data.isOriginal ? 'Bản gốc' : 'Bản sao'}
+                    </span>
                   </div>
                 ) : null}
                 {data?.status ? (
@@ -264,9 +260,156 @@ export default function ArtifactDetailPage() {
                     <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-green-600/80 text-white">{data.status}</span>
                   </div>
                 ) : null}
+                {data?.areaName ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Khu vực</div>
+                    <div className="text-white/80">
+                      <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white mb-1">{data.areaName}</span>
+                      {data?.areaDescription ? (
+                        <p className="text-sm text-white/60 mt-1">{data.areaDescription}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+                {data?.displayPositionName ? (
+                  <div>
+                    <div className="font-medium text-white/90 mb-2">Vị trí trưng bày</div>
+                    <div className="text-white/80">
+                      <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white mb-1">{data.displayPositionName}</span>
+                      {data?.displayPositionDescription ? (
+                        <p className="text-sm text-white/60 mt-1">{data.displayPositionDescription}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
               </div>
+
+              {/* Physical Dimensions */}
+              {(data?.weight || data?.height || data?.width || data?.length) && (
+                <div className="mt-6 pt-6 border-t border-neutral-700">
+                  <div className="font-medium text-white/90 mb-4 text-lg">Kích thước & Trọng lượng</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {data?.weight !== undefined && data?.weight !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Trọng lượng</div>
+                        <div className="text-white/80 font-medium">{data.weight} kg</div>
+                      </div>
+                    ) : null}
+                    {data?.height !== undefined && data?.height !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Chiều cao</div>
+                        <div className="text-white/80 font-medium">{data.height} cm</div>
+                      </div>
+                    ) : null}
+                    {data?.width !== undefined && data?.width !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Chiều rộng</div>
+                        <div className="text-white/80 font-medium">{data.width} cm</div>
+                      </div>
+                    ) : null}
+                    {data?.length !== undefined && data?.length !== null ? (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Chiều dài</div>
+                        <div className="text-white/80 font-medium">{data.length} cm</div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+
+              {/* Media Gallery */}
+              {data?.mediaItems && Array.isArray(data.mediaItems) && data.mediaItems.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-neutral-700">
+                  <div className="font-medium text-white/90 mb-4 text-lg">Hình ảnh</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {data.mediaItems.map((media: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                        onClick={() => {
+                          if (media.filePath) {
+                            setPreviewImage(media.filePath);
+                            setPreviewOpen(true);
+                          }
+                        }}
+                      >
+                        <img
+                          src={media.filePath}
+                          alt={media.fileName || `Hình ảnh ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Metadata */}
+              {(data?.createdAt || data?.updatedAt) && (
+                <div className="mt-6 pt-6 border-t border-neutral-700">
+                  <div className="font-medium text-white/90 mb-4 text-lg">Thông tin bổ sung</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    {data?.createdAt ? (
+                      <div>
+                        <div className="text-white/60 mb-1">Ngày tạo</div>
+                        <div className="text-white/80">
+                          {new Date(data.createdAt).toLocaleDateString('vi-VN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                    {data?.updatedAt ? (
+                      <div>
+                        <div className="text-white/60 mb-1">Cập nhật lần cuối</div>
+                        <div className="text-white/80">
+                          {new Date(data.updatedAt).toLocaleDateString('vi-VN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Image Preview Modal */}
+          {previewOpen && previewImage && (
+            <div
+              className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+              onClick={() => {
+                setPreviewOpen(false);
+                setPreviewImage(null);
+              }}
+            >
+              <button
+                className="absolute top-4 right-4 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow text-black hover:bg-white transition-colors z-10"
+                onClick={() => {
+                  setPreviewOpen(false);
+                  setPreviewImage(null);
+                }}
+              >
+                Đóng
+              </button>
+              <img
+                src={previewImage}
+                alt={data?.name || 'artifact'}
+                className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
 
           {/* Interactions Section */}
           <Card className="border border-neutral-800 bg-neutral-800/50 shadow-xl backdrop-blur-sm">
