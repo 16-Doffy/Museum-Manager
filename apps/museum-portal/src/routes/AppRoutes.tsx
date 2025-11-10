@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import LoginPage from '../features/auth/LoginPage';
+import RegisterPage from '../features/auth/RegisterPage';
 import DashboardPage from '../features/dashboard/DashboardPage';
 import AreasPage from '../features/areas/AreasPage';
 import ArtifactsPage from '../features/artifacts/ArtifactsPage';
@@ -17,6 +18,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       
       {/* Public routes (no auth required) */}
       <Route path="/visitor/artifacts/:id" element={<PublicArtifactDetailPage />} />
