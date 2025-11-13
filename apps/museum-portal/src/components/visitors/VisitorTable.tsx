@@ -48,9 +48,9 @@ export default function VisitorTable({ onCreate, onEdit, onDelete }: VisitorTabl
   const error: string | null = null;
   const pagination = { pageIndex: 1, pageSize: 10, totalItems: 0, totalPages: 0 };
   const fetchVisitors = () => Promise.resolve();
-  const createVisitor = async () => {};
-  const updateVisitor = async () => {};
-  const deleteVisitor = async () => {};
+  const createVisitor = async (_data: VisitorCreateRequest) => Promise.resolve({} as Visitor);
+  const updateVisitor = async (_id: string, _data: VisitorUpdateRequest) => Promise.resolve({} as Visitor);
+  const deleteVisitor = async (_id: string) => Promise.resolve();
 
   const handleSearch = useCallback((newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);

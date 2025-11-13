@@ -10,7 +10,11 @@ export default function ChatAIWidget() {
   const [museums, setMuseums] = useState<any[]>([]);
   const [artifactsByMuseum, setArtifactsByMuseum] = useState<Record<string, any[]>>({});
 
-  const base = process.env.NEXT_PUBLIC_API_BASE || '';
+  // Use same API base as other API calls (with /api/v1 prefix)
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    process.env.VITE_API_URL ||
+    'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1';
   const token =
     typeof window !== 'undefined'
       ? localStorage.getItem('auth_token') || localStorage.getItem('vp_token')
@@ -18,7 +22,7 @@ export default function ChatAIWidget() {
 
   async function fetchMuseums() {
     try {
-      const res = await fetch(`${base}/visitors/museums?pageIndex=1&pageSize=100`, {
+      const res = await fetch(`${API_BASE}/visitors/museums?pageIndex=1&pageSize=100`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -34,7 +38,7 @@ export default function ChatAIWidget() {
 
   async function fetchArtifacts(museumId: string) {
     try {
-      const res = await fetch(`${base}/visitors/museums/${museumId}/artifacts?pageIndex=1&pageSize=100`, {
+      const res = await fetch(`${API_BASE}/visitors/museums/${museumId}/artifacts?pageIndex=1&pageSize=100`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -111,39 +115,131 @@ export default function ChatAIWidget() {
     setPrompt('');
     setLoading(true);
     try {
-      // Try answer from local knowledge first
-      const local = answerFromLocal(p);
-      if (local) {
-        setMessages((prev) => [...prev, { role: 'ai', text: local }]);
+      // Get museumId - priority: 1) from URL, 2) from prompt, 3) first museum
+      let museumId: string | undefined;
+      
+      // Try to get museumId from current URL (if on museum detail page)
+      if (typeof window !== 'undefined') {
+        const pathMatch = window.location.pathname.match(/\/museums\/([a-f0-9-]+)/i);
+        if (pathMatch && pathMatch[1]) {
+          museumId = pathMatch[1];
+          console.log('Found museumId from URL:', museumId);
+        }
+      }
+      
+      // If not from URL, try to find from prompt
+      if (!museumId) {
+        const foundMuseum = museums.find((m) => normalize(p).includes(normalize(m.name || '')));
+        if (foundMuseum) {
+          museumId = foundMuseum.id;
+          console.log('Found museumId from prompt:', museumId, foundMuseum.name);
+        }
+      }
+      
+      // If still not found, use first museum
+      if (!museumId && museums.length > 0) {
+        museumId = museums[0].id;
+        console.log('Using first museum:', museumId, museums[0].name);
+      }
+
+      // Only use local answers for simple queries (museum list, basic info)
+      // For artifact queries or complex questions, always use API
+      const q = normalize(p);
+      const foundMuseumForLocal = museums.find((m) => normalize(p).includes(normalize(m.name || '')));
+      const isSimpleQuery = 
+        q.includes('danh sach bao tang') || 
+        q.includes('bao tang nao') ||
+        (foundMuseumForLocal && !q.includes('hien vat') && !q.includes('do vat') && !q.includes('artifact') && (q.includes('mo ta') || q.includes('gioi thieu') || q.includes('thong tin')));
+      
+      if (isSimpleQuery) {
+        const local = answerFromLocal(p);
+        if (local) {
+          setMessages((prev) => [...prev, { role: 'ai', text: local }]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!museumId) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'ai',
+            text: 'Xin lỗi, chưa có thông tin bảo tàng. Vui lòng thử lại sau khi hệ thống tải xong dữ liệu.',
+          },
+        ]);
+        setLoading(false);
         return;
       }
-      const res = await fetch(`${base}/chat/generate`, {
+
+      // Call AI chat API
+      console.log('Calling API with:', { prompt: p, museumId, API_BASE: `${API_BASE}/chat/generate` });
+      
+      const res = await fetch(`${API_BASE}/chat/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ prompt: p }),
+        body: JSON.stringify({ prompt: p, museumId }),
       });
 
-      const raw = await res.text();
-      let text = raw;
-      try {
-        const data = raw ? JSON.parse(raw) : null;
-        text =
-          data?.data?.content ||
-          data?.content ||
-          data?.message ||
-          data?.result ||
-          data?.answer ||
-          data?.output ||
-          data?.data?.message ||
-          raw;
-      } catch {
-        // raw text is final
+      console.log('API Response status:', res.status, 'Content-Type:', res.headers.get('content-type'));
+
+      // Check if response is ok
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '');
+        console.error('API Error:', res.status, errorText);
+        // Check if error is HTML (like 404 page)
+        if (errorText.trim().startsWith('<!DOCTYPE') || errorText.trim().startsWith('<html')) {
+          throw new Error(`API endpoint không khả dụng (${res.status}). Vui lòng kiểm tra kết nối với server.`);
+        }
+        throw new Error(`Lỗi API: ${res.status} - ${errorText || res.statusText}`);
       }
 
-      setMessages((prev) => [...prev, { role: 'ai', text: text || 'Không có phản hồi.' }]);
+      // Check content type
+      const contentType = res.headers.get('content-type') || '';
+      const raw = await res.text();
+      
+      console.log('API Raw response length:', raw.length, 'Content-Type:', contentType);
+      console.log('API Raw response (first 300 chars):', raw.substring(0, 300));
+      
+      // If response is HTML, it's an error
+      if (raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html')) {
+        throw new Error('Server trả về HTML thay vì text. Endpoint có thể không tồn tại hoặc có lỗi cấu hình.');
+      }
+
+      let text = raw.trim();
+      
+      // API returns text/plain, but try to parse as JSON first (in case format changes)
+      if (contentType.includes('application/json') || text.startsWith('{') || text.startsWith('[')) {
+        try {
+          const data = JSON.parse(text);
+          console.log('Parsed JSON data:', data);
+          text =
+            data?.data?.content ||
+            data?.content ||
+            data?.message ||
+            data?.result ||
+            data?.answer ||
+            data?.output ||
+            data?.data?.message ||
+            text;
+        } catch (parseError) {
+          // If JSON parse fails, use raw text
+          console.log('JSON parse failed, using raw text');
+        }
+      } else {
+        // Content-Type is text/plain, use raw text directly
+        console.log('Response is text/plain, using raw text');
+      }
+
+      if (!text || text.trim().length === 0) {
+        text = 'Không có phản hồi từ server.';
+      }
+
+      console.log('Final text to display (length:', text.length, '):', text.substring(0, 300));
+      setMessages((prev) => [...prev, { role: 'ai', text: text }]);
     } catch (err: any) {
       setMessages((prev) => [...prev, { role: 'ai', text: err?.message || 'Lỗi gọi Chat AI.' }]);
     } finally {
@@ -184,7 +280,11 @@ export default function ChatAIWidget() {
                         ? 'text-white'
                         : 'text-neutral-800')
                     }
-                    style={m.role === 'user' ? { background: '#4EB09B' } : { background: '#FAE0C7' }}
+                    style={{
+                      ...(m.role === 'user' ? { background: '#4EB09B' } : { background: '#FAE0C7' }),
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                    }}
                   >
                     {m.text}
                   </div>

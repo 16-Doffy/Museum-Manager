@@ -36,99 +36,157 @@ export default function MuseumDetailPage() {
   }, [id]);
 
   return (
-    <div className="w-full max-w-7xl">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl shadow-lg mb-8">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(90deg, #F28076 0%, #FFB6AF 20%, #FAE0C7 45%, #FBC193 70%, #4EB09B 100%)',
-            opacity: 0.35,
-          }}
-        />
-        <div className="relative z-10 p-8 sm:p-12 md:p-14">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-                {data?.name || 'Thông tin bảo tàng'}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-neutral-800">
-                {data?.location ? (
-                  <span className="inline-flex rounded-full px-3 py-1 bg-[#FAE0C7]">
-                    Địa điểm: {data.location}
-                  </span>
-                ) : null}
-                <span className="inline-flex rounded-full px-3 py-1 bg-[#FFB6AF]">Mã: {data?.id}</span>
-                <span className="inline-flex rounded-full px-3 py-1 bg-[#FBC193]">Số hiện vật: {artifacts.length}</span>
-              </div>
-              {data?.description ? (
-                <p className="mt-5 max-w-4xl text-neutral-700 text-lg">{data.description}</p>
-              ) : null}
-            </div>
-            <Button variant="outline" className="h-11 px-6 text-base" onClick={() => router.back()}>Quay lại</Button>
+    <div className="w-full min-h-screen bg-black text-white">
+      {/* Hero Section - British Museum Style */}
+      <div className="relative w-full min-h-[90vh] flex flex-col">
+        {/* Background Image */}
+        {data?.thumbnailUrl ? (
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${data.thumbnailUrl})`,
+            }}
+          >
+            <div className="absolute inset-0 bg-black/60" />
           </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-800" />
+        )}
+
+        {/* Content */}
+        <div className="relative z-10 flex-1 flex flex-col">
+          {/* Header with back button */}
+          <div className="flex items-center justify-between p-6 md:p-8">
+            <button
+              onClick={() => router.back()}
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              ← Quay lại
+            </button>
+          </div>
+
+          {/* Main Hero Content */}
+          <div className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-16 pb-16">
+            <div className="max-w-6xl w-full">
+              {/* Welcome Text */}
+              <div className="text-white/90 italic text-xl md:text-2xl lg:text-3xl font-sans mb-4 text-center font-light tracking-wide">
+                Chào mừng đến với
+              </div>
+
+              {/* Museum Name - Large Typography */}
+              <div className="mb-8 md:mb-12">
+                <h1 className="text-6xl md:text-8xl lg:text-9xl font-sans font-extrabold text-white leading-none tracking-tight">
+                  <span className="block text-left">{data?.name?.split(' ').slice(0, Math.ceil((data?.name?.split(' ').length || 1) / 2)).join(' ') || 'BẢO TÀNG'}</span>
+                  <span className="block text-right mt-2">
+                    {data?.name?.split(' ').slice(Math.ceil((data?.name?.split(' ').length || 1) / 2)).join(' ') || 'VIỆT NAM'}
+                  </span>
+                </h1>
+              </div>
+
+              {/* Center Image Section */}
+              {data?.thumbnailUrl && (
+                <div className="my-8 md:my-12">
+                  <img
+                    src={data.thumbnailUrl}
+                    alt={data?.name || 'Bảo tàng'}
+                    className="w-full h-[400px] md:h-[500px] lg:h-[600px] object-cover rounded-lg shadow-2xl"
+                  />
+                </div>
+              )}
+
+              {/* Call to Action Button */}
+              <div className="flex justify-end mt-8 md:mt-12">
+                <button
+                  onClick={() => {
+                    const artifactsSection = document.getElementById('artifacts-section');
+                    artifactsSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-white/80 hover:border-white transition-all flex items-center justify-center group"
+                >
+                  <span className="text-white text-sm md:text-base font-medium text-center px-4 group-hover:scale-105 transition-transform">
+                    KHÁM PHÁ<br />HIỆN VẬT
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Description at bottom left */}
+          {data?.description && (
+            <div className="absolute bottom-8 left-6 md:left-12 lg:left-16 max-w-md">
+              <p className="text-white/80 text-sm md:text-base leading-relaxed">
+                {data.description}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Hiện vật</h2>
-        <div className="w-72">
-          <Input className="h-12 text-base" placeholder="Tìm hiện vật..." value={query} onChange={(e) => setQuery(e.target.value)} />
+      {/* Artifacts Section */}
+      <div id="artifacts-section" className="bg-neutral-900 py-16 px-6 md:px-12 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+
+          {/* Toolbar */}
+          <div className="mb-8 flex items-center justify-between gap-3">
+            <h2 className="text-3xl md:text-4xl font-sans font-bold text-white">Hiện vật</h2>
+            <div className="w-72">
+              <Input 
+                className="h-12 text-base bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-400 focus:border-white" 
+                placeholder="Tìm hiện vật..." 
+                value={query} 
+                onChange={(e) => setQuery(e.target.value)} 
+              />
+            </div>
+          </div>
+
+          {/* Artifacts */}
+          {loading ? (
+            <div className="text-white/60 text-center py-12">Đang tải hiện vật...</div>
+          ) : null}
+          {!loading && artifacts.length === 0 ? (
+            <div className="text-white/60 text-center py-12">Chưa có hiện vật nào.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-8">
+              {artifacts
+                .filter((a) => (query ? String(a.name || '').toLowerCase().includes(query.toLowerCase()) : true))
+                .map((a) => (
+                  <Card key={a.id} className="rounded-2xl border border-neutral-800 bg-neutral-800/50 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 backdrop-blur-sm">
+                    <CardHeader className="p-6">
+                      <CardTitle className="text-xl font-semibold text-white">
+                        <Link href={`/artifacts/${a.id}`} className="hover:text-white/80 transition-colors">
+                          {a.name}
+                        </Link>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0">
+                      <div className="text-base text-white/80 space-y-3">
+                        {a.periodTime ? (
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-base text-white/90">Niên đại:</span>
+                            <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{a.periodTime}</span>
+                          </div>
+                        ) : null}
+                        {a.areaName ? (
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-base text-white/90">Khu vực:</span>
+                            <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{a.areaName}</span>
+                          </div>
+                        ) : null}
+                        {a.displayPositionName ? (
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-base text-white/90">Vị trí trưng bày:</span>
+                            <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{a.displayPositionName}</span>
+                          </div>
+                        ) : null}
+                        {/* Ẩn trạng thái hiện vật theo yêu cầu */}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Artifacts */}
-      {loading ? <div>Đang tải hiện vật...</div> : null}
-      {!loading && artifacts.length === 0 ? (
-        <div className="text-neutral-500">Chưa có hiện vật nào.</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-          {artifacts
-            .filter((a) => (query ? String(a.name || '').toLowerCase().includes(query.toLowerCase()) : true))
-            .map((a) => (
-              <Card key={a.id} className="rounded-2xl border-none shadow-xl hover:shadow-lg transition-transform hover:-translate-y-0.5" style={{ background: '#ede7dd' }}>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
-                    <Link href={`/artifacts/${a.id}`} className="hover:underline">
-                      {a.name}
-                    </Link>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-neutral-700 space-y-2">
-                    {a.periodTime ? (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Niên đại:</span>
-                        <span className="inline-flex rounded-full px-2.5 py-1 text-xs" style={{ background: '#FFB6AF' }}>{a.periodTime}</span>
-                      </div>
-                    ) : null}
-                    {a.areaName ? (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Khu vực:</span>
-                        <span className="inline-flex rounded-full px-2.5 py-1 text-xs" style={{ background: '#FAE0C7' }}>{a.areaName}</span>
-                      </div>
-                    ) : null}
-                    {a.displayPositionName ? (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Vị trí trưng bày:</span>
-                        <span className="inline-flex rounded-full px-2.5 py-1 text-xs" style={{ background: '#FBC193' }}>{a.displayPositionName}</span>
-                      </div>
-                    ) : null}
-                    {a.status ? (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Trạng thái:</span>
-                        <span className="inline-flex rounded-full px-2.5 py-1 text-xs text-white" style={{ background: '#4EB09B' }}>{a.status}</span>
-                      </div>
-                    ) : null}
-                    <div className="text-neutral-400 text-xs break-all">ID: {a.id}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-        </div>
-      )}
     </div>
   );
 }

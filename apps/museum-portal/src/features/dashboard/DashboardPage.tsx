@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAreas, useArtifacts, useDisplayPositions, useArtifactStats, useStaffStats } from '../../lib/api/hooks';
 import { Users, MapPin, Package, TrendingUp, BarChart3 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth-store';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalVisitors: 0,
     totalArtifacts: 0,
@@ -238,41 +240,52 @@ export default function DashboardPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Thêm hiện vật mới</p>
-                <p className="text-sm text-gray-500">Quản lý bộ sưu tập</p>
-              </div>
-            </div>
-          </button>
-          
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Quản lý khu vực</p>
-                <p className="text-sm text-gray-500">Thiết lập vị trí trưng bày</p>
-              </div>
-            </div>
-          </button>
-          
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Khách tham quan</p>
-                <p className="text-sm text-gray-500">Theo dõi lượt truy cập</p>
-              </div>
-            </div>
-          </button>
+          {[
+            {
+              title: 'Thêm hiện vật mới',
+              subtitle: 'Quản lý bộ sưu tập',
+              icon: Package,
+              iconClasses: 'w-5 h-5 text-blue-600',
+              iconWrapper: 'w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center',
+              to: '/artifacts',
+            },
+            {
+              title: 'Quản lý khu vực',
+              subtitle: 'Thiết lập vị trí trưng bày',
+              icon: MapPin,
+              iconClasses: 'w-5 h-5 text-purple-600',
+              iconWrapper: 'w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center',
+              to: '/areas',
+            },
+            {
+              title: 'Khách tham quan',
+              subtitle: 'Theo dõi lượt truy cập',
+              icon: Users,
+              iconClasses: 'w-5 h-5 text-emerald-600',
+              iconWrapper: 'w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center',
+              to: '/visitors',
+            },
+          ].map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.title}
+                type="button"
+                onClick={() => navigate(action.to)}
+                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={action.iconWrapper}>
+                    <Icon className={action.iconClasses} />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{action.title}</p>
+                    <p className="text-sm text-gray-500">{action.subtitle}</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

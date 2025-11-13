@@ -77,13 +77,12 @@ export default function RegisterPage() {
       {/* Left panel - form */}
       <div className="relative bg-[#06204e] text-white flex items-center justify-center p-8 overflow-y-auto">
         <div className="max-w-md w-full py-8">
-          <div className="mb-8">
-            <h1 className="leading-none font-extrabold tracking-tight text-3xl bg-gradient-to-r from-white via-sky-200 to-green-500 inline-block text-transparent bg-clip-text">
-              <span className="block text-center">CREATE YOUR</span>
-              <span className="block text-center">MUSEUM ACCOUNT</span>
+          <div className="mb-8 text-center">
+            <h1 className="leading-none font-extrabold tracking-tight text-3xl bg-linear-to-r from-white via-sky-200 to-green-500 inline-block text-transparent bg-clip-text">
+              Register Account With Museum
             </h1>
-            <p className="text-center text-gray-300 mt-4 text-sm">
-              Đăng ký tài khoản bảo tàng mới. Tài khoản cần được Admin xác nhận.
+            <p className="text-gray-300 mt-3 text-sm">
+              Điền đầy đủ các trường giống như phần Request body trong API `/api/v1/auth/register`.
             </p>
           </div>
 
@@ -91,7 +90,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email <span className="text-red-400">*</span>
+                email <span className="text-red-400">*</span>
               </label>
               <input
                 id="email"
@@ -100,7 +99,7 @@ export default function RegisterPage() {
                 onChange={handleChange('email')}
                 required
                 className="w-full px-4 py-3 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                placeholder="you@example.com"
+                placeholder="tien@gmail.com"
                 disabled={isLoading}
               />
             </div>
@@ -108,7 +107,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Mật khẩu <span className="text-red-400">*</span>
+                password <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <input
@@ -136,7 +135,7 @@ export default function RegisterPage() {
             {/* Full Name */}
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-2">
-                Họ và tên <span className="text-red-400">*</span>
+                fullName <span className="text-red-400">*</span>
               </label>
               <input
                 id="fullName"
@@ -145,7 +144,7 @@ export default function RegisterPage() {
                 onChange={handleChange('fullName')}
                 required
                 className="w-full px-4 py-3 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                placeholder="Nguyễn Văn A"
+                placeholder="Thái Tấn Tiến"
                 disabled={isLoading}
               />
             </div>
@@ -153,7 +152,7 @@ export default function RegisterPage() {
             {/* Museum Name */}
             <div>
               <label htmlFor="museumName" className="block text-sm font-medium text-gray-300 mb-2">
-                Tên bảo tàng <span className="text-red-400">*</span>
+                museumName <span className="text-red-400">*</span>
               </label>
               <input
                 id="museumName"
@@ -162,7 +161,7 @@ export default function RegisterPage() {
                 onChange={handleChange('museumName')}
                 required
                 className="w-full px-4 py-3 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                placeholder="Bảo tàng Lịch sử Việt Nam"
+                placeholder="Bảo Tàng Chiến Tranh"
                 disabled={isLoading}
               />
             </div>
@@ -170,7 +169,7 @@ export default function RegisterPage() {
             {/* Museum Location */}
             <div>
               <label htmlFor="museumLocation" className="block text-sm font-medium text-gray-300 mb-2">
-                Địa chỉ bảo tàng <span className="text-red-400">*</span>
+                museumLocation <span className="text-red-400">*</span>
               </label>
               <input
                 id="museumLocation"
@@ -179,7 +178,7 @@ export default function RegisterPage() {
                 onChange={handleChange('museumLocation')}
                 required
                 className="w-full px-4 py-3 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                placeholder="123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh"
+                placeholder="6a 494 Tăng Nhơn Phú TP HCM"
                 disabled={isLoading}
               />
             </div>
@@ -187,7 +186,7 @@ export default function RegisterPage() {
             {/* Museum Description */}
             <div>
               <label htmlFor="museumDescription" className="block text-sm font-medium text-gray-300 mb-2">
-                Mô tả bảo tàng <span className="text-red-400">*</span>
+                museumDescription <span className="text-red-400">*</span>
               </label>
               <textarea
                 id="museumDescription"
@@ -196,7 +195,7 @@ export default function RegisterPage() {
                 required
                 rows={4}
                 className="w-full px-4 py-3 rounded-md bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
-                placeholder="Mô tả về bảo tàng của bạn..."
+                placeholder="Giới thiệu ngắn gọn về bảo tàng của bạn"
                 disabled={isLoading}
               />
             </div>
@@ -206,7 +205,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               className="w-full py-3 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản'}
+              {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
             </button>
           </form>
 
@@ -214,7 +213,7 @@ export default function RegisterPage() {
             <p className="text-sm text-gray-300">
               Đã có tài khoản?{' '}
               <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
-                Đăng nhập ngay
+                Đăng nhập
               </Link>
             </p>
           </div>
@@ -225,7 +224,7 @@ export default function RegisterPage() {
         </div>
 
         {/* vignette */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/30" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-black/40 via-transparent to-black/30" />
       </div>
 
       {/* Right panel - image */}

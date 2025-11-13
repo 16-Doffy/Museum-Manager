@@ -2,8 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/auth-store';
-import { FiEye, FiEyeOff, FiArchive } from 'react-icons/fi';
-import { Landmark } from 'lucide-react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,7 +55,7 @@ export default function LoginPage() {
             {/* <div className="w-14 h-14 rounded-xl bg-gray-500/20 flex items-center justify-center ">
              <Landmark className="w-10 h-12 text-white " />
             </div> */}
-            <h1 className="leading-none font-extrabold tracking-tight text-3xl bg-gradient-to-r from-white via-sky-200 to-green-500 inline-block text-transparent bg-clip-text">
+            <h1 className="leading-none font-extrabold tracking-tight text-3xl bg-linear-to-r from-white via-sky-200 to-green-500 inline-block text-transparent bg-clip-text">
               <span className="block text-center"> WELCOME TO THE MUSEUM</span>
               <span className="block text-center ">WORLD OF ART</span>
               <span className="block text-center">AND</span>
@@ -124,14 +123,13 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-
           <p className="mt-10 text-xs text-gray-400">
             © 2025 Museum Management System
           </p>
         </div>
 
         {/* vignette */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/30" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-black/40 via-transparent to-black/30" />
       </div>
 
       {/* Right panel - image */}

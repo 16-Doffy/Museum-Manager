@@ -107,7 +107,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       
       // API response format: { code, statusCode, message, data: { token } }
       // response.data is already the data field from API response
-      const rawToken = response.data?.token || response.data?.accessToken;
+      const rawToken = response.data?.token;
       const normalizeToken = (value: string | undefined | null) => {
         if (!value) return null;
         return value.startsWith('Bearer ') ? value.substring(7) : value;

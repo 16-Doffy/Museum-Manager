@@ -504,7 +504,7 @@ export default function CollectionTable() {
       {/* Artifact Form Modal */}
       {showForm && (
         <ArtifactForm
-          artifact={editingArtifact}
+          artifact={editingArtifact || undefined}
           onSave={handleSave}
           onCancel={() => {
             setShowForm(false);
