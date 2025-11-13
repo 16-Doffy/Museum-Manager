@@ -318,8 +318,33 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
   const addArtifactMedia = useCallback(async (artifactId: string, file: File, caption?: string) => {
     try {
       const form = new FormData();
-      form.append('File', file);
-      if (caption) form.append('Caption', caption);
+      
+      // Try multiple field names that APIs commonly use
+      // Some APIs expect 'file', 'File', 'fileUpload', 'media', etc.
+      const fieldNames = ['File', 'file', 'fileUpload', 'media', 'upload'];
+      const fieldName = fieldNames[0]; // Start with 'File' as it's most common
+      form.append(fieldName, file);
+      
+      // Also append filename if API needs it
+      if (file.name) {
+        form.append('fileName', file.name);
+      }
+      
+      if (caption) {
+        form.append('Caption', caption);
+        form.append('caption', caption); // Try both cases
+      }
+      
+      // Log for debugging
+      console.log('Uploading file:', {
+        artifactId,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        fieldName,
+        endpoint: artifactEndpoints.addMedia(artifactId)
+      });
+      
       const response = await apiClient.uploadFile<any>(artifactEndpoints.addMedia(artifactId), form);
       const payload = (response.data && typeof response.data === 'object' && 'data' in response.data)
         ? (response.data as any).data
@@ -327,7 +352,16 @@ export function useArtifacts(searchParams?: ArtifactSearchParams) {
       await fetchArtifacts();
       return normalizeArtifact(payload as any);
     } catch (err: unknown) {
-      throw new Error(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      console.error('addArtifactMedia error:', {
+        artifactId,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        error: errorMsg,
+        fullError: err
+      });
+      throw new Error(errorMsg);
     }
   }, [fetchArtifacts]);
 

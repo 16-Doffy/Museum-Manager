@@ -15,6 +15,9 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['three', 'three/examples/jsm/loaders/GLTFLoader', 'three/examples/jsm/loaders/OBJLoader'],
+  },
   server: {
     port: 3600,
     open: true,

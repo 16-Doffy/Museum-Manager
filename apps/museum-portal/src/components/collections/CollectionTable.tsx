@@ -172,24 +172,74 @@ export default function CollectionTable() {
   const handleAddMedia = useCallback(async (artifactId: string) => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.accept = 'image/*,video/*,model/gltf-binary,model/gltf+json,.glb,.gltf,.obj,.fbx,.3ds'; // Accept 3D models and media files
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
+      
+      // Validate file size (max 10MB - server limit seems to be around this)
+      // Most servers have default limit of 10-20MB for uploads
+      const maxSize = 10 * 1024 * 1024; // 10MB - conservative limit
+      if (file.size > maxSize) {
+        const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+        const maxSizeMB = (maxSize / 1024 / 1024).toFixed(0);
+        alert(
+          `File quá lớn!\n\n` +
+          `Kích thước file: ${fileSizeMB} MB\n` +
+          `Giới hạn tối đa: ${maxSizeMB} MB\n\n` +
+          `Vui lòng:\n` +
+          `1. Nén file GLB bằng công cụ như gltf-pipeline\n` +
+          `2. Hoặc giảm độ phân giải/texture của model\n` +
+          `3. Hoặc liên hệ admin để tăng giới hạn upload`
+        );
+        return;
+      }
+      
       try {
         setIsSubmitting(true);
+        console.log('Uploading media:', {
+          artifactId,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          mimeType: file.type || 'application/octet-stream'
+        });
+        
         await addArtifactMedia(artifactId, file);
         // Fetch fresh artifact detail to ensure correct shape (some upload APIs return only status)
         const fresh = await apiClient.get<Artifact>(artifactEndpoints.getById(artifactId));
         alert('Thêm media thành công');
         if (fresh?.data) setViewingArtifact(fresh.data);
-      } catch (e) {
-        alert('Lỗi khi thêm media');
+        await fetchArtifacts(); // Refresh the list
+      } catch (e: any) {
+        console.error('Error adding media:', e);
+        let errorMessage = e?.message || e?.toString() || 'Lỗi không xác định';
+        
+        // Handle specific error cases
+        if (e?.statusCode === 413 || errorMessage.includes('413') || errorMessage.includes('Content Too Large') || errorMessage.includes('too large')) {
+          const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+          errorMessage = `File quá lớn (${fileSizeMB} MB)!\n\n` +
+            `Server từ chối file vì vượt quá giới hạn upload.\n\n` +
+            `Giải pháp:\n` +
+            `• Nén file GLB bằng gltf-pipeline hoặc Blender\n` +
+            `• Giảm độ phân giải texture\n` +
+            `• Chia nhỏ model thành nhiều file\n` +
+            `• Liên hệ admin để tăng giới hạn upload`;
+        } else if (e?.statusCode === 400) {
+          errorMessage = `Dữ liệu không hợp lệ: ${errorMessage}`;
+        } else if (e?.statusCode === 401 || e?.statusCode === 403) {
+          errorMessage = `Không có quyền upload. Vui lòng đăng nhập lại.`;
+        } else if (e?.statusCode === 500) {
+          errorMessage = `Lỗi server: ${errorMessage}`;
+        }
+        
+        alert(`Lỗi khi thêm media:\n\n${errorMessage}`);
       } finally {
         setIsSubmitting(false);
       }
     };
     input.click();
-  }, [addArtifactMedia]);
+  }, [addArtifactMedia, fetchArtifacts]);
 
   const handleSave = useCallback(async (data: ArtifactCreateRequest | ArtifactUpdateRequest) => {
     try {

@@ -186,29 +186,77 @@ class ApiClient {
     const config: RequestInit = {
       method,
       headers: {
+        // Don't set Content-Type header - browser will set it automatically with boundary for FormData
         ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: formData,
     };
 
     try {
+      console.log('Uploading to:', url, 'Method:', method);
       const response = await fetch(url, config);
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        // Try to get error message from response
+        let errorData: any = {};
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            errorData = await response.json();
+          } catch (e) {
+            console.error('Failed to parse error response as JSON:', e);
+          }
+        } else {
+          // Try to get text response
+          try {
+            const text = await response.text();
+            if (text) {
+              errorData = { message: text };
+            }
+          } catch (e) {
+            console.error('Failed to read error response:', e);
+          }
+        }
+        
+        const errorMessage = errorData?.message || errorData?.error || errorData?.Message || `Upload failed: ${response.status} ${response.statusText}`;
+        
+        console.error('Upload error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          errorMessage
+        });
+        
         throw {
-          message: (errorData as any).message || 'Upload failed',
+          message: errorMessage,
           statusCode: response.status,
-          errors: (errorData as any).errors,
+          errors: errorData?.errors || errorData?.Errors,
         } as ApiError;
+      }
+
+      // Check if response has content
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        // Some APIs return empty body on success
+        return { data: {} as T, success: true };
       }
 
       const data = await response.json();
       return { data, success: true };
     } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'statusCode' in error) {
+        // Already an ApiError
+        throw error;
+      }
+      
       if (error instanceof Error) {
+        console.error('Upload exception:', error);
         throw { message: error.message, statusCode: 500 } as ApiError;
       }
-      throw error as ApiError;
+      
+      console.error('Unknown upload error:', error);
+      throw { message: 'Upload failed: Unknown error', statusCode: 500 } as ApiError;
     }
   }
 }

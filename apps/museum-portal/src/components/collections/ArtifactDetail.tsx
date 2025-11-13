@@ -17,7 +17,7 @@ export default function ArtifactDetail({ artifact, onClose }: ArtifactDetailProp
   const [removedMediaIds, setRemovedMediaIds] = useState<Set<string>>(new Set());
   // Detect 3D model media
   const [modelUrl, setModelUrl] = useState<string | null>(null);
-  const [modelType, setModelType] = useState<'gltf' | 'obj' | null>(null);
+  const [modelType, setModelType] = useState<'gltf' | 'glb' | 'obj' | null>(null);
   useEffect(() => {
     const mediaList = extractMedia(current as any);
     const model = mediaList.find((m: any) => {
@@ -26,9 +26,17 @@ export default function ArtifactDetail({ artifact, onClose }: ArtifactDetailProp
       return url.match(/\.(glb|gltf|obj)$/i);
     });
     if (model) {
-      setModelUrl(model.url || model.filePath);
-      if ((model.url || model.filePath).endsWith('.obj')) setModelType('obj');
-      else setModelType('gltf');
+      const url = model.url || model.filePath;
+      setModelUrl(url);
+      // Auto-detect type from file extension
+      const ext = url.toLowerCase().split('.').pop();
+      if (ext === 'obj') {
+        setModelType('obj');
+      } else if (ext === 'glb') {
+        setModelType('glb');
+      } else {
+        setModelType('gltf');
+      }
     } else {
       setModelUrl(null);
       setModelType(null);
@@ -223,8 +231,15 @@ QR Code: ${artifact.code}
           {/* 3D Model Preview */}
           {modelUrl && modelType && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">3D Model Preview</h3>
-              <Model3DViewer url={modelUrl} type={modelType} />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Mô hình 3D</h3>
+              <Model3DViewer 
+                url={modelUrl} 
+                type={modelType}
+                width={600}
+                height={400}
+                autoRotate={true}
+                controls={true}
+              />
             </div>
           )}
           {/* Media Gallery */}

@@ -83,11 +83,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
       
-      console.log('Attempting login with:', { endpoint: authEndpoints.login, credentials });
-      
       // Try real API first, fallback to mock if fails
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}${authEndpoints.login}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}${authEndpoints.login}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -97,7 +95,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Login response:', data);
           
           if (data.token && data.user) {
             saveAuthData(data);
@@ -105,7 +102,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch (apiError) {
-        console.log('API not available, using mock data');
+        // API not available, using mock data
       }
       
       // Fallback to mock data
@@ -138,7 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginWithGoogle = async (googleToken: GoogleLoginRequest) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}${authEndpoints.loginGoogle}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}${authEndpoints.loginGoogle}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +162,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       // Call logout endpoint if token exists
       if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}${authEndpoints.logout}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}${authEndpoints.logout}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -186,7 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       // This would typically be a separate endpoint to get current user info
       // For now, we'll just validate the token is still valid
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}/auth/me`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://museum-system-api-160202770359.asia-southeast1.run.app/api/v1'}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
