@@ -8,10 +8,13 @@ const config = {
 
 export const initConfigApp = () => {
   // Initialize app configuration
-  console.log('App initialized with config:', {
-    apiUrl: API.API_URL,
-    environment: import.meta.env.MODE,
-  });
+  // Only log in development mode
+  if (import.meta.env.DEV) {
+    console.log('App initialized with config:', {
+      apiUrl: API.API_URL,
+      environment: import.meta.env.MODE,
+    });
+  }
 };
 
 export default config;
