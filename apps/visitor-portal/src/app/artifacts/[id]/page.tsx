@@ -131,7 +131,7 @@ export default function ArtifactDetailPage() {
             <div className="absolute inset-0 bg-black/70" />
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-800" />
+          <div className="absolute inset-0 bg-linear-to-br from-neutral-900 via-black to-neutral-800" />
         )}
 
         {/* Content */}
@@ -263,15 +263,7 @@ export default function ArtifactDetailPage() {
                     <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{data.periodTime}</span>
                   </div>
                 ) : null}
-                {data?.isOriginal !== undefined ? (
-                  <div>
-                    <div className="font-medium text-white/90 mb-2">Tính chất</div>
-                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">
-                      {data.isOriginal ? 'Bản gốc' : 'Bản sao'}
-                    </span>
-                  </div>
-                ) : null}
-                {/* Ẩn trạng thái hiện vật theo yêu cầu */}
+                {/* Ẩn tính chất hiện vật theo yêu cầu */}
                 {data?.areaName ? (
                   <div>
                     <div className="font-medium text-white/90 mb-2">Khu vực</div>
