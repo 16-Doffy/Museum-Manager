@@ -6,7 +6,7 @@ export class VisitorService {
   static async getAll(params?: PaginationParams): Promise<PaginatedResponse<Visitor>> {
     const response = await apiClient.get<PaginatedResponse<Visitor>>(
       visitorEndpoints.getAll,
-      params as Record<string, string | number | boolean>
+      params ? (params as unknown as Record<string, string | number | boolean>) : undefined
     );
     return response.data;
   }

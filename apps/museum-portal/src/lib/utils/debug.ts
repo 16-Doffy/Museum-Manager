@@ -42,6 +42,6 @@ export function debugLocalStorage() {
 
 // Auto-run on page load
 if (typeof window !== 'undefined') {
-  window.debugLocalStorage = debugLocalStorage;
+  (window as any).debugLocalStorage = debugLocalStorage;
   console.log('🔧 Debug function available: window.debugLocalStorage()');
 }

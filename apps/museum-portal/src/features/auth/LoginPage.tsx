@@ -1,9 +1,8 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/auth-store';
-import { FiEye, FiEyeOff, FiArchive } from 'react-icons/fi';
-import { Landmark } from 'lucide-react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -116,6 +115,14 @@ export default function LoginPage() {
             </button>
           </form>
 
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-300">
+              Chưa có tài khoản?{' '}
+              <Link to="/register" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                Đăng ký ngay
+              </Link>
+            </p>
+          </div>
           <p className="mt-10 text-xs text-gray-400">
             © 2025 Museum Management System
           </p>

@@ -13,7 +13,7 @@ export class ExhibitionService {
   static async getAll(params?: ExhibitionSearchParams): Promise<PaginatedResponse<Exhibition>> {
     const response = await apiClient.get<PaginatedResponse<Exhibition>>(
       exhibitionEndpoints.getAll,
-      params as Record<string, string | number | boolean>
+      params ? (params as unknown as Record<string, string | number | boolean>) : undefined
     );
     return response.data;
   }

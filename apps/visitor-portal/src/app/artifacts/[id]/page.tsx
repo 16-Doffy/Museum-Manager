@@ -17,6 +17,7 @@ export default function ArtifactDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<'image' | 'qr'>('image');
   const [interactions, setInteractions] = useState<any[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(false);
   const [myRating, setMyRating] = useState<number>(0);
@@ -174,6 +175,7 @@ export default function ArtifactDetailPage() {
                     className="w-full h-[400px] md:h-[500px] lg:h-[600px] object-cover rounded-lg shadow-2xl cursor-zoom-in"
                     onClick={() => {
                       setPreviewImage(img);
+                      setPreviewType('image');
                       setPreviewOpen(true);
                     }}
                   />
@@ -238,6 +240,7 @@ export default function ArtifactDetailPage() {
                             className="w-32 h-32 bg-white p-2 rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity inline-flex items-center justify-center"
                             onClick={() => {
                               setPreviewImage(qrUrl);
+                              setPreviewType('qr');
                               setPreviewOpen(true);
                             }}
                           >
@@ -268,12 +271,7 @@ export default function ArtifactDetailPage() {
                     </span>
                   </div>
                 ) : null}
-                {data?.status ? (
-                  <div>
-                    <div className="font-medium text-white/90 mb-2">Trạng thái</div>
-                    <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-green-600/80 text-white">{data.status}</span>
-                  </div>
-                ) : null}
+                {/* Ẩn trạng thái hiện vật theo yêu cầu */}
                 {data?.areaName ? (
                   <div>
                     <div className="font-medium text-white/90 mb-2">Khu vực</div>
@@ -343,6 +341,7 @@ export default function ArtifactDetailPage() {
                         onClick={() => {
                           if (media.filePath) {
                             setPreviewImage(media.filePath);
+                            setPreviewType('image');
                             setPreviewOpen(true);
                           }
                         }}
@@ -405,6 +404,7 @@ export default function ArtifactDetailPage() {
               onClick={() => {
                 setPreviewOpen(false);
                 setPreviewImage(null);
+                setPreviewType('image');
               }}
             >
               <button
@@ -412,21 +412,21 @@ export default function ArtifactDetailPage() {
                 onClick={() => {
                   setPreviewOpen(false);
                   setPreviewImage(null);
+                  setPreviewType('image');
                 }}
               >
                 Đóng
               </button>
-                    {previewImage && previewImage.startsWith('http') && (data?.artifactCode || data?.id) ? (
-                      // Show QR code if preview is a URL
-                      <div className="bg-white p-8 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                        <QRCode
-                          value={previewImage}
-                          size={400}
-                          style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                          viewBox="0 0 256 256"
-                        />
-                      </div>
-                    ) : (
+              {previewType === 'qr' ? (
+                <div className="bg-white p-8 rounded-lg" onClick={(e) => e.stopPropagation()}>
+                  <QRCode
+                    value={previewImage}
+                    size={400}
+                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                    viewBox="0 0 256 256"
+                  />
+                </div>
+              ) : (
                 <img
                   src={previewImage}
                   alt={data?.name || 'artifact'}

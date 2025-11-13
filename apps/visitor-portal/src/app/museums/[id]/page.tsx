@@ -178,12 +178,7 @@ export default function MuseumDetailPage() {
                             <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-neutral-700 text-white">{a.displayPositionName}</span>
                           </div>
                         ) : null}
-                        {a.status ? (
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium text-base text-white/90">Trạng thái:</span>
-                            <span className="inline-flex rounded-full px-3 py-1.5 text-sm bg-green-600/80 text-white">{a.status}</span>
-                          </div>
-                        ) : null}
+                        {/* Ẩn trạng thái hiện vật theo yêu cầu */}
                       </div>
                     </CardContent>
                   </Card>

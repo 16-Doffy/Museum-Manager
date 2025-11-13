@@ -13,7 +13,8 @@ interface CreateAccountModalProps {
 
 export default function CreateAccountModal({ isOpen, onClose, onSubmit, isLoading }: CreateAccountModalProps) {
   const { data: rolesData } = useRoles({ pageIndex: 1, pageSize: 10 });
-  const { data: museumsData } = useMuseums({ pageIndex: 1, pageSize: 10 });
+  // Only fetch Active museums for account creation
+  const { data: museumsData } = useMuseums({ pageIndex: 1, pageSize: 10, Status: 'Active' });
 
   const [formData, setFormData] = useState<CreateAccountRequest>({
     email: '',

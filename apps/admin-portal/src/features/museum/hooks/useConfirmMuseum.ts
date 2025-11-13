@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { museumsApi } from '../api/museums-api';
-import { CreateMuseumRequest } from '../types';
+import { ConfirmMuseumRequest } from '../types';
 
-export function useCreateMuseum() {
+export function useConfirmMuseum() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateMuseumRequest) => museumsApi.create(data),
+    mutationFn: ({ id, confirmStatus }: { id: string; confirmStatus: ConfirmMuseumRequest['ConfirmStatus'] }) =>
+      museumsApi.confirm(id, confirmStatus),
     onSuccess: () => {
-      // Invalidate museums list to refetch with new museum
       queryClient.invalidateQueries({ queryKey: ['museums'] });
     },
   });

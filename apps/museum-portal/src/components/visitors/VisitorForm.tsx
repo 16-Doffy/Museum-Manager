@@ -21,10 +21,10 @@ export default function VisitorForm({ visitor, onSave, onCancel, isLoading = fal
   useEffect(() => {
     if (visitor) {
       setFormData({
-        phoneNumber: visitor.phoneNumber,
+        phoneNumber: visitor.phoneNumber || '',
         name: visitor.name || '',
         email: visitor.email || '',
-        status: visitor.status,
+        status: visitor.status || 'Active',
       });
     } else {
       setFormData({

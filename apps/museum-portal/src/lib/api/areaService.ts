@@ -6,7 +6,7 @@ export class AreaService {
   static async getAll(params?: PaginationParams): Promise<PaginatedResponse<Area>> {
     const response = await apiClient.get<PaginatedResponse<Area>>(
       areaEndpoints.getAll,
-      params as Record<string, string | number | boolean>
+      params ? (params as unknown as Record<string, string | number | boolean>) : undefined
     );
     return response.data;
   }
