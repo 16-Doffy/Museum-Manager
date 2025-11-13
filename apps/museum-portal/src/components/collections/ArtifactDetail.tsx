@@ -1,6 +1,7 @@
 import { Artifact } from '@/lib/api/types';
 import { useAreas } from '@/lib/api/hooks';
 import { useEffect, useState } from 'react';
+import { Model3DViewer } from './Model3DViewer';
 import { apiClient } from '@/lib/api/client';
 import { artifactEndpoints } from '@/lib/api/endpoints';
 import { FiX, FiPrinter, FiDownload } from 'react-icons/fi';
@@ -14,6 +15,25 @@ export default function ArtifactDetail({ artifact, onClose }: ArtifactDetailProp
   const [current, setCurrent] = useState<Artifact>(artifact);
   const [coverId, setCoverId] = useState<string | null>(null);
   const [removedMediaIds, setRemovedMediaIds] = useState<Set<string>>(new Set());
+  // Detect 3D model media
+  const [modelUrl, setModelUrl] = useState<string | null>(null);
+  const [modelType, setModelType] = useState<'gltf' | 'obj' | null>(null);
+  useEffect(() => {
+    const mediaList = extractMedia(current as any);
+    const model = mediaList.find((m: any) => {
+      if (!m.url && !m.filePath) return false;
+      const url = m.url || m.filePath;
+      return url.match(/\.(glb|gltf|obj)$/i);
+    });
+    if (model) {
+      setModelUrl(model.url || model.filePath);
+      if ((model.url || model.filePath).endsWith('.obj')) setModelType('obj');
+      else setModelType('gltf');
+    } else {
+      setModelUrl(null);
+      setModelType(null);
+    }
+  }, [current]);
 
   // Load removed media ids from localStorage (persist across reopen)
   useEffect(() => {
@@ -200,6 +220,13 @@ QR Code: ${artifact.code}
             </div>
           </div>
 
+          {/* 3D Model Preview */}
+          {modelUrl && modelType && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">3D Model Preview</h3>
+              <Model3DViewer url={modelUrl} type={modelType} />
+            </div>
+          )}
           {/* Media Gallery */}
           {Array.isArray(sortedMedia) && sortedMedia.length > 0 && (
             <div className="mb-6">
