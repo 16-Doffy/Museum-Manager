@@ -131,7 +131,7 @@ export default function ArtifactDetailPage() {
             <div className="absolute inset-0 bg-black/70" />
           </div>
         ) : (
-          <div className="absolute inset-0 bg-linear-to-br from-neutral-900 via-black to-neutral-800" />
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-800" />
         )}
 
         {/* Content */}

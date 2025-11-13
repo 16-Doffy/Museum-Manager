@@ -30,11 +30,36 @@ export async function apiFetch<T = any>(path: string, options: ApiOptions = {}):
     const token = getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
+  
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(text || `Request failed: ${res.status}`);
+    let errorMessage = text || `Request failed: ${res.status}`;
+    
+    // Try to parse as JSON for better error message
+    try {
+      const errorJson = JSON.parse(text);
+      errorMessage = errorJson.message || errorJson.Message || errorJson.error || errorMessage;
+    } catch {
+      // Not JSON, use text as is
+    }
+    
+    // Don't log 403 errors to console (permission issues are expected for visitors)
+    if (res.status !== 403) {
+      console.error('API Error:', {
+        url: `${API_BASE}${path}`,
+        status: res.status,
+        statusText: res.statusText,
+        error: errorMessage,
+      });
+    }
+    
+    const error: any = new Error(errorMessage);
+    error.statusCode = res.status;
+    throw error;
   }
+  
   // Some endpoints may return empty body
   const contentType = res.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) return undefined as unknown as T;
@@ -110,10 +135,36 @@ export interface ArtifactSummary {
 export async function getArtifactsByMuseum(
   museumId: string,
   params: { pageIndex?: number; pageSize?: number; artifactName?: string; periodTime?: string; areaName?: string; displayPositionName?: string } = {}
-): Promise<ArtifactSummary[]>
-{ const qs = new URLSearchParams(Object.entries(params).filter(([,v]) => v!==undefined && v!==null && v!=='') as any).toString();
-  const res = await apiFetch<any>(`/visitors/museums/${museumId}/artifacts${qs ? `?${qs}` : ''}`, { auth: true });
-  return (res?.data?.items as ArtifactSummary[]) || (res?.items as ArtifactSummary[]) || (Array.isArray(res) ? res : []);
+): Promise<ArtifactSummary[]> {
+  try {
+    const qs = new URLSearchParams(Object.entries(params).filter(([,v]) => v!==undefined && v!==null && v!=='') as any).toString();
+    const res = await apiFetch<any>(`/visitors/museums/${museumId}/artifacts${qs ? `?${qs}` : ''}`, { auth: true });
+    
+    // Try multiple response structures
+    let artifacts: ArtifactSummary[] = [];
+    
+    if (res?.data?.items && Array.isArray(res.data.items)) {
+      artifacts = res.data.items;
+    } else if (res?.items && Array.isArray(res.items)) {
+      artifacts = res.items;
+    } else if (res?.data && Array.isArray(res.data)) {
+      artifacts = res.data;
+    } else if (Array.isArray(res)) {
+      artifacts = res;
+    }
+    
+    // Filter out deleted/inactive artifacts
+    artifacts = artifacts.filter((a: any) => {
+      if (a.isDeleted === true) return false;
+      if (a.isActive === false) return false;
+      if (a.status === 'Deleted' || a.status === 'Inactive') return false;
+      return true;
+    });
+    
+    return artifacts;
+  } catch (e: any) {
+    throw e;
+  }
 }
 
 export async function getArtifactDetail(artifactId: string): Promise<any>
@@ -124,6 +175,161 @@ export async function getArtifactDetail(artifactId: string): Promise<any>
 export async function getArtifactByCode(artifactCode: string): Promise<any>
 { const res = await apiFetch<any>(`/artifacts/code/${encodeURIComponent(artifactCode)}`, { auth: true });
   return res?.data || res; }
+
+// Exhibitions
+export interface ExhibitionSummary {
+  id: string;
+  name: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: 'Active' | 'Upcoming' | 'Expired' | 'Daily' | 'Deleted';
+  museumId?: string;
+  museum?: {
+    id: string;
+    name: string;
+  };
+  historicalContexts?: Array<{
+    id: string;
+    title: string;
+    period?: string;
+  }>;
+}
+
+export async function getExhibitions(params: { 
+  pageIndex?: number; 
+  pageSize?: number; 
+  name?: string;
+  statusFilter?: string;
+  museumId?: string;
+} = {}): Promise<ExhibitionSummary[]> {
+  try {
+    // Try /visitors/exhibitions endpoint first (visitor-specific)
+    const qs = new URLSearchParams(Object.entries(params).filter(([,v]) => v!==undefined && v!==null && v!=='') as any).toString();
+    const res = await apiFetch<any>(`/visitors/exhibitions${qs ? `?${qs}` : ''}`, { auth: true });
+    
+    // Try multiple response structures
+    let exhibitions: ExhibitionSummary[] = [];
+    
+    if (res?.data?.items && Array.isArray(res.data.items)) {
+      exhibitions = res.data.items;
+    } else if (res?.items && Array.isArray(res.items)) {
+      exhibitions = res.items;
+    } else if (res?.data && Array.isArray(res.data)) {
+      exhibitions = res.data;
+    } else if (Array.isArray(res)) {
+      exhibitions = res;
+    }
+    
+    return exhibitions;
+  } catch (e: any) {
+    // If 404, try /exhibition endpoint (admin endpoint)
+    if (e?.statusCode === 404 || e?.message?.includes('404') || e?.message?.includes('Not Found')) {
+      try {
+        const qs = new URLSearchParams(Object.entries(params).filter(([,v]) => v!==undefined && v!==null && v!=='') as any).toString();
+        const res = await apiFetch<any>(`/exhibition${qs ? `?${qs}` : ''}`, { auth: true });
+        
+        // Try multiple response structures
+        let exhibitions: ExhibitionSummary[] = [];
+        
+        if (res?.data?.items && Array.isArray(res.data.items)) {
+          exhibitions = res.data.items;
+        } else if (res?.items && Array.isArray(res.items)) {
+          exhibitions = res.items;
+        } else if (res?.data && Array.isArray(res.data)) {
+          exhibitions = res.data;
+        } else if (Array.isArray(res)) {
+          exhibitions = res;
+        }
+        
+        return exhibitions;
+      } catch (fallbackError: any) {
+        // If fallback also fails, return empty array
+        return [];
+      }
+    }
+    // If 403 or permission error, return empty array (visitor doesn't have access)
+    if (e?.statusCode === 403 || e?.message?.includes('403') || e?.message?.includes('Forbidden') || e?.message?.includes('permission')) {
+      return [];
+    }
+    // For other errors, throw
+    throw e;
+  }
+}
+
+export async function getExhibitionDetail(id: string): Promise<any> {
+  try {
+    // Try visitor-specific endpoint first
+    const res = await apiFetch<any>(`/visitors/exhibitions/${id}`, { auth: true });
+    return res?.data || res;
+  } catch (e: any) {
+    // Fallback to regular endpoint if visitor endpoint doesn't exist
+    if (e?.message?.includes('404') || e?.message?.includes('Not Found')) {
+      const res = await apiFetch<any>(`/exhibition/${id}`, { auth: true });
+      return res?.data || res;
+    }
+    throw e;
+  }
+}
+
+export async function getExhibitionsByMuseum(museumId: string, params: { 
+  pageIndex?: number; 
+  pageSize?: number; 
+  name?: string;
+  statusFilter?: string;
+} = {}): Promise<ExhibitionSummary[]> {
+  try {
+    // Try /visitors/exhibitions endpoint with museumId filter
+    const qs = new URLSearchParams(Object.entries({ ...params, museumId }).filter(([,v]) => v!==undefined && v!==null && v!=='') as any).toString();
+    const res = await apiFetch<any>(`/visitors/exhibitions${qs ? `?${qs}` : ''}`, { auth: true });
+    
+    // Try multiple response structures
+    let exhibitions: ExhibitionSummary[] = [];
+    
+    if (res?.data?.items && Array.isArray(res.data.items)) {
+      exhibitions = res.data.items;
+    } else if (res?.items && Array.isArray(res.items)) {
+      exhibitions = res.items;
+    } else if (res?.data && Array.isArray(res.data)) {
+      exhibitions = res.data;
+    } else if (Array.isArray(res)) {
+      exhibitions = res;
+    }
+    
+    return exhibitions;
+  } catch (e: any) {
+    // If 404, try /exhibition endpoint
+    if (e?.statusCode === 404 || e?.message?.includes('404') || e?.message?.includes('Not Found')) {
+      try {
+        const qs = new URLSearchParams(Object.entries({ ...params, museumId }).filter(([,v]) => v!==undefined && v!==null && v!=='') as any).toString();
+        const res = await apiFetch<any>(`/exhibition${qs ? `?${qs}` : ''}`, { auth: true });
+        
+        // Try multiple response structures
+        let exhibitions: ExhibitionSummary[] = [];
+        
+        if (res?.data?.items && Array.isArray(res.data.items)) {
+          exhibitions = res.data.items;
+        } else if (res?.items && Array.isArray(res.items)) {
+          exhibitions = res.items;
+        } else if (res?.data && Array.isArray(res.data)) {
+          exhibitions = res.data;
+        } else if (Array.isArray(res)) {
+          exhibitions = res;
+        }
+        
+        return exhibitions;
+      } catch (fallbackError: any) {
+        return [];
+      }
+    }
+    // If 403 or permission error, return empty array
+    if (e?.statusCode === 403 || e?.message?.includes('403') || e?.message?.includes('Forbidden') || e?.message?.includes('permission')) {
+      return [];
+    }
+    // For other errors, throw
+    throw e;
+  }
+}
 
 
 

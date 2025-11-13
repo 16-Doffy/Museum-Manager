@@ -24,7 +24,7 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
       '@': path.resolve(__dirname, 'src'),
@@ -37,6 +37,13 @@ const nextConfig = {
       connect: false,
       batch: false,
     };
+
+    // Ensure three.js is properly resolved
+    config.resolve.modules = [
+      ...(config.resolve.modules || []),
+      path.resolve(__dirname, 'node_modules'),
+      'node_modules',
+    ];
 
     // Add "use client" directive to ui-core components that use React hooks
     config.module.rules.push({

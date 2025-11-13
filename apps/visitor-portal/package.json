@@ -16,7 +16,8 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-qr-code": "^2.0.18",
-    "shared": "*"
+    "shared": "*",
+    "three": "^0.181.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -24,6 +25,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.181.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "string-replace-loader": "^3.2.0",

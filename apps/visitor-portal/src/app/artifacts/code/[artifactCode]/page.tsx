@@ -8,6 +8,20 @@ import { Input } from '@museum-manager/ui-core/input';
 import { Star } from 'lucide-react';
 import { getArtifactByCode, getArtifactDetail, postInteraction, getInteractionsByArtifact } from '@/lib/api';
 import QRCode from 'react-qr-code';
+import dynamic from 'next/dynamic';
+
+// Dynamically import Model3DViewer to avoid SSR issues with three.js
+const Model3DViewer = dynamic(() => import('@/components/Model3DViewer').then(mod => ({ default: mod.Model3DViewer })), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] flex items-center justify-center bg-neutral-900 border border-neutral-700 rounded-lg">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-2"></div>
+        <p className="text-sm text-white/80">Đang tải viewer 3D...</p>
+      </div>
+    </div>
+  ),
+});
 
 export default function ArtifactByCodePage() {
   const { artifactCode } = useParams<{ artifactCode: string }>();
@@ -150,6 +164,14 @@ export default function ArtifactByCodePage() {
   const ratings = interactions.filter((i) => i.rating && i.rating > 0).map((i) => i.rating);
   const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
   const comments = interactions.filter((i) => i.comment && i.comment.trim());
+  
+  // Detect 3D model from media items
+  const model3D = data?.mediaItems?.find((m: any) => {
+    const url = m?.filePath || m?.url || '';
+    return url.match(/\.(glb|gltf|obj)$/i);
+  });
+  const model3DUrl = model3D?.filePath || model3D?.url;
+  const model3DType = model3DUrl ? (model3DUrl.toLowerCase().endsWith('.obj') ? 'obj' : model3DUrl.toLowerCase().endsWith('.glb') ? 'glb' : 'gltf') : null;
 
   if (loading) {
     return (
@@ -407,12 +429,35 @@ export default function ArtifactByCodePage() {
                     </div>
                   </div>
                 )}
+                {/* 3D Model Section */}
+                {model3DUrl && model3DType && (
+                  <div className="mt-6 pt-6 border-t border-neutral-700">
+                    <div className="font-medium text-white/90 mb-4 text-lg">Mô hình 3D</div>
+                    <div className="w-full">
+                      <Model3DViewer 
+                        url={model3DUrl} 
+                        type={model3DType}
+                        width={800}
+                        height={500}
+                        autoRotate={true}
+                        controls={true}
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 {/* Media Gallery */}
                 {data?.mediaItems && Array.isArray(data.mediaItems) && data.mediaItems.length > 0 && (
                   <div className="mt-6 pt-6 border-t border-neutral-700">
                     <div className="font-medium text-white/90 mb-4 text-lg">Hình ảnh</div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                      {data.mediaItems.map((media: any, idx: number) => (
+                      {data.mediaItems
+                        .filter((media: any) => {
+                          // Filter out 3D models (already shown above)
+                          const url = media?.filePath || media?.url || '';
+                          return !url.match(/\.(glb|gltf|obj)$/i);
+                        })
+                        .map((media: any, idx: number) => (
                         <div
                           key={idx}
                           className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"

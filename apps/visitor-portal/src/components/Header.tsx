@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@museum-manager/ui-core/button';
 import { visitorMe, setToken, getToken } from '@/lib/api';
 
@@ -58,7 +59,19 @@ export default function Header() {
     <header className="w-full border-b border-neutral-700 sticky top-0 z-40" style={{ background: '#2C2C2C' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="font-semibold text-lg text-white">Bảo tàng Việt Nam</div>
+          <div className="flex items-center gap-6">
+            <Link href="/select-museum" className="font-semibold text-lg text-white hover:text-white/80 transition-colors">
+              Bảo tàng Việt Nam
+            </Link>
+            <nav className="hidden md:flex items-center gap-4">
+              <Link 
+                href="/select-museum" 
+                className={`text-sm text-neutral-300 hover:text-white transition-colors ${pathname === '/select-museum' ? 'text-white font-medium' : ''}`}
+              >
+                Bảo tàng
+              </Link>
+            </nav>
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-neutral-300">
               Xin chào, <span className="font-semibold text-white">{currentUser?.username || 'Người dùng'}</span>

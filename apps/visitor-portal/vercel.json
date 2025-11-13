@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm install && pnpm --filter visitor-portal build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "pnpm install"
+}
