@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm install && pnpm --filter admin-portal build",
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter admin-portal build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "pnpm install",
+  "installCommand": "cd ../.. && pnpm install",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
