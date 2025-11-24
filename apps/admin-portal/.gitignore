@@ -38,3 +38,4 @@ src/**/*.js
 *.njsproj
 *.sln
 *.sw?
+".env" 
